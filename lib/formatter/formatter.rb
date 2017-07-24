@@ -2,6 +2,7 @@ require_relative 'csv'
 require_relative 'json'
 require_relative 'xml'
 require_relative 'yaml'
+require_relative 'table'
 
 module BlockStack
   module Formatters

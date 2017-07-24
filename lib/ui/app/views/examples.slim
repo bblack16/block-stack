@@ -1,0 +1,201 @@
+sass:
+  section.even
+    padding-top: 25px
+    padding-bottom: 25px
+  section.odd
+    background-color: rgb(236, 236, 236)
+    padding-top: 25px
+    padding-bottom: 25px
+
+section.even
+  h1.text-center Form
+  p.text-center Using BlockStack
+  .centered style='max-width: 600px; background-color: white; padding: 25px; box-shadow: 3px 3px 10px grey'
+    h4 Please Fill In The Information Below
+    br
+    br
+    .centered style='width: 450px'
+      .floating-label
+        input type='text' placeholder='Enter some text...'
+        label Input with Floating Label
+      .floating-label
+        input type='number'
+        label Score
+      .floating-label
+        textarea.autosize
+        label Description
+
+section.odd
+  h1.text-center Date/Time Picker
+  p.text-center Using DateDropper and TimeDropper
+
+  .centered style='max-width: 600px; background-color: white; padding: 25px; box-shadow: 3px 3px 10px grey'
+    .floating-label
+      input.date-picker.has-value type="text" data-large-mode="true" data-max-year="2050" data-init-set="false" placeholder='Pick a date...'
+      label Select Date
+
+    .floating-label
+      input.time-picker.has-value type="text" placeholder='Pick a time...'
+      label Select Time
+
+section.even
+  h1.text-center Data Table
+  p.text-center Using Data Tables and BlockStack
+  .centered style='max-width: 800px; background-color: white; padding: 25px; box-shadow: 3px 3px 10px grey'
+    table.data-table.nowrap.responsive
+      thead
+        th.ripple data-ripple-color='rgb(215, 215, 215)' Name
+        th.ripple data-ripple-color='rgb(215, 215, 215)' Age
+        th.ripple data-ripple-color='rgb(215, 215, 215)' State
+      tbody
+        tr
+          td Brandon
+          td 28
+          td Colorado
+        tr
+          td John
+          td 15
+          td Washington
+        tr
+          td Jerry
+          td 45
+          td Texas
+        tr
+          td Beth
+          td 32
+          td California
+
+section.odd
+  h1.text-center Select
+  p.text-center Using Select2 and BlockStack
+  br
+  .centered style='width: 500px'
+    h4.text-center Select2 Single Select
+    .floating-label
+      select.text-center.select-2
+        option Ruby
+        option Javascript
+        option Java
+        option Python
+        option C++
+        option C#
+        option R
+      label Pick Your Language
+    br
+    h4.text-center Select2 Multi Select
+    .floating-label
+      select.text-center.select-2 multiple='true'
+        option Ruby
+        option Javascript
+        option Java
+        option Python
+        option C++
+        option C#
+        option R
+      label Pick Your Language(s)
+
+section.even
+  h1.text-center Buttons
+  p.text-center Using Bootstrap and BlockStack
+
+  .centered style='width: 500px'
+    h4.text-center Ripple Effect
+    br
+    .row
+      .col style='padding: 10px'
+        .btn.btn-primary.ripple.text-center PRIMARY
+      .col style='padding: 10px'
+        .btn.btn-secondary.ripple.text-center SECONDARY
+      .col style='padding: 10px'
+        .btn.btn-success.ripple.text-center SUCCESS
+    .row
+      .col style='padding: 10px'
+        .btn.btn-info.ripple.text-center INFO
+      .col style='padding: 10px'
+        .btn.btn-warning.ripple.text-center WARNING
+      .col style='padding: 10px'
+        .btn.btn-danger.ripple.text-center DANGER
+    hr
+    h4.text-center Flat Buttons
+    br
+    .row
+      .col style='padding: 10px'
+        .btn.btn-primary.ripple.text-center.flat PRIMARY
+      .col style='padding: 10px'
+        .btn.btn-secondary.ripple.text-center.flat SECONDARY
+      .col style='padding: 10px'
+        .btn.btn-success.ripple.text-center.flat SUCCESS
+    .row
+      .col style='padding: 10px'
+        .btn.btn-info.ripple.text-center.flat INFO
+      .col style='padding: 10px'
+        .btn.btn-warning.ripple.text-center.flat WARNING
+      .col style='padding: 10px'
+        .btn.btn-danger.ripple.text-center.flat DANGER
+    hr
+    h4.text-center Outline Buttons
+    br
+    .row
+      .col style='padding: 10px'
+        .btn.btn-primary.ripple.text-center.outline PRIMARY
+      .col style='padding: 10px'
+        .btn.btn-secondary.ripple.text-center.outline SECONDARY
+      .col style='padding: 10px'
+        .btn.btn-success.ripple.text-center.outline SUCCESS
+    .row
+      .col style='padding: 10px'
+        .btn.btn-info.ripple.text-center.outline INFO
+      .col style='padding: 10px'
+        .btn.btn-warning.ripple.text-center.outline WARNING
+      .col style='padding: 10px'
+        .btn.btn-danger.ripple.text-center.outline DANGER
+
+section.odd
+  h1.text-center Modal
+  p.text-center Using Bootstrap and BlockStack
+
+  .centered style='width: 600px'
+    .btn.btn-secondary.outline.ripple.text-center data-target="#modal" data-toggle="modal" Open Modal
+
+    .modal.fade tabindex="-1" id="modal" style="display: none;" aria-hidden="true"
+      .modal-dialog
+        .modal-content
+          .fab-top-right.ripple.fa.fa-times data-dismiss='modal'
+          i.modal-icon.fa.fa-flash
+          .modal-header This is a BlockStack Modal
+          .modal-subtitle It uses Bootstrap as a base!
+          .modal-body
+            p Modals are cool, right? Click anywhere outside of this modal to close it.
+          .modal-footer
+            p Alternatively, click the close button.
+            .float-right
+              .btn.btn-danger.ripple.flat data-dismiss="modal" Close
+
+    h4.text-center Modal Colors
+    p.text-center Modals are also available with default color styling for each of the bootstrap colors
+    i.text-center They can also have styled fab close buttons!
+
+    - [:secondary, :primary, :info, :success, :warning, :danger].each do |type|
+      .btn.outline.ripple.text-center class="btn-#{type}" data-target="##{type}_modal" data-toggle="modal" = type.to_s.upcase
+      .modal.fade class="#{type}" tabindex="-1" id="#{type}_modal" style="display: none;" aria-hidden="true"
+        .modal-dialog
+          .modal-content
+            .fab.fab-spin.fab-top-right.ripple.fa.fa-times data-dismiss='modal'
+            i.modal-icon.fa.fa-exclamation-circle
+            .modal-header = "This is a BlockStack #{type} Modal"
+            .modal-subtitle It uses Bootstrap as a base!
+            .modal-body
+              p Modals are attractive and also a great way to grab a user's attention.
+            .modal-footer
+              p Do I have your attention?
+              .float-right
+                .btn.btn-primary.ripple.flat.solid data-dismiss="modal" onclick="alertify.success('Good, I\'m glad!');" Yes
+                .btn.btn-secondary.ripple.flat.solid data-dismiss="modal" onclick="alertify.error('I\'ll Try harder next time...');" No
+
+    h1.text-center Lightbox Display
+    p.text-center Using Baguette Box JS
+    .gallery
+      == image_tag('logo')
+      == mail_to(['bblack@digitalglobe.com', 'lkblack@live.com'], 'Send Email', cc: 'd2sm10@hotmail.com', subject: 'Test Tag')
+- 10.times
+ br

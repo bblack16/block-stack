@@ -1,12 +1,7 @@
-require_relative 'helpers'
-
 module BlockStack
   class Server < Sinatra::Base
     extend BBLib::Attrs
 
-    attr_str :application_name, default: 'BlockStack'
-
-    helpers Helpers
     use Rack::Deflater
 
     def self.default_formatter(key = nil)
@@ -23,12 +18,13 @@ module BlockStack
 
     def self.default_formatters
       {
-        json: { formatter: BlockStack::Formatters::JSON, content_type: :json },
-        yaml: { formatter: BlockStack::Formatters::YAML, content_type: :yaml },
-        xml:  { formatter: BlockStack::Formatters::XML, content_type: :xml },
-        txt:  { formatter: BlockStack::Formatters::Text, content_type: :text },
-        csv:  { formatter: BlockStack::Formatters::CSV, content_type: :csv },
-        tsv:  { formatter: BlockStack::Formatters::CSV, content_type: :tsv },
+        json:  { formatter: BlockStack::Formatters::JSON, content_type: :json },
+        yaml:  { formatter: BlockStack::Formatters::YAML, content_type: :yaml },
+        xml:   { formatter: BlockStack::Formatters::XML, content_type: :xml },
+        txt:   { formatter: BlockStack::Formatters::Text, content_type: :text },
+        csv:   { formatter: BlockStack::Formatters::CSV, content_type: :csv },
+        tsv:   { formatter: BlockStack::Formatters::CSV, content_type: :tsv },
+        table: { formatter: BlockStack::Formatters::Table.new, content_type: :html }
       }
     end
 
@@ -63,7 +59,7 @@ module BlockStack
     end
 
     after do
-      if api_routes.include?(request.env['sinatra.route'])
+      if api_routes.include?(request.env['sinatra.route']) || request[:api_mode]
         format = (params[:format] || File.extname(request.path_info).sub('.', '')).to_s.downcase.to_sym
         if formatter = formatters[format] || formatters[default_formatter]
           formatter[:formatter].respond_to?(:process) ? formatter[:formatter].process(response, request, params) : formatter[:formatter].call(response, request, params)
@@ -95,10 +91,5 @@ module BlockStack
       return [] unless routes[verb.to_s.upcase]
       routes[verb.to_s.upcase].map { |r| r[0].to_s }
     end
-
-    get_api '/' do
-      { message: 'Hello there! Welcome to the BlockStack API', time: Time.now, request: request.env['sinatra.route'] }
-    end
-
   end
 end

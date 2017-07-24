@@ -1,0 +1,46 @@
+sass:
+  #more-info
+    margin-left: auto
+    margin-right: auto
+    padding: 30px
+    width: 500px
+    border: 7px solid grey
+    box-shadow: 3px 3px 8px grey
+    border-radius: 10px
+    background-color: white
+
+button.btn.btn-primary.ripple onclick='alertify.closeLogOnClick(true).log("Hello and Welcome to BlockStack!");' style='position: absolute; right: 10px; top: 75px' Hello
+section.white style='background-color: rgb(41, 43, 44); width: 100%'
+  p.text-center.font-400
+    | Welcome to&nbsp;
+    font.bold.white-title BlockStack
+  p.font-200.text-center style='height: 60px;'
+    |Currently Running Application:&nbsp;&nbsp;
+    span#app-name.transition-all-1-5.font-100 style='vertical-align: bottom; color: #b43535;' = "#{self.class.name}"
+  br
+.info style='margin: auto; position: relative; width: 600px; font-size: 125%'
+  br
+  p
+    |BlockStack is a foundation to build powerful Sinatra applications.
+      It is able to run complete servers out of a Gem or from within Ruby scripts (no config.ru required!).
+  .text-center
+    .fa.fa-diamond.animated.zoomIn style='font-size: 1750% !important; color: #b43535; text-shadow: 5px 5px 8px grey'
+  br
+  p.font-80.italic If you are seeing this page, you may want to create your own home page by generating a custom index.slim
+
+- 4.times do
+  br
+#more-info data-aos-offset='300' data-aos='flip-up'
+  p
+    |BlockStack is maintained and developed by&nbsp;
+    font.bold Brandon Black
+  a.fa.fa-github.font-300.text-center style='text-decoration: none; cursor: pointer; width: 100%' href='http://github.com/bblack16/block-stack'
+  hr
+  p BlockStack is currently made of the following blocks:
+  - blocks = ['Ruby', 'Sinatra', 'Reactrb', 'Opal', 'Bootstrap4', 'jQuery', 'Animate on Scroll', 'Animate.css', 'Data Tables', 'Chart.js', 'Font Awesome', 'Tether', 'Alertify.js', 'Slick', 'iziModal', 'timedropper', 'datedropper']
+  - (blocks.size / 3.0).ceil.times do |indx|
+    .row
+      - ((indx*3)..(indx*3+2)).to_a.each do |i|
+        .col.font-90.grey = blocks[i]
+- 4.times do
+  br

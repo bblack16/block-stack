@@ -1,0 +1,11 @@
+.row
+  - @routes.each do |verb, routes|
+    .col
+      h1 = verb.to_s.upcase
+      ul
+        - routes.sort.each do |route|
+          li
+            - if verb == :get
+              a href="#{route}" = route
+            - else
+              = route
