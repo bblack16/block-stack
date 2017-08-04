@@ -118,7 +118,6 @@ module BlockStack
         },
         sub_menu: {
           text: 'Dropdown Menu',
-          href: '',
           'data-placement': 'bottom',
           'data-animation': 'true',
           'data-replace': "true",
