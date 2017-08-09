@@ -89,35 +89,6 @@ module BlockStack
       manifest.compile(%w(*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
-    class << self
-      BlockStack::VERBS.each do |verb|
-        define_method(verb) do |path, opts = {}, &block|
-          super(build_route(path), opts, &block)
-        end
-
-        define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
-          path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
-          path = "#{build_route(path)}#{verb == :get ? '(.:format)?' : nil}".pathify
-          self.api_routes.push("#{verb.to_s.upcase} #{path}")
-          send(verb, path, &block)
-        end
-      end
-    end
-
-    def self.build_route(path)
-      if route_prefix
-        '/' + route_prefix.to_s + path.to_s
-      else
-        path
-      end
-    end
-
-    def self.route_prefix
-      settings.prefix
-    rescue => e
-      nil
-    end
-
     def self.menu(env)
       {
         title: title(env),
