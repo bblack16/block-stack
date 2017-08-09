@@ -4,6 +4,35 @@ module BlockStack
 
     use Rack::Deflater
 
+    class << self
+      BlockStack::VERBS.each do |verb|
+        define_method(verb) do |path, opts = {}, &block|
+          super(build_route(path), opts, &block)
+        end
+
+        define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
+          path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
+          path = "#{build_route(path)}#{verb == :get ? '(.:format)?' : nil}".pathify
+          self.api_routes.push("#{verb.to_s.upcase} #{path}")
+          send(verb, path, &block)
+        end
+      end
+    end
+
+    def self.build_route(path)
+      if route_prefix
+        '/' + route_prefix.to_s + path.to_s
+      else
+        path
+      end
+    end
+
+    def self.route_prefix
+      settings.prefix
+    rescue => e
+      nil
+    end
+
     def self.default_formatter(key = nil)
       if key
         @default_formatter = key
@@ -76,20 +105,16 @@ module BlockStack
       Object.const_set(name, Class.new(self))
     end
 
-    class << self
-      BlockStack::VERBS.each do |verb|
-        define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
-          path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
-          path = "/#{path}#{verb == :get ? '(.:format)?' : nil}".pathify
-          self.api_routes.push("#{verb.to_s.upcase} #{path}")
-          send(verb, path, &block)
-        end
-      end
-    end
 
     def self.route_names(verb)
       return [] unless routes[verb.to_s.upcase]
       routes[verb.to_s.upcase].map { |r| r[0].to_s }
+    end
+
+    def self.descendants(include_singletons = false)
+      ObjectSpace.each_object(Class).select do |c|
+        (include_singletons || !c.singleton_class?) && c < self
+      end
     end
   end
 end

@@ -15,9 +15,9 @@ module BlockStack
     Opal.use_gem 'bblib'
     Opal.use_gem 'dformed'
 
-    before do
-      request[:menu] = build_menu
-    end
+    # before do
+    #   request[:menu] = build_menu
+    # end
 
     def self.assets
       @assets ||= default_assets
@@ -34,8 +34,8 @@ module BlockStack
       }
     end
 
-    def self.prefix
-      @prefix ||= '/assets'
+    def self.assets_prefix
+      @assets_prefix ||= '/assets'
     end
 
     def self.maps_prefix
@@ -89,6 +89,34 @@ module BlockStack
       manifest.compile(%w(*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
+    class << self
+      BlockStack::VERBS.each do |verb|
+        define_method(verb) do |path, opts = {}, &block|
+          super(build_route(path), opts, &block)
+        end
+
+        define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
+          path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
+          path = "#{build_route(path)}#{verb == :get ? '(.:format)?' : nil}".pathify
+          self.api_routes.push("#{verb.to_s.upcase} #{path}")
+          send(verb, path, &block)
+        end
+      end
+    end
+
+    def self.build_route(path)
+      if route_prefix
+        '/' + route_prefix.to_s + path.to_s
+      else
+        path
+      end
+    end
+
+    def self.route_prefix
+      settings.prefix
+    rescue => e
+      nil
+    end
 
     def self.menu(env)
       {
@@ -99,6 +127,22 @@ module BlockStack
 
     def self.title(env)
       to_s.split('::').last
+    end
+
+    def self.load_controllers
+      controllers.each do |cont|
+        cont.assets = assets if cont.respond_to?(:assets=)
+        use cont
+      end
+    end
+
+    def self.controllers
+      settings.controller_base.descendants
+    end
+
+    def self.run!(*args)
+      load_controllers
+      super
     end
 
     def self.main_menu(env)
@@ -160,7 +204,7 @@ module BlockStack
 
     def self.load_assets
       assets[:assets].each do |path|
-        BBLib.scan_files(path, /#{Regexp.escape(path)}\/?(controllers|models)\/.*\.rb$/i, recursive: true) do |file|
+        BBLib.scan_files(path, /#{Regexp.escape(path)}\/models\/.*\.rb$/i, recursive: true) do |file|
           begin
             puts "Loaded #{file}"
             require file
@@ -168,16 +212,7 @@ module BlockStack
             puts "Failed to load #{file}: #{e}"
           end
         end
-        Controller.descendants.each do |cont|
-          cont.assets = assets
-          use cont
-        end
       end
-    end
-
-    def self.run!(*args)
-      super
-      load_assets
     end
 
     helpers do
@@ -199,13 +234,12 @@ module BlockStack
       redirect request.path_info.sub('fonts', 'assets/fonts')
     end
 
-    get '/' do
-      slim :index
-    end
-
-    get '/examples' do
-      slim :examples
-    end
-
+    # get '/' do
+    #   slim :index
+    # end
+    #
+    # get '/examples' do
+    #   slim :examples
+    # end
   end
 end
