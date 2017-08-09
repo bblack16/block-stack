@@ -12,8 +12,8 @@ module BlockStack
 
         define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
           path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
-          path = "#{build_route(path)}#{verb == :get ? '(.:format)?' : nil}".pathify
-          self.api_routes.push("#{verb.to_s.upcase} #{path}")
+          path = "#{path}#{verb == :get ? '(.:format)?' : nil}".pathify
+          self.api_routes.push("#{verb.to_s.upcase} #{build_route(path)}")
           send(verb, path, &block)
         end
       end
