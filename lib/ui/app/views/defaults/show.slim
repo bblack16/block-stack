@@ -1,0 +1,35 @@
+sass:
+  .info
+    table
+      margin: auto
+      td
+        padding: 5px
+      td.label
+        font-weight: bold
+        text-align: right
+
+section.header
+  h1.text-center.bold
+    - if @model.setting?(:fa_icon)
+      i class="fa fa-#{@model.setting(:fa_icon)}"
+      |&nbsp;
+    = name_for(@model)
+  br
+  .centered
+    .btn-group.text-center style='display: block;'
+      == link_to(:show, @model, class: 'btn btn-secondary')
+      == link_to(:edit, @model, class: 'btn btn-secondary')
+      == link_to(:delete, @model, class: 'btn btn-secondary')
+      == link_to(:index, @model, class: 'btn btn-secondary')
+
+br
+
+.centered
+  .info
+    table
+      tbody
+        - @model.attributes.each do |key|
+          - value = @model.attribute(key)
+          tr
+            td.label = key.to_s.title_case
+            td = value

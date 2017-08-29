@@ -1,0 +1,11 @@
+sass:
+  #back
+    position: absolute
+    top: 15px
+    right: 40px
+
+section.header
+  a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back
+  h1.text-center = "Create New #{@model.class.name.capitalize}"
+br
+== slim :'defaults/_form'

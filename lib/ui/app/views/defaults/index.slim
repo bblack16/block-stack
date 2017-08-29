@@ -1,0 +1,41 @@
+sass:
+  #new
+    position: absolute
+    top: 15px
+    right: 40px
+
+section.header
+  h1.text-center.bold
+    - if @model.setting?(:fa_icon)
+      i class="fa fa-#{@model.setting(:fa_icon)}"
+      |&nbsp;
+    = @model.plural_name.to_s.title_case
+  a.btn.btn-outline-success#new href="/#{@model.plural_name}/new" = "New #{@model.name.to_s.title_case}"
+
+- cols = @model._attrs.keys
+- cols.push(cols.delete(:created_at)) if cols.include?(:created_at)
+- cols.push(cols.delete(:updated_at)) if cols.include?(:updated_at)
+br
+.centered
+  table.data_table.nowrap.responsive.default
+    thead
+      tr
+        - cols.each do |col|
+          th.ripple data-ripple-color='rgb(215, 215, 215)' = col.to_s.gsub('_', ' ').title_case
+        th
+    tbody
+      - @models.each do |mod|
+        tr
+          - cols.each do |key|
+            - if key == :id
+              td
+                a.btn.btn-outline-primary.btn-sm style='min-width: 25px' href="/#{@model.plural_name}/#{mod.id}" = mod.attribute(key)
+            - else
+              td = mod.attribute(key)
+          td
+            .dropdown
+              button.btn.btn-secondary.dropdown-toggle.btn-sm type='button' id="action_drop_#{mod.id}" data-toggle='dropdown' Actions
+              .dropdown-menu
+                == link_to("/#{@model.plural_name}/#{mod.id}", ' View', class: 'dropdown-item fa fa-eye')
+                == link_to("/#{@model.plural_name}/#{mod.id}/edit", ' Edit', class: 'dropdown-item fa fa-pencil')
+                == link_to("/#{@model.plural_name}/#{mod.id}/delete", ' Delete', class: 'dropdown-item fa fa-trash')

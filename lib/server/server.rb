@@ -7,30 +7,80 @@ module BlockStack
     class << self
       BlockStack::VERBS.each do |verb|
         define_method(verb) do |path, opts = {}, &block|
-          super(build_route(path), opts, &block)
+          super(build_route(path, prefixed: api_routes.include?("#{verb.to_s.upcase} #{path}")), opts, &block)
         end
 
         define_method("#{verb}_api") do |route, version: nil, prefix: nil, &block|
           path = [prefix, (version ? "v#{version}" : nil), route].compact.join('/')
-          path = "#{path}#{verb == :get ? '(.:format)?' : nil}".pathify
-          self.api_routes.push("#{verb.to_s.upcase} #{build_route(path)}")
+          path = "#{build_route(path, api: true)}#{verb == :get ? '(.:format)?' : nil}".pathify
+          self.api_routes.push("#{verb.to_s.upcase} #{path}")
           send(verb, path, &block)
         end
       end
+
+      def crud(model, opts = {})
+        name = model.name
+        plural = model.plural_name
+        ivar = "@#{name}"
+        ivar_plural = "@#{plural}"
+
+        define_method("_retrieve_#{name}") do |params|
+          return unless params[:id]
+          instance_variable_set(ivar, model.find(params[:id]))
+        end
+
+        # before '/*/:id' do
+        #   send("_retrieve_#{name}", params)
+        # end
+
+        get_api '/' do
+          model.all.map(&:serialize)
+        end
+
+        get_api '/:id' do
+          instance_variable_get(ivar).serialize
+        end
+
+        post_api '/' do
+          args = JSON.parse(request.body.read).keys_to_sym
+          item = model.new(args)
+          if result = item.save
+            { result: result, status: :success, message: "Successfully saved #{model.name} #{item.id rescue nil}" }
+          else
+            { result: result, status: :error, message: "Failed to save #{model.name}" }
+          end
+        end
+
+        put_api '/:id' do
+          args = JSON.parse(request.body.read).keys_to_sym
+          instance_variable_get(ivar).update(args).save
+        end
+
+        delete_api '/:id' do
+          instance_variable_get(ivar).delete
+        end
+
+        true
+      end
     end
 
-    def self.build_route(path)
-      if route_prefix
-        '/' + route_prefix.to_s + path.to_s
+    def self.build_route(path, api: false, prefixed: false)
+      if !prefixed && route_prefix
+        path = '/' + (api ? api_route_prefix : route_prefix).to_s + path.to_s
       else
         path
       end
+      path.end_with?('/') ? "#{path}?" : path
     end
 
     def self.route_prefix
       settings.prefix
     rescue => e
       nil
+    end
+
+    def self.api_route_prefix
+      route_prefix
     end
 
     def self.default_formatter(key = nil)
@@ -48,6 +98,7 @@ module BlockStack
     def self.default_formatters
       {
         json:  { formatter: BlockStack::Formatters::JSON, content_type: :json },
+        yml:   { formatter: BlockStack::Formatters::YAML, content_type: :yaml },
         yaml:  { formatter: BlockStack::Formatters::YAML, content_type: :yaml },
         xml:   { formatter: BlockStack::Formatters::XML, content_type: :xml },
         txt:   { formatter: BlockStack::Formatters::Text, content_type: :text },
@@ -115,6 +166,15 @@ module BlockStack
       ObjectSpace.each_object(Class).select do |c|
         (include_singletons || !c.singleton_class?) && c < self
       end
+    end
+
+    def self.route_map
+      BlockStack::VERBS.map do |verb|
+        [
+          verb,
+          (self.route_names(verb) + self.controllers.flat_map { |c| c.route_names(verb) })
+        ]
+      end.to_h
     end
   end
 end

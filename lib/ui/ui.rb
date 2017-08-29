@@ -79,6 +79,56 @@ module BlockStack
           asset_path(type, *paths)
         end
       end
+
+      def crud(model, opts = {})
+        name        = model.name
+        plural      = model.plural_name
+        ivar        = "@#{name}"
+        ivar_plural = "@#{plural}"
+        prefix      = "#{opts[:prefix] || plural}"
+        engine      = opts[:engine] || :slim
+
+        get '/' do
+          begin
+            instance_variable_set(ivar_plural, model.all)
+          send(engine, :"#{prefix}/index")
+          rescue Errno::ENOENT => e
+            @models = model.all
+            @model_name = name
+            @model = model
+            slim :'defaults/index'
+          end
+        end
+
+        get '/new' do
+          begin
+            send(engine, :"#{prefix}/new")
+          rescue Errno::ENOENT => e
+            @model = model.new(opts[:defaults] || {})
+            slim :'defaults/new'
+          end
+        end
+
+        get '/:id' do
+          begin
+            send(engine, :"#{prefix}/show")
+          rescue Errno::ENOENT => e
+            @model = model.find(params[:id])
+            slim :'defaults/show'
+          end
+        end
+
+        get '/:id/edit' do
+          begin
+            send(engine, :"#{prefix}/edit")
+          rescue Errno::ENOENT => e
+            @model = model.find(params[:id])
+            slim :'defaults/edit'
+          end
+        end
+
+        super
+      end
     end
 
     def self.precompile!
@@ -108,7 +158,7 @@ module BlockStack
     end
 
     def self.controllers
-      settings.controller_base.descendants
+      [settings.controller_base].flatten.compact.flat_map(&:descendants).reject { |c| c == self }
     end
 
     def self.run!(*args)

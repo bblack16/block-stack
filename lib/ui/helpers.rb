@@ -5,14 +5,40 @@ module BlockStack
       '/assets/'
     end
 
+    def name_for(model)
+      if model.is_a?(Model)
+        model.setting?(:title_attribute) ? model.attribute(model.setting(:title_attribute)) : "#{model.class.name.capitalize} #{model.id}"
+      else
+        model.to_s.title_case
+      end
+    end
+
     def tag(type, content = nil, attributes = {})
       attr_str = attributes.map { |k, v| "#{k}=\"#{v.to_s.gsub('"', '\\"')}\"" }.join(' ')
       attr_str = ' ' + attr_str unless attr_str.empty?
       "<#{type}#{attr_str}>#{content}</#{type}>"
     end
 
-    def link_to(text, url, attributes = {})
-      tag(:a, text, attributes.merge(href: url))
+    def link_to(url, text, label = {}, attributes = {})
+      if label.is_a?(Hash)
+        attributes = label
+        label = nil
+      end
+      if text.is_a?(Model)
+        case url
+        when :show, :view
+          tag(:a, (label || 'View'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}"))
+        when :edit, :update
+          tag(:a, (label || 'Edit'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/edit"))
+        when :delete, :destroy
+          tag(:a, (label || 'Delete'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/delete"))
+        when :index
+          tag(:a, (label || 'Index'), attributes.merge(href: "/#{text.class.dataset_name}"))
+        else
+        end
+      else
+        tag(:a, text, attributes.merge(href: url))
+      end
     end
 
     def mail_to(addresses, text, attributes = {})
@@ -34,7 +60,7 @@ module BlockStack
       end.join
     end
 
-    alias opal_tag opal_include 
+    alias opal_tag opal_include
 
     def stylesheet_include(*paths)
       paths.map do |path|
