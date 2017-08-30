@@ -1,7 +1,7 @@
 require 'opal'
 require 'opal-jquery'
 require 'opal-browser'
-require 'reactrb'
+# require 'reactrb'
 
 require_relative 'helpers'
 
@@ -90,39 +90,41 @@ module BlockStack
 
         get '/' do
           begin
-            instance_variable_set(ivar_plural, model.all)
+          instance_variable_set(ivar_plural, model.all)
           send(engine, :"#{prefix}/index")
           rescue Errno::ENOENT => e
-            @models = model.all
-            @model_name = name
-            @model = model
+            @models     = instance_variable_get(ivar_plural)
+            @model      = model
             slim :'defaults/index'
           end
         end
 
         get '/new' do
           begin
+            @model = model.new(opts[:defaults] || {})
+            instance_variable_set(ivar, @model)
             send(engine, :"#{prefix}/new")
           rescue Errno::ENOENT => e
-            @model = model.new(opts[:defaults] || {})
             slim :'defaults/new'
           end
         end
 
         get '/:id' do
           begin
+            @model = model.find(params[:id])
+            instance_variable_set(ivar, @model)
             send(engine, :"#{prefix}/show")
           rescue Errno::ENOENT => e
-            @model = model.find(params[:id])
             slim :'defaults/show'
           end
         end
 
         get '/:id/edit' do
           begin
+            @model = model.find(params[:id])
+            instance_variable_set(ivar, @model)
             send(engine, :"#{prefix}/edit")
           rescue Errno::ENOENT => e
-            @model = model.find(params[:id])
             slim :'defaults/edit'
           end
         end
@@ -139,20 +141,10 @@ module BlockStack
       manifest.compile(%w(*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
-    def self.menu(env)
-      {
-        title: title(env),
-        main_menu: main_menu(env)
-      }
-    end
-
-    def self.title(env)
-      to_s.split('::').last
-    end
-
     def self.load_controllers
       controllers.each do |cont|
         cont.assets = assets if cont.respond_to?(:assets=)
+        cont.base_server(self)
         use cont
       end
     end
@@ -161,9 +153,29 @@ module BlockStack
       [settings.controller_base].flatten.compact.flat_map(&:descendants).reject { |c| c == self }
     end
 
+    def self._running_server
+      @_running_server
+    end
+
     def self.run!(*args)
+      @_running_server = self if self == UiServer
       load_controllers
       super
+    end
+
+    def self.base_server
+      self
+    end
+
+    def self.menu(env)
+      {
+        title: title(env),
+        main_menu: main_menu(env)
+      }
+    end
+
+    def self.title(env)
+      base_server.to_s.split('::').last
     end
 
     def self.main_menu(env)
@@ -180,46 +192,70 @@ module BlockStack
           active_when: [
             '/'
           ]
-        },
-        sub_menu: {
-          text: 'Dropdown Menu',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          active_when: [
-            '/never__'
-          ],
-          sub: {
-            option1: {},
-            option2: {},
-            option3: {}
-          }
-        },
-        examples: {
-          text: 'Examples',
-          href: '/examples',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          active_when: [
-            '/examples'
-          ]
-        },
-        gems: {
-          text: '',
-          href: '/gems',
-          title: 'View the currently loaded gems on the server.',
-          tooltip: 'true',
-          style: 'float: right',
-          class: 'fa fa-diamond transition-all-2 gem',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-push': "true",
-          active_when: [
-            '/gems'
-          ]
         }
-      }
+      }.merge(controllers.map do |c|
+        [
+          c.to_s,
+          {
+            title: c.to_s,
+            href: "/#{c.to_s}",
+            active_when: [/\/#{Regexp.escape(c.to_s)}/]
+          }
+        ]
+      end.to_h)
+      # {
+      #   home: {
+      #     text: 'Home',
+      #     href: '/',
+      #     title: 'Head to the home page',
+      #     tooltip: 'true',
+      #     'data-placement': 'bottom',
+      #     'data-animation': 'true',
+      #     'data-replace': "true",
+      #     class: 'pmd-tooltip',
+      #     active_when: [
+      #       '/'
+      #     ]
+      #   },
+      #   sub_menu: {
+      #     text: 'Dropdown Menu',
+      #     'data-placement': 'bottom',
+      #     'data-animation': 'true',
+      #     'data-replace': "true",
+      #     active_when: [
+      #       '/never__'
+      #     ],
+      #     sub: {
+      #       option1: {},
+      #       option2: {},
+      #       option3: {}
+      #     }
+      #   },
+      #   examples: {
+      #     text: 'Examples',
+      #     href: '/examples',
+      #     'data-placement': 'bottom',
+      #     'data-animation': 'true',
+      #     'data-replace': "true",
+      #     active_when: [
+      #       '/examples'
+      #     ]
+      #   },
+      #   gems: {
+      #     text: '',
+      #     href: '/gems',
+      #     title: 'View the currently loaded gems on the server.',
+      #     tooltip: 'true',
+      #     style: 'float: right',
+      #     class: 'fa fa-diamond transition-all-2 gem',
+      #     'data-placement': 'bottom',
+      #     'data-animation': 'true',
+      #     'data-push': "true",
+      #     active_when: [
+      #       '/gems'
+      #     ]
+      #   }
+      # }
     end
 
     def self.load_assets

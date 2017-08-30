@@ -42,6 +42,8 @@ module BlockStack
 
       base.singleton_class.send(:after, :all, :find_all, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
+      base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed_field: false)
+      base.send(:attr_time, :created_at, :updated_at, default: Time.now, dformed_field: false)
       base.send(:init_type, :loose)
 
       unless base.respond_to?(:find)
@@ -240,8 +242,19 @@ module BlockStack
       BlockStack::Model.abstract_error
     end
 
-    def delete
+    def delete(cascade = true)
       BlockStack::Model.abstract_error
+    end
+
+    def serialize_attributes
+      post_serialize(
+        serialize.merge(updated_at: Time.now)
+                 .merge(attribute?(:created_at) ? {} : { created_at: Time.now })
+      )
+    end
+
+    def post_serialize(hash)
+      hash
     end
 
     def exist?

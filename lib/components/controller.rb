@@ -27,6 +27,15 @@ module BlockStack
       "api/#{route_prefix}"
     end
 
+    def self.base_server(server = nil)
+      @base_server = server if server
+      @base_server
+    end
+
+    def self.menu(env)
+      base_server.menu(env)
+    end
+
   end
 end
 

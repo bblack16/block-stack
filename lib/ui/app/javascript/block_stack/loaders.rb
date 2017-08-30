@@ -2,6 +2,11 @@
 module Loaders
 
   def self.load_all
+    # Main Menu slider
+    Loaders.menu_slider
+
+    # Load delete links
+    Loaders.delete_model_buttons
 
     # Initialize tooltips and data tables
     Loaders.tooltips
@@ -18,13 +23,11 @@ module Loaders
     Loaders.ripple
     Loaders.floating_labels
     Loaders.autosize_textareas
-    # Loaders.baguette_box_galleries
-    Loaders.slider
 
     Loaders.dformed
   end
 
-  def self.slider
+  def self.menu_slider
     Element['#menu-toggle'].on :click do |event|
       menu = Element['#menu']
       if menu.has_class?(:hide)
@@ -39,8 +42,24 @@ module Loaders
     end
   end
 
+  def self.delete_model_buttons
+    Element['.delete-model-btn'].each do |elem|
+      elem.on :click do |evt|
+        url = elem.attr(:'del-url')
+        HTTP.delete(url) do |response|
+          `console.log(#{response})`
+          if response.json[:status] == :success
+            puts 'SUCCESS!'
+          else
+            puts 'FAILURE!'
+          end
+        end
+      end
+    end
+  end
+
   def self.tooltips
-    Element['[tooltip="true"],[data-toggle="tooltip"]'].JS.tooltip
+    Element['[tooltip="true"],[data-toggle="tooltip"],[title]'].JS.tooltip
   end
 
   def self.data_tables
@@ -128,37 +147,6 @@ module Loaders
   end
 
   def self.dformed
-    FORM_CONTROLLER = DFormed::Controller.new
-    Element['.dform'].each_with_index do |form, id|
-      form_id = form.attr('df_name') || "form_#{id}"
-      if form.attr('df_get_from')
-        FORM_CONTROLLER.download(form.attr('df_get_from'), form_id, form)
-      else
-        form_data = JSON.parse(form.attr('df_form_data'))
-        FORM_CONTROLLER.add_and_render(form_data, form_id, form)
-      end
-      form.attr('df_form_data', '')
-    end
-
-    Element['.dform-save'].each do |btn, id|
-      next unless btn.attr('df_name') && btn.attr('df_save_to')
-      method = btn.attr('df_method') || :post
-      btn.on :click do |evt|
-        btn.attr(:disabled, true)
-        `alertify.closeLogOnClick(true).logPosition("bottom right").log("Saving form...");`
-        HTTP.post(btn.attr('df_save_to'), data: FORM_CONTROLLER.values(btn.attr('df_name')).to_json) do |response|
-          `console.log(#{response})`
-          if response.json['status'] == :success
-            `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
-            if url = btn.attr(:df_save_redirect)
-              `window.location.href = #{url}`
-            end
-          else
-            `alertify.closeLogOnClick(true).logPosition("bottom right").error(#{response.json[:message] || "Failed to save"});`
-            btn.attr(:disabled, false)
-          end
-        end
-      end
-    end
+    DFormed.load_forms
   end
 end

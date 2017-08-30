@@ -26,15 +26,14 @@ module BlockStack
       end
       if text.is_a?(Model)
         case url
-        when :show, :view
-          tag(:a, (label || 'View'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}"))
         when :edit, :update
           tag(:a, (label || 'Edit'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/edit"))
         when :delete, :destroy
-          tag(:a, (label || 'Delete'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/delete"))
+          tag(:a, (label || 'Delete'), attributes.merge(class: ('delete-model-btn ' + attributes[:class].to_s).strip, href: '#', 'del-url': "/api/#{text.class.dataset_name}/#{text.id}"))
         when :index
           tag(:a, (label || 'Index'), attributes.merge(href: "/#{text.class.dataset_name}"))
-        else
+        else # Defaults to show page
+          tag(:a, (label || 'View'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}"))
         end
       else
         tag(:a, text, attributes.merge(href: url))

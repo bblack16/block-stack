@@ -5,9 +5,6 @@ module BlockStack
     class SQL
       include BlockStack::Model
 
-      attr_int :id, default: nil, allow_nil: true, serialize: false, sql_type: :primary_key
-      attr_time :created_at, :updated_at, default: Time.now
-
       class << self
         before :all, :find_all, :find, :first, :last, :sample, :count, :exist?, :create_table_if_not_exist
       end

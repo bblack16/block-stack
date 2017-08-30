@@ -5,7 +5,7 @@ require 'json'
 require 'bblib' unless defined?(BBLib::VERSION)
 require 'sinatra/base'
 # require 'graphql'
-require 'rom'
+# require 'rom'
 require 'gyoku'
 require 'dformed' unless defined?(DFormed::VERSION)
 

@@ -1,0 +1,107 @@
+
+body.closed-menu
+  padding-left: 0px
+
+#menu
+  color: white
+  background-color: #3a3939
+  box-shadow: 2px 0px 10px #3a3939
+  overflow: hidden
+  z-index: 99
+  position: fixed
+  top: 0
+  bottom: 0
+  left: 0
+  width: 275px
+  height: 100%
+
+  header
+    height: 100%
+    section.top
+      padding-top: 35px
+      padding-bottom: 20px
+      text-align: center
+    section.menu
+      height: 100%
+      background-color: rgba(83, 107, 150, 0.49)
+      width: 95%
+    section.bottom
+      height: 50px
+      position: absolute
+      width: 275px
+      background-color: #3a3939
+      bottom: 0
+      left: 0
+
+  .dropdown-item
+    color: black
+    &:hover
+      background-color: rgba(#3c88d2, 0.52)
+      padding-left: 30px
+
+  #footer
+    font-family: VarelaRound-Regular
+    width: 100%
+    position: absolute
+    bottom: 0px
+    font-size: 80%
+    padding: 4px
+    text-align: center
+
+  .navbar-brand
+    width: 100%
+    text-shadow: 3px 3px 10px #000000
+    color: white !important
+    font-size: 200%
+    padding-right: 40px
+
+  ul.menu-list
+    list-style-type: none
+    width: 100%
+    padding: 0px
+    li
+      width: 100%
+      &:hover
+        background-color: #3c88d2
+    li.active
+      background-color: #2c669e
+    a.parent
+      text-decoration: none !important
+      color: white
+      &:hover
+        padding-left: 30px
+
+  .dropdown-menu.block_stack_nav
+    position: relative
+    width: 100%
+    border-radius: 0px
+    border: none
+    background-color: #efefef
+    float: none
+
+#menu.hide
+  left: -275px
+  background-color: #000000
+  box-shadow: none
+
+#menu-toggle
+  font-size: 25px
+  position: fixed
+  z-index: 100
+  color: white
+  top: 17px
+  left: 5px
+  cursor: pointer
+  text-shadow: 0px 0px 1px black
+  &:hover
+    color: #e2e1e1
+
+#menu-toggle.dark
+  color: #3a3939
+  font-size: 30px
+  text-shadow: 0px 0px 1px white
+  -webkit-transform: rotate(360deg)
+  -moz-transform: rotate(360deg)
+  -o-transform: rotate(360deg)
+  -ms-transform: rotate(360deg)
+  transform: rotate(360deg)

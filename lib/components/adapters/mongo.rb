@@ -5,8 +5,6 @@ module BlockStack
     class Mongo
       include BlockStack::Model
       attr_of BSON::ObjectId, :_id, serialize: false
-      attr_int :id, default: nil, allow_nil: true, serialize: false, sql_type: :primary_key, dformed_field: false
-      attr_time :created_at, :updated_at, default: Time.now, dformed_field: false
       attr_bool :increment_id, default: true, singleton: true, dformed_field: false
 
       def self.all
@@ -80,10 +78,8 @@ module BlockStack
         next_id
       end
 
-      def save_attributes
-        serialize.merge(updated_at: Time.now)
-                  .merge(exist? ? {} : { created_at: Time.now })
-                  .merge(increment_id? ? { id: retrieve_id } : {})
+      def post_serialize(hash)
+        hash.merge(increment_id? ? { id: retrieve_id } : {})
       end
 
       def index_keys

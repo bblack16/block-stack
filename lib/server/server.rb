@@ -38,7 +38,7 @@ module BlockStack
         end
 
         get_api '/:id' do
-          instance_variable_get(ivar).serialize
+          model.find(params[:id]).serialize
         end
 
         post_api '/' do
@@ -53,11 +53,16 @@ module BlockStack
 
         put_api '/:id' do
           args = JSON.parse(request.body.read).keys_to_sym
-          instance_variable_get(ivar).update(args).save
+          model.find(params[:id]).update(args).save
         end
 
         delete_api '/:id' do
-          instance_variable_get(ivar).delete
+          puts "DELETING #{params[:id]}"
+          if response = model.find(params[:id]).delete
+            { status: :success, response: response }
+          else
+            { status: :error, response: response }
+          end
         end
 
         true
