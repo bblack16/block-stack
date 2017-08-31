@@ -24,15 +24,6 @@ module BlockStack
         ivar = "@#{name}"
         ivar_plural = "@#{plural}"
 
-        define_method("_retrieve_#{name}") do |params|
-          return unless params[:id]
-          instance_variable_set(ivar, model.find(params[:id]))
-        end
-
-        # before '/*/:id' do
-        #   send("_retrieve_#{name}", params)
-        # end
-
         get_api '/' do
           model.all.map(&:serialize)
         end
@@ -43,25 +34,29 @@ module BlockStack
 
         post_api '/' do
           args = JSON.parse(request.body.read).keys_to_sym
+          BlockStack.logger.info(args)
           item = model.new(args)
           if result = item.save
-            { result: result, status: :success, message: "Successfully saved #{model.name} #{item.id rescue nil}" }
+            { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
           else
-            { result: result, status: :error, message: "Failed to save #{model.name}" }
+            { result: result, status: :error, message: "Failed to save #{model.model_name}" }
           end
         end
 
         put_api '/:id' do
           args = JSON.parse(request.body.read).keys_to_sym
-          model.find(params[:id]).update(args).save
+          if result = model.find(params[:id]).update(args)
+            { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
+          else
+            { result: result, status: :error, message: "Failed to save #{model.model_name}" }
+          end
         end
 
         delete_api '/:id' do
-          puts "DELETING #{params[:id]}"
           if response = model.find(params[:id]).delete
-            { status: :success, response: response }
+            { status: :success, result: response }
           else
-            { status: :error, response: response }
+            { status: :error, result: response }
           end
         end
 

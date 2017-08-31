@@ -134,7 +134,7 @@ module BlockStack
     end
 
     def self.precompile!
-      p "BlockStack: Compiling assets in #{settings.public_folder}..."
+      info("BlockStack: Compiling assets in #{settings.public_folder}...")
       # FileUtils.rm_rf(settings.public_folder)
       environment = opal.sprockets
       manifest = Sprockets::Manifest.new(environment.index, settings.public_folder)
@@ -194,15 +194,19 @@ module BlockStack
           ]
         }
       }.merge(controllers.map do |c|
-        [
-          c.to_s,
-          {
-            title: c.to_s,
-            href: "/#{c.to_s}",
-            active_when: [/\/#{Regexp.escape(c.to_s)}/]
-          }
-        ]
-      end.to_h)
+        begin
+          [
+            c.to_s,
+            {
+              text: c.model.dataset_name.to_s.drop_symbols.title_case,
+              href: "/#{c.model.dataset_name}",
+              active_when: [/\/#{Regexp.escape(c.model.dataset_name)}/]
+            }
+          ]
+        rescue => e
+          nil
+        end
+      end.compact.to_h)
       # {
       #   home: {
       #     text: 'Home',

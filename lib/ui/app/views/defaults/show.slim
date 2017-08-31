@@ -36,4 +36,10 @@ br
           - value = @model.attribute(key)
           tr
             td.label = key.to_s.title_case
-            td = value
+            td
+              - if value.is_a?(Array)
+                ul
+                  - value.each do |v|
+                    li = v
+              -else
+                = value

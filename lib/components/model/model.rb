@@ -1,7 +1,6 @@
 require_relative 'associations'
 
 module BlockStack
-  class AbstractMethodError < StandardError; end
 
   # This module is used as a contract between a class and the BlockStack
   # framework. All of the methods defined below should be implemented on the
@@ -20,11 +19,11 @@ module BlockStack
   module Model
 
     def self.abstract_error
-      raise AbstractMethodError, "Method #{caller_locations(1,1)[0].label} is abstract and should have been redefined."
+      raise AbstractError, "Method :#{caller_locations(1,1)[0].label} is abstract and should have been redefined."
     end
 
     def self.model_for(name)
-      included_classes_and_descendants.find { |c| c.dataset_name == name || c.name == name }
+      included_classes_and_descendants.find { |c| c.dataset_name == name || c.model_name == name }
     end
 
     def self.included_classes
@@ -108,14 +107,14 @@ module BlockStack
     end
 
     module ClassMethods
-      def name(name = nil)
-        @name = name if name
-        @name || to_s.split('::').last.method_case.to_sym
+      def model_name(name = nil)
+        @model_name = name if name
+        @model_name || to_s.split('::').last.method_case.to_sym
       end
 
       def plural_name(new_name = nil)
         @plural_name = new_name if new_name
-        @plural_name || self.name.to_s.pluralize.to_sym
+        @plural_name || self.model_name.to_s.pluralize.to_sym
       end
 
       def dataset_name(new_name = nil)
@@ -154,6 +153,7 @@ module BlockStack
       end
 
       def instantiate(result)
+        p 'OLD OLD OLD'
         return nil unless result
         return result if result.class == self
         self.new(result)
@@ -228,11 +228,16 @@ module BlockStack
       respond_to?(name)
     end
 
-    # def attribute_set(params)
-    #   params.each do |k, v|
-    #     attributes[k.to_s.to_sym] = v
-    #   end
-    # end
+    def update(params)
+      params.each do |k, v|
+        if attribute?(k)
+          send("#{k}=", v)
+        else
+          warn("Unknown attribute #{k} passed to #{self.class} in update params. Ignoring it...")
+        end
+      end
+      save
+    end
 
     def db
       self.class.db
