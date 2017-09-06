@@ -1,3 +1,8 @@
 
+.hidden#notice notice-severity='info' = "Found a total of #{BBLib.plural_string(@results.size, 'result')}."
+
+section.header.purple
+  h1.text-center Search Results
+
 - @models = @results
 == slim :'defaults/list_items'

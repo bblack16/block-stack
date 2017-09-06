@@ -9,6 +9,7 @@ module BlockStack
   class UiServer < Server
 
     enable :sessions
+    set global_search: false
 
     helpers UiHelpers
 
@@ -143,6 +144,31 @@ module BlockStack
         end
 
         super
+      end
+
+      def add_global_search
+        set global_search: true
+
+        get '/search' do
+          @results = nil
+          if params[:query]
+            @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
+              next unless model.setting(:global_search)
+              model.search(params[:query])
+            end.compact.uniq.sort_by { |r| r._score }
+          end
+          slim :'defaults/global_search'
+        end
+
+        get_api '/search' do
+          @results = nil
+          if params[:query]
+            @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
+              next unless model.setting(:global_search)
+              model.search(params[:query])
+            end.compact.uniq.sort_by { |r| r._score }
+          end
+        end
       end
     end
 

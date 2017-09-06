@@ -4,6 +4,11 @@ module BlockStack
       nil
     end
 
+    def self.base_server(server = nil)
+      @base_server = server if server
+      @base_server
+    end
+
     get '/search' do
       @results = nil
       if params[:query]

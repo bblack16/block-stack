@@ -6,7 +6,7 @@ nav#menu.transition-all-1
   header
     section.top
       h2.navbar-brand.text-center = menu[:title].upcase
-      - unless menu[:no_search]
+      - if self.class.base_server.settings.global_search
         form action='/search'
           .floating-label
             /i.fa.fa-search.white
