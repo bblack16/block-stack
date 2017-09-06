@@ -25,17 +25,24 @@ module BlockStack
         ivar_plural = "@#{plural}"
 
         get_api '/' do
-          model.all.map(&:serialize)
+          if params[:query]
+            model.search(params[:query])
+          else
+            model.all
+          end.map(&:serialize)
         end
 
         get_api '/:id' do
-          model.find(params[:id]).serialize
+          item = model.find(params[:id])
+          halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
+          item.serialize
         end
 
         post_api '/' do
           args = JSON.parse(request.body.read).keys_to_sym
           BlockStack.logger.info(args)
           item = model.new(args)
+          halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
           if result = item.save
             { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
           else
@@ -45,7 +52,9 @@ module BlockStack
 
         put_api '/:id' do
           args = JSON.parse(request.body.read).keys_to_sym
-          if result = model.find(params[:id]).update(args)
+          item = model.find(params[:id])
+          halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
+          if result = item.update(args)
             { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
           else
             { result: result, status: :error, message: "Failed to save #{model.model_name}" }
@@ -53,7 +62,9 @@ module BlockStack
         end
 
         delete_api '/:id' do
-          if response = model.find(params[:id]).delete
+          item = model.find(params[:id])
+          halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
+          if response = item.delete
             { status: :success, result: response }
           else
             { status: :error, result: response }
@@ -77,6 +88,10 @@ module BlockStack
       settings.prefix
     rescue => e
       nil
+    end
+
+    def route_prefix
+      self.class.route_prefix
     end
 
     def self.api_route_prefix

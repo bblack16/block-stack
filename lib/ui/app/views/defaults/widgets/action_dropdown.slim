@@ -1,0 +1,12 @@
+- @item = @item || @model
+- if @item
+  .dropdown
+    button.btn-sm.fa.fa-ellipsis-v.action-dropdown-toggle type='button' id="action_drop_#{@item.id}" data-toggle='dropdown'
+    .dropdown-menu
+      - if @item.setting?(:actions)
+        - @item.setting(:actions).each do |method, label|
+          == link_to(method, @item, label, class: 'dropdown-item')
+      - else
+        == link_to(:show, @item, class: 'dropdown-item')
+        == link_to(:edit, @item, class: 'dropdown-item')
+        == link_to(:delete, @item, class: 'dropdown-item')

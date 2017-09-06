@@ -1,0 +1,29 @@
+
+- if @model.setting?(:table_attributes) || @model.setting?(:attributes)
+  - attrs = @model.setting(:table_attributes) || @model.setting(:attributes)
+  - attrs = attrs.map { |m| [m, m] }.to_h if attrs.is_a?(Array)
+  - cols = attrs
+- else
+  - cols = @model._attrs.map { |k, v| v[:options][:blockstack] && !v[:options][:blockstack][:display] ? nil : k }.compact.uniq
+  - cols.push(cols.delete(:created_at)) if cols.include?(:created_at)
+  - cols.push(cols.delete(:updated_at)) if cols.include?(:updated_at)
+  - cols = cols.map { |v| [v, v.to_s.gsub('_', ' ').title_case] }.to_h
+
+table.data_table.nowrap.responsive.default.table-striped.table-bordered
+  thead
+    tr
+      th
+      - cols.values.each do |col|
+        th.ripple data-ripple-color='rgb(215, 215, 215)' = col
+  tbody
+    - @models.each do |mod|
+      - @item = mod
+      tr
+        td
+          == slim :'defaults/widgets/action_dropdown'
+        - cols.keys.each do |key|
+          - if key == :id
+            td
+              a.btn.btn-outline-primary.btn-sm style='min-width: 25px' href="/#{@model.plural_name}/#{mod.id}" = mod.attribute(key)
+          - else
+            td == mod.attribute?(key) ? mod.attribute(key) : (mode.send(key) rescue 'ERROR')

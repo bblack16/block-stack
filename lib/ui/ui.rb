@@ -8,6 +8,8 @@ require_relative 'helpers'
 module BlockStack
   class UiServer < Server
 
+    enable :sessions
+
     helpers UiHelpers
 
     IMAGE_TYPES = [:svg, :png, :jpg, :jpeg, :gif].freeze
@@ -81,7 +83,7 @@ module BlockStack
       end
 
       def crud(model, opts = {})
-        name        = model.name
+        name        = model.model_name
         plural      = model.plural_name
         ivar        = "@#{name}"
         ivar_plural = "@#{plural}"
@@ -89,9 +91,12 @@ module BlockStack
         engine      = opts[:engine] || :slim
 
         get '/' do
+          session[:display] = params[:display] if params[:display]
           begin
-          instance_variable_set(ivar_plural, model.all)
-          send(engine, :"#{prefix}/index")
+            limit = params[:limit]&.to_i || 25
+            offset = ((params[:page]&.to_i || 1) - 1) * limit
+            instance_variable_set(ivar_plural, model.all(limit: limit, offset: offset))
+            send(engine, :"#{prefix}/index")
           rescue Errno::ENOENT => e
             @models     = instance_variable_get(ivar_plural)
             @model      = model
@@ -112,8 +117,12 @@ module BlockStack
         get '/:id' do
           begin
             @model = model.find(params[:id])
-            instance_variable_set(ivar, @model)
-            send(engine, :"#{prefix}/show")
+            if @model
+              instance_variable_set(ivar, @model)
+              send(engine, :"#{prefix}/show")
+            else
+              redirect "/#{route_prefix}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+            end
           rescue Errno::ENOENT => e
             slim :'defaults/show'
           end
@@ -122,8 +131,12 @@ module BlockStack
         get '/:id/edit' do
           begin
             @model = model.find(params[:id])
-            instance_variable_set(ivar, @model)
-            send(engine, :"#{prefix}/edit")
+            if @model
+              instance_variable_set(ivar, @model)
+              send(engine, :"#{prefix}/edit")
+            else
+              redirect "/#{route_prefix}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+            end
           rescue Errno::ENOENT => e
             slim :'defaults/edit'
           end
@@ -167,22 +180,27 @@ module BlockStack
       self
     end
 
-    def self.menu(env)
+    def self.menu
       {
-        title: title(env),
-        main_menu: main_menu(env)
+        title: title,
+        main_menu: main_menu
       }
     end
 
-    def self.title(env)
-      base_server.to_s.split('::').last
+    def self.title
+      settings.app_name || base_server.to_s.split('::').last
     end
 
-    def self.main_menu(env)
-      {
+    def self.main_menu
+      @main_menu ||= construct_menu
+    end
+
+    def self.construct_menu
+      menu = {
         home: {
           text: 'Home',
           href: '/',
+          fa_icon: 'home',
           title: 'Head to the home page',
           tooltip: 'true',
           'data-placement': 'bottom',
@@ -193,73 +211,16 @@ module BlockStack
             '/'
           ]
         }
-      }.merge(controllers.map do |c|
+      }
+      controllers.sort_by(&:to_s).map do |c|
         begin
-          [
-            c.to_s,
-            {
-              text: c.model.dataset_name.to_s.drop_symbols.title_case,
-              href: "/#{c.model.dataset_name}",
-              active_when: [/\/#{Regexp.escape(c.model.dataset_name)}/]
-            }
-          ]
+          menu = menu.merge(c.main_menu)
         rescue => e
+          puts e
           nil
         end
-      end.compact.to_h)
-      # {
-      #   home: {
-      #     text: 'Home',
-      #     href: '/',
-      #     title: 'Head to the home page',
-      #     tooltip: 'true',
-      #     'data-placement': 'bottom',
-      #     'data-animation': 'true',
-      #     'data-replace': "true",
-      #     class: 'pmd-tooltip',
-      #     active_when: [
-      #       '/'
-      #     ]
-      #   },
-      #   sub_menu: {
-      #     text: 'Dropdown Menu',
-      #     'data-placement': 'bottom',
-      #     'data-animation': 'true',
-      #     'data-replace': "true",
-      #     active_when: [
-      #       '/never__'
-      #     ],
-      #     sub: {
-      #       option1: {},
-      #       option2: {},
-      #       option3: {}
-      #     }
-      #   },
-      #   examples: {
-      #     text: 'Examples',
-      #     href: '/examples',
-      #     'data-placement': 'bottom',
-      #     'data-animation': 'true',
-      #     'data-replace': "true",
-      #     active_when: [
-      #       '/examples'
-      #     ]
-      #   },
-      #   gems: {
-      #     text: '',
-      #     href: '/gems',
-      #     title: 'View the currently loaded gems on the server.',
-      #     tooltip: 'true',
-      #     style: 'float: right',
-      #     class: 'fa fa-diamond transition-all-2 gem',
-      #     'data-placement': 'bottom',
-      #     'data-animation': 'true',
-      #     'data-push': "true",
-      #     active_when: [
-      #       '/gems'
-      #     ]
-      #   }
-      # }
+      end
+      menu
     end
 
     def self.load_assets

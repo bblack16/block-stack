@@ -1,154 +1,191 @@
 require 'mongo'
 
+Mongo::Logger.logger = BlockStack.logger
+
 module BlockStack
   module Models
-    class Mongo
-      include BlockStack::Model
-      attr_of BSON::ObjectId, :_id, serialize: false
-      attr_bool :increment_id, default: true, singleton: true, dformed_field: false
-
-      def self.all
-        debug { "find().all()" }
-        dataset.find.all
+    module Mongo
+      def self.included(base)
+        base.extend ClassMethods
+        base.send(:include, BlockStack::Model)
+        base.send(:include, InstanceMethods)
+        base.send(:attr_of, BSON::ObjectId, :_id, serialize: false, blockstack: { display: false })
+        base.send(:attr_bool, :increment_id, default: true, singleton: true, dformed_field: false)
       end
 
-      def self.find(query)
-        query = {
-          '$or': [
-            { id: query },
-            { _id: (BSON::ObjectId(query) rescue query) }
-          ]
-        } unless query.is_a?(Hash)
-        debug { "find(#{query.to_json}).first()" }
-        dataset.find(query).first
-      end
-
-      def self.find_all(query)
-        query = convert_to_mongo_query(query)
-        debug { "find(#{query.to_json}).all()" }
-        dataset.find(query).map { |m| m }
-      end
-
-      def self.first(query = nil)
-        query = convert_to_mongo_query(query)
-        debug { "find(#{query.to_json}).first()" }
-        dataset.find(query).first
-      end
-
-      def self.last(query = nil)
-        query = convert_to_mongo_query(query)
-        debug { "find(#{query.to_json}).last()" }
-        dataset.find(query).last
-      end
-
-      def self.count
-        debug { "find().count()" }
-        dataset.find.count
-      end
-
-      def exist?
-        self.class.exist?(index_keys)
-      end
-
-      def increment_id?
-        self.class.increment_id?
-      end
-
-      def next_id
-        self.class.next_id
-      end
-
-      def self.next_id
-        ((dataset.find.sort(id: -1).limit(1).first[:id] rescue 0) || 0) + 1
-      end
-
-      def save
-        body = Mongo.mongo_escape(save_attributes)
-        if exist?
-          debug { "update_one(#{index_keys}, #{body}, upsert: true)" }
-          dataset.update_one(index_keys, body, upsert: true)
-        else
-          debug { "insert_one(#{body})" }
-          dataset.insert_one(body)
+      module ClassMethods
+        def all(opts = {})
+          debug { "find().all()" }
+          build_filter(dataset.find, opts).to_a
         end
-      end
 
-      def retrieve_id
-        return attribute(:id) if attribute(:id)
-        next_id
-      end
-
-      def post_serialize(hash)
-        hash.merge(increment_id? ? { id: retrieve_id } : {})
-      end
-
-      def index_keys
-        if increment_id?
-          { id: retrieve_id }
-        else
-          { _id: attribute(:_id) } if attribute(:_id)
+        def build_filter(query, opts)
+          opts[:sort] = opts[:order] if opts[:order]
+          opts[:sort] = [opts[:sort]].flatten.map { |f| [f, 1] }.to_h if opts[:sort] && !opts[:sort].is_a?(Hash)
+          query = query.limit(opts[:limit]) if opts[:limit]
+          query = query.skip(opts[:offset]) if (opts[:offset] ||= opts[:skip])
+          query = query.sort(opts[:sort]) if opts[:sort]
+          query
         end
-      end
 
-      def delete
-        debug { "delete_one({ _id: #{attribute(:_id)} })" }
-        dataset.delete_one({ _id: attribute(:_id) }).deleted_count == 1
-      end
+        def query_dataset(query = nil)
+          query = (query || {}).merge(_class: self.to_s) if is_polymorphic_child?
+          query ? dataset.find(query) : dataset.find
+        end
 
-      def self.mongo_escape(hash)
-        if hash.is_a?(Hash)
-          hash.hmap do |k, v|
-            v = mongo_escape(v) if v.is_a?(Hash) || v.is_a?(Array)
-            if k.to_s.include?('.')
-              [k.to_s.gsub('.', '%2E'), v]
-            else
-              [k, v]
+        def find(query)
+          query = {
+            '$or': [
+              { id: query.to_s.to_i },
+              { _id: (BSON::ObjectId(query) rescue query) }
+            ]
+          } unless query.is_a?(Hash)
+          query_dataset(query).first
+        end
+
+        def find_all(query, opts = {})
+          return all if query.nil? || query.empty?
+          query = convert_to_mongo_query(query)
+          build_filter(query_dataset(query), opts).to_a
+        end
+
+        def first
+          query_dataset.first
+        end
+
+        def last
+          query_dataset.sort('$natural': -1).first
+        end
+
+        def count
+          query_dataset.count
+        end
+
+        def average(field, query = {})
+          BBLib.average(query_dataset(query).distinct(field).to_a)
+        end
+
+        def min(field, query = {})
+          query_dataset(query).sort(field => 1).limit(1).first[field]
+        end
+
+        def max(field, query = {})
+          query_dataset(query).sort(field => -1).limit(1).first[field]
+        end
+
+        def sum(field, query = {})
+          query_dataset(query).distinct(field).to_a.sum
+        end
+
+        def distinct(field, query = {})
+          query_dataset.distinct(field)
+        end
+
+        def next_id
+          ((dataset.find.sort(id: -1).limit(1).first[:id] rescue 0) || 0) + 1
+        end
+
+        def mongo_escape(hash)
+          if hash.is_a?(Hash)
+            hash.hmap do |k, v|
+              v = mongo_escape(v) if v.is_a?(Hash) || v.is_a?(Array)
+              if k.to_s.include?('.')
+                [k.to_s.gsub('.', '%2E'), v]
+              else
+                [k, v]
+              end
             end
+          elsif hash.is_a?(Array)
+            hash.map { |h| mongo_escape(h) }
+          else
+            hash
           end
-        elsif hash.is_a?(Array)
-          hash.map { |h| mongo_escape(h) }
-        else
-          hash
+        end
+
+        def mongo_unescape(hash)
+          if hash.is_a?(Hash)
+            hash.hmap do |k, v|
+              v = mongo_unescape(v) if v.is_a?(Hash) || v.is_a?(Array)
+              if k.to_s.include?('%2E')
+                [k.to_s.gsub('%2E', '.'), v]
+              else
+                [k, v]
+              end
+            end.keys_to_sym
+          elsif hash.is_a?(Array)
+            hash.map { |h| mongo_unescape(h) }.keys_to_sym
+          else
+            hash
+          end
+        end
+
+        def convert_to_mongo_query(query)
+          return query unless query.is_a?(Hash)
+          query.hmap do |k, v|
+            [
+              k,
+              if v.is_a?(Array)
+                { '$in': v }
+              else
+                v
+              end
+            ]
+          end
+        end
+
+        def custom_instantiate(hash)
+          return polymorphic_model.custom_instantiate(hash) if is_polymorphic_child?
+          return hash if hash.class == self
+          return nil unless hash.is_a?(Hash)
+          self.new(mongo_unescape(hash))
         end
       end
 
-      def self.mongo_unescape(hash)
-        if hash.is_a?(Hash)
-          hash.hmap do |k, v|
-            v = mongo_unescape(v) if v.is_a?(Hash) || v.is_a?(Array)
-            if k.to_s.include?('%2E')
-              [k.to_s.gsub('%2E', '.'), v]
-            else
-              [k, v]
-            end
-          end.keys_to_sym
-        elsif hash.is_a?(Array)
-          hash.map { |h| mongo_unescape(h) }.keys_to_sym
-        else
-          hash
+      module InstanceMethods
+        def exist?
+          self.class.exist?(index_keys)
         end
-      end
 
-      def self.convert_to_mongo_query(query)
-        return query unless query.is_a?(Hash)
-        query.hmap do |k, v|
-          [
-            k,
-            if v.is_a?(Array)
-              { '$in': v }
-            else
-              v
-            end
-          ]
+        def increment_id?
+          self.class.increment_id?
         end
-      end
 
-      protected
+        def next_id
+          self.class.next_id
+        end
 
-      def self.instantiate(hash)
-        return hash if hash.class == self
-        return nil unless hash.is_a?(Hash)
-        self.new(mongo_unescape(hash))
+        def save
+          body = self.class.mongo_escape(serialize_attributes)
+          result = if exist?
+            dataset.update_one(index_keys, body, upsert: true).ok?
+          else
+            dataset.insert_one(body).ok?
+          end
+          refresh
+          result
+        end
+
+        def retrieve_id
+          return attribute(:id) if attribute(:id)
+          next_id
+        end
+
+        def post_serialize(hash)
+          hash.merge(increment_id? ? { id: retrieve_id } : {})
+        end
+
+        def index_keys
+          if increment_id?
+            self.id = retrieve_id unless id
+            { id: id }
+          else
+            { _id: attribute(:_id) } if attribute(:_id)
+          end
+        end
+
+        def delete
+          dataset.delete_one({ _id: attribute(:_id) }).deleted_count == 1
+        end
       end
     end
   end

@@ -25,6 +25,9 @@ module Loaders
     Loaders.autosize_textareas
 
     Loaders.dformed
+
+    # Fires off any notices on the page
+    Loaders.notices
   end
 
   def self.menu_slider
@@ -46,12 +49,18 @@ module Loaders
     Element['.delete-model-btn'].each do |elem|
       elem.on :click do |evt|
         url = elem.attr(:'del-url')
-        HTTP.delete(url) do |response|
-          `console.log(#{response})`
-          if response.json[:status] == :success
-            puts 'SUCCESS!'
-          else
-            puts 'FAILURE!'
+        evt.prevent_default
+
+        Alert.confirm('Are you sure?') do |e|
+          elem.attr('disabled', true)
+          HTTP.delete(url) do |response|
+            if response.json[:status] == :success
+              Alert.success("Successfully deleted")
+              BlockStack.redirect(elem.attr('re-url') || '/', 1)
+            else
+              Alert.error("Failed to delete")
+              elem.attr('disabled', false)
+            end
           end
         end
       end
@@ -147,6 +156,12 @@ module Loaders
   end
 
   def self.dformed
-    DFormed.load_forms
+    BlockStack.load_forms
+  end
+
+  def self.notices
+    Element['#notice'].each do |elem|
+      Alert.log(elem.html, type: elem.attr('notice-severity'), delay: 0, position: 'top right') if elem.text.strip != ''
+    end
   end
 end

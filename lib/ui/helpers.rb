@@ -5,9 +5,18 @@ module BlockStack
       '/assets/'
     end
 
+    def redirect(uri, *args)
+      named = BBLib.named_args(*args)
+      if named[:notice]
+        session[:notice] = named[:notice]
+        session[:severity] = named[:severity] || :info
+      end
+      super
+    end
+
     def name_for(model)
       if model.is_a?(Model)
-        model.setting?(:title_attribute) ? model.attribute(model.setting(:title_attribute)) : "#{model.class.name.capitalize} #{model.id}"
+        model.setting?(:title_attribute) ? model.attribute(model.setting(:title_attribute)) : "#{model.class.clean_name} #{model.id}"
       else
         model.to_s.title_case
       end
@@ -29,11 +38,13 @@ module BlockStack
         when :edit, :update
           tag(:a, (label || 'Edit'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/edit"))
         when :delete, :destroy
-          tag(:a, (label || 'Delete'), attributes.merge(class: ('delete-model-btn ' + attributes[:class].to_s).strip, href: '#', 'del-url': "/api/#{text.class.dataset_name}/#{text.id}"))
+          tag(:a, (label || 'Delete'), attributes.merge(class: ('delete-model-btn ' + attributes[:class].to_s).strip, href: '#', 'del-url': "/api/#{text.class.dataset_name}/#{text.id}", 're-url': "/#{text.class.dataset_name}"))
         when :index
           tag(:a, (label || 'Index'), attributes.merge(href: "/#{text.class.dataset_name}"))
-        else # Defaults to show page
+        when :show, :view
           tag(:a, (label || 'View'), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}"))
+        else
+          tag(:a, (label || url.to_s.title_case), attributes.merge(href: "/#{text.class.dataset_name}/#{text.id}/#{url}"))
         end
       else
         tag(:a, text, attributes.merge(href: url))
@@ -81,6 +92,14 @@ module BlockStack
 
     alias_method :image_tag, :image_tags
 
+    def find_image(*images)
+      images.find { |image| self.class.opal.sprockets.find_asset("images/#{image}") }
+    end
+
+    def image?(image)
+      find_image(image) ? true : false
+    end
+
     def loading_messages
       @loading_messages ||= [
         'The hamster has been placed on the wheel...',
@@ -104,7 +123,7 @@ module BlockStack
     end
 
     def build_menu
-      self.class.menu(env)
+      self.class.menu
     end
   end
 end

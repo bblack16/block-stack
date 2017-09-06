@@ -1,15 +1,3 @@
-sass:
-  #back
-    position: absolute
-    top: 15px
-    right: 40px
-
-section.header
-  a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back
-  h1.text-center.bold
-    - if @model.setting?(:fa_icon)
-      i class="fa fa-#{@model.setting(:fa_icon)}"
-      |&nbsp;
-    = "Editing #{name_for(@model)}"
+== slim :'defaults/header'
 br
 == slim :'defaults/_form'

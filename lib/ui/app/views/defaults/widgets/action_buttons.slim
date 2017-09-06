@@ -1,0 +1,12 @@
+- @item = @item || @model
+- if @item
+  .btn-group.text-center
+    - if @item.setting?(:actions)
+      - @item.setting(:actions).each do |method, label|
+        == link_to(method, @item, label, class: 'btn btn-secondary')
+      == link_to(:index, @item, 'Back', class: 'btn btn-secondary')
+    - else
+      /== link_to(:show, @model, class: 'btn btn-secondary')
+      == link_to(:edit, @item, class: 'btn btn-secondary')
+      == link_to(:delete, @item, class: 'btn btn-secondary')
+      == link_to(:index, @item, 'Back', class: 'btn btn-secondary')

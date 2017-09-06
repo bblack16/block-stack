@@ -1,0 +1,53 @@
+sass:
+  #new
+    position: absolute
+    top: 15px
+    right: 40px
+    z-index: 1
+  #back
+    position: absolute
+    top: 15px
+    right: 40px
+    z-index: 1
+  #actions
+    position: absolute
+    display: table
+    z-index: 50
+    transform: translate(-50%, -50%)
+    bottom: -38px
+    left: 50%
+
+- header_attributes = { style: '' }
+/- header_attributes[:style] = "background-image: url(#{@model.image_for(:background)})" if @model.image_for(:background)
+
+- single = @model && !@model.is_a?(Class)
+- exists = single && @model.exist?
+
+section.header *header_attributes
+  .backdrop
+    == image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
+  /- if @model.setting?(:icon)
+  /  == image_tag(@model.setting(:icon), class: 'icon')
+  /- elsif @model.setting?(:fa_icon)
+  /  i class="fa fa-#{@model.setting(:fa_icon)}"
+  /- elsif image?("#{@model.dataset_name}/icon")
+  /  == image_tag("#{@model.dataset_name}/icon", class: 'icon')
+  - if single
+    - if exists
+      h1.text-center.bold = "#{name_for(@model)}"
+    - else
+      h1.text-center.bold = "Create New #{@model.class.clean_name}"
+    a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back
+  - else
+    h1.text-center.bold = @model.clean_name.pluralize
+    a.btn.btn-outline-success#new href="/#{@model.plural_name}/new" = "New #{@model.clean_name}"
+  - if single && exists
+    #actions
+      == slim :'defaults/widgets/action_buttons'
+  - elsif !single
+    #actions
+      .btn-group.text-center
+        - type = params[:display] || session[:display]
+        a.btn.btn-secondary.fa.fa-table href='?display=table' title='Display as a table.' class="#{type == 'table' ? 'active' : nil}"
+        a.btn.btn-secondary.fa.fa-id-card-o href='?display=cards' title='Display as cards.' class="#{type == 'cards' ? 'active' : nil}"
+        a.btn.btn-secondary.fa.fa-list href='?display=list' title='Display as a list.' class="#{type == 'list' ? 'active' : nil}"

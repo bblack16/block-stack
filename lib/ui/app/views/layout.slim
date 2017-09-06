@@ -1,8 +1,8 @@
 doctype html
 html
   head
-    title = self.class.base_server
-    == stylesheet_include('vendor/animate', 'vendor/font-awesome.min', 'vendor/datatables_bootstrap', 'vendor/jquery-ui.min')
+    title = self.class.base_server.title
+    == stylesheet_include('vendor/animate', 'vendor/font-awesome.min', 'vendor/dataTables.bootstrap4.min', 'vendor/jquery-ui.min')
     == stylesheet_include('vendor/aos')
     == stylesheet_include('vendor/alertify')
     == stylesheet_include('vendor/timedropper.min', 'vendor/datedropper.min', 'vendor/select2.min')
@@ -13,4 +13,8 @@ html
   body
     #params json="#{params.to_h.merge(session[:params] || {}).merge(route: env['PATH_INFO']).to_json}"
     == slim :'partials/navbar'
+    - if session[:notice]
+      #notice.hidden notice-severity="#{session.delete(:severity)}"
+        i.fa.fa-exclamation-circle.notice-icon
+        span = session.delete(:notice)
     == yield
