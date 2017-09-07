@@ -9,7 +9,7 @@
   - cols.push(cols.delete(:updated_at)) if cols.include?(:updated_at)
   - cols = cols.map { |v| [v, v.to_s.gsub('_', ' ').title_case] }.to_h
 
-table.data_table.nowrap.responsive.default.table-striped.table-bordered
+table.data_table.nowrap.responsive.default.table-striped.table-bordered data-page-length='25'
   thead
     tr
       th

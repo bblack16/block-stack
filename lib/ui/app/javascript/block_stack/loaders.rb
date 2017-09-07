@@ -5,6 +5,8 @@ module Loaders
     # Main Menu slider
     Loaders.menu_slider
 
+    Loaders.dformed
+
     # Load delete links
     Loaders.delete_model_buttons
 
@@ -23,8 +25,6 @@ module Loaders
     Loaders.ripple
     Loaders.floating_labels
     Loaders.autosize_textareas
-
-    Loaders.dformed
 
     # Fires off any notices on the page
     Loaders.notices
@@ -94,8 +94,9 @@ module Loaders
   end
 
   def self.date_pickers
-    Element['.date-picker'].JS.dateDropper
-    Element['.time-picker'].JS.timeDropper({ mouseWheel: true, format: 'HH:mm' }.to_n)
+    Element['.date-time-picker'].JS.flatpickr({ enableTime: true, altInput: true }.to_n)
+    Element['.date-picker'].JS.flatpickr({ altInput: true }.to_n)
+    Element['.time-picker'].JS.flatpickr({enableTime: true, noCalendar: true}.to_n)
   end
 
   def self.select_2

@@ -21,6 +21,7 @@ end
 require_relative 'server/server'
 require_relative 'formatter/formatter'
 require_relative 'ui/ui'
+require_relative 'ui/dformed/presets'
 require_relative 'components/controller'
 require_relative 'components/model/model'
 require_relative 'components/database'

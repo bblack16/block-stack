@@ -1,6 +1,8 @@
 == slim :'defaults/header'
 br
 .centered
+  .centered
+    == slim :'defaults/widgets/paginator'
   - case (params[:display] || session[:display]).to_s
   - when 'cards'
     == slim :'defaults/cards'
@@ -8,6 +10,7 @@ br
     == slim :'defaults/list_items'
   - else
     == slim :'defaults/table'
-  hr
-  == slim :'defaults/widgets/paginator'
-br
+
+.floating-label
+  input type='text'
+  label My Label
