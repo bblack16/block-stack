@@ -101,13 +101,9 @@ module Loaders
 
   def self.select_2
     Element['.select-2'].JS.select2({
-      tags: true,
 			theme: 'bootstrap',
       allowClear: true
     }.to_n)
-    Element['.select-2'].each do |elem|
-      elem.parent.append(Element['<span class="fa fa-caret-down" style="position: absolute; right: 5px"/>'])
-    end
   end
 
   def self.ripple

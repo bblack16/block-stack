@@ -57,6 +57,8 @@ module BlockStack
                 :timestamp
               when :element_of
                 :string
+              when :elements_of
+                :array
               when :hash
                 :json
               when :of
@@ -156,7 +158,7 @@ module BlockStack
           result.hmap do |k, v|
             [
               k.to_sym,
-              if _attrs[k.to_sym] && [:hash, :array, :array_of].any? { |t| t == _attrs[k.to_sym][:type] } && v.is_a?(String)
+              if _attrs[k.to_sym] && [:hash, :array, :array_of, :elements_of].any? { |t| t == _attrs[k.to_sym][:type] } && v.is_a?(String)
                 JSON.parse(v)
               else
                 v

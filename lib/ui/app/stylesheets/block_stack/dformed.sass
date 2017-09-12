@@ -13,3 +13,40 @@
   .multi_field
     &.btn-group
       display: block
+
+  input, textarea, select
+    transition: all 0.5s ease
+    border: 1px solid #b9b9b9
+    padding: 5px 10px
+    font-size: 20px
+    border-radius: 3px
+    width: 300px
+    &:focus
+      border: 1px solid #2e9ce2
+      box-shadow: 0 0 8px #2e9ce2
+      outline: none
+    &.select2-search__field
+      border: none
+      background-color: transparent
+      &:focus
+        border: none
+        background-color: transparent
+        box-shadow: none
+
+  input[type=number]
+    width: 100px
+    text-align: center
+    padding-right: 5px
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button
+    opacity: 1
+
+  .multi_field
+    &.empty_placeholder
+      i
+        padding: 2px 5px
+        color: grey
+
+  .flatpickr-input
+    background-color: white

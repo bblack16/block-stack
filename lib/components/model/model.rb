@@ -323,7 +323,7 @@ module BlockStack
 
       def associations
         return polymorphic_model.associations if is_polymorphic_child?
-        BlockStack::Associations.associations_for(self)
+        BlockStack::Associations.associations[dataset_name]
       end
 
       BlockStack::Association.descendants.each do |association|
@@ -486,6 +486,14 @@ module BlockStack
 
     def exist?
       id && self.class.exist?(id)
+    end
+
+    def dformed_form
+      form = DFormed.form_for(self, bypass: true)
+      self.class.associations.each do |asc|
+        p '-'*25, asc
+      end
+      form
     end
 
     protected
