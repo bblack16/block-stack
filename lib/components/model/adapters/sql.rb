@@ -8,7 +8,7 @@ module BlockStack
         base.send(:include, BlockStack::Model)
         base.send(:include, InstanceMethods)
         base.singleton_class.send(:before, :all, :find_all, :find, :first, :last, :sample, :count, :exist?, :create_table_if_not_exist)
-        base.send(:after, :delete, :delete_associations)
+        # base.send(:after, :delete, :delete_associations)
         base.send(:before, :save, :delete, :exist?, :create_table_if_not_exist)
       end
 

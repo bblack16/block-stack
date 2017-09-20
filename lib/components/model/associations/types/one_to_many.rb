@@ -1,24 +1,36 @@
 module BlockStack
   module Associations
-    class OneToMany < OneToOne
+    class OneToMany < Association
+
+      attr_set :cascade, default: false
+      attr_bool :singular, default: false
+
+      def associated?(obj_a, obj_b)
+        return false if obj_a == obj_b
+        obj_b.attribute(column) == obj_a.attribute(attribute)
+      end
 
       def retrieve(obj)
+        return [] unless obj.id
         model.find_all(column => obj.attribute(attribute))
       end
 
-      def foreign_key
-        false
-      end
-
       def associate(obj_a, *objs)
-        [objs].flatten.all? do |obj_b|
+        objs = [objs].flatten.map { |o| o.is_a?(Model) ? o : model.find(o) }
+        retrieve(obj_a).each { |o| disassociate(obj_a, o) unless objs.include?(o) }
+        objs.all? do |obj_b|
           if associated?(obj_a, obj_b)
             true
           else
-            query = foreign_key? ? { attribute => obj_b.attribute(column) } : { column => obj_a.attribute(attribute) }
-            (foreign_key? ? obj_a : obj_b).update(query)
+            query = { column => obj_a.attribute(attribute) }
+            obj_b.update(query)
           end
         end
+      end
+
+      def disassociate(obj_a, obj_b)
+        return true unless associated?(obj_a, obj_b)
+        obj_b.update(column => nil)
       end
 
       def delete(obj)
@@ -31,8 +43,7 @@ module BlockStack
           from: to,
           to: from,
           column: attribute,
-          attribute: column,
-          foreign_key: true
+          attribute: column
         )
       end
 

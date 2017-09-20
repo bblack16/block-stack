@@ -1,5 +1,6 @@
 require_relative 'associations'
 require_relative 'associations/association'
+require_relative 'model_attrs'
 
 module BlockStack
 
@@ -95,14 +96,18 @@ module BlockStack
       included_classes.push(base)
       base.send(:include, BBLib::Effortless)
       base.extend ClassMethods
+      base.extend ModelAttrs
 
       base.singleton_class.send(:after, :all, :find_all, :latest_by, :oldest_by, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
-      # base.send(:after, :delete, :delete_associations)
+      base.send(:after, :save, :save_associations)
+      base.send(:after, :delete, :delete_associations)
+      base.send(:after, :dformed_form, :add_associations_to_form, send_value: true, modify_value: true)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
-      base.send(:attr_float, :_score, default: nil, allow_nil: true, serialize: false, dformed: false)
-      base.send(:attr_time, :created_at, :updated_at, default: Time.now, dformed: false, blockstack: { display: false })
+      # base.send(:attr_float, :_score, default: nil, allow_nil: true, serialize: false, dformed: false)
+      base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:init_type, :loose)
+      base.send(:load_associations)
 
       unless base.respond_to?(:find)
         base.send(:define_singleton_method, :find) do |query|
@@ -230,6 +235,17 @@ module BlockStack
         subclass.db(Model.consume_next_db)
       end
 
+      def load_associations
+        BlockStack::Associations.associations_for(dataset_name).each do |asc|
+          send(asc.type, asc.to, asc: asc)
+        end
+        BlockStack::Associations.associations.values.each do |h|
+          h.values.each do |asc|
+            asc.through_model if asc.respond_to?(:through)
+          end
+        end
+      end
+
       def polymorphic(toggle = nil)
         unless toggle.nil?
           @polymorphic = !is_polymorphic_child? && toggle
@@ -326,11 +342,11 @@ module BlockStack
         BlockStack::Associations.associations[dataset_name]
       end
 
-      BlockStack::Association.descendants.each do |association|
-        define_method(association.type) do |name, opts = {}|
-          BlockStack::Associations.add(association.new(opts.merge(from: dataset_name, to: name)))
-        end
-      end
+      # BlockStack::Association.descendants.each do |association|
+      #   define_method(association.type) do |name, opts = {}|
+      #     BlockStack::Associations.add(association.new(opts.merge(from: dataset_name, to: name)))
+      #   end
+      # end
 
       def create(*payloads)
         return polymorphic_model.create(*payloads) if is_polymorphic_child?
@@ -425,7 +441,7 @@ module BlockStack
 
     def attribute?(name)
       return nil unless name
-      respond_to?(name)
+      _attrs.include?(name) && respond_to?(name)
     end
 
     def update(params)
@@ -449,18 +465,30 @@ module BlockStack
       self.class.db
     end
 
-    def save
-      BlockStack::Model.abstract_error
+    # def save
+    #   BlockStack::Model.abstract_error
+    # end
+
+    def save_associations
+      _attrs.find_all { |name, a| a[:options][:association] }.each do |name, opts|
+        items = [send(name)].flatten(1).flat_map do |value|
+          next unless value
+          value.save unless value.exist?
+          value
+        end.compact
+        items = items.first if opts[:options][:association].singular?
+        opts[:options][:association].associate(self, items) if items
+      end
     end
 
-    def delete(cascade = true)
-      BlockStack::Model.abstract_error
-    end
+    # def delete(cascade = true)
+    #   BlockStack::Model.abstract_error
+    # end
 
     def delete_associations
-      debug { "Deleting associations for #{self} #{id}." }
+      debug { "Deleting associations for #{self.class.clean_name} #{id}." }
       BlockStack::Associations.associations_for(self).all? do |asc|
-        debug("ASC: #{asc}")
+        debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
         asc.delete(self)
       end
     end
@@ -488,27 +516,46 @@ module BlockStack
       id && self.class.exist?(id)
     end
 
-    def dformed_form
-      form = DFormed.form_for(self, bypass: true)
-      self.class.associations.each do |asc|
-        p '-'*25, asc
+    def dformed_form(form)
+      DFormed.form_for(self, bypass: true)
+    end
+
+    def add_associations_to_form(form)
+      self.class.associations.each do |name, asc|
+        values = [send(asc.method_name)].compact.flatten(1)&.map { |m| m.id }
+        next unless values
+        form.field(asc.method_name)&.options = asc.dformed_options
+        case [asc.class]
+        when [BlockStack::Associations::OneToOne], [BlockStack::Associations::ManyToOne]
+          if asc.is_a?(BlockStack::Associations::ManyToOne) || asc.foreign_key?
+            form.remove(asc.method_name, "#{asc.method_name}_label")
+            form.replace("#{asc.attribute}_label".to_sym, type: :label, label: asc.model.clean_name)
+            form.replace(asc.attribute, value: values.first, name: asc.attribute, type: :select, options: asc.dformed_options)
+          else
+            form.field(asc.method_name)&.value = values.first
+          end
+        when [BlockStack::Associations::OneToMany], [BlockStack::Associations::ManyToMany]
+          form.field(asc.method_name)&.value = values
+        when [BlockStack::Associations::OneThroughOne]
+          form.field(asc.method_name)&.value = values.first
+        end
       end
       form
     end
 
     protected
 
-    def method_missing(method, *args, &block)
-      if Associations.association?(dataset_name, method)
-        cache_association(method)
-        send(method)
-      elsif method.to_s =~ /=$/ && Associations.association?(dataset_name, method.to_s[0..-2].to_sym)
-        cache_association(method.to_s[0..-2].to_sym)
-        send(method, *args)
-      else
-        super
-      end
-    end
+    # def method_missing(method, *args, &block)
+    #   if Associations.association?(dataset_name, method)
+    #     cache_association(method)
+    #     send(method)
+    #   elsif method.to_s =~ /=$/ && Associations.association?(dataset_name, method.to_s[0..-2].to_sym)
+    #     cache_association(method.to_s[0..-2].to_sym)
+    #     send(method, *args)
+    #   else
+    #     super
+    #   end
+    # end
 
     def respond_to_missing?(method, inc_priv = false)
       Associations.association?(dataset_name, method) || super

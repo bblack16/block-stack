@@ -11,8 +11,13 @@ module BlockStack
     end
 
     def self.add(asc, add_opposite = true)
-      (associations[asc.from] ||= {})[asc.method_name] = asc
-      add(asc.opposite, false) if add_opposite && !association?(asc.to, asc.from)
+      return asc if (associations[asc.from] ||= {})[asc.method_name] == asc
+      associations[asc.from][asc.method_name] = asc
+      if add_opposite && !association?(asc.to, asc.from)
+        [asc.opposite].flatten.each do |op|
+          add(op, false)
+        end 
+      end
       asc
     end
 

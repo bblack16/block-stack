@@ -5,6 +5,8 @@ module BlockStack
       attr_of Object, :through_model, serialize: false
       attr_sym :through_attribute, :through_column, serialize: false
 
+      attr_bool :singular, default: false
+
       before :through_model, :through_attribute, :through_column, :lookup_through_model
 
       def associated?(obj_a, obj_b)
@@ -17,13 +19,17 @@ module BlockStack
       end
 
       def associate(obj_a, *objs)
+        current = retrieve(obj_a)
         [objs].flatten.compact.all? do |obj_b|
+          obj_b = model.find(obj_b) unless obj_b.is_a?(Model)
+          current.delete(obj_b)
           if associated?(obj_a, obj_b)
             true
           else
             through_model.create(through_attribute => obj_a.attribute(attribute), through_column => obj_b.attribute(column))
           end
         end
+        current.each { |i| disassociate(obj_a, i) }
       end
 
       def disassociate(obj_a, obj_b)
@@ -31,6 +37,7 @@ module BlockStack
       end
 
       def retrieve(obj)
+        return [] unless obj.id
         join_ids = through_model.find_all(through_attribute => obj.attribute(attribute)).map { |r| r.attribute(through_column) }.uniq
         return [] unless join_ids && !join_ids.empty?
         model.find_all(column => join_ids)
@@ -61,9 +68,29 @@ module BlockStack
       end
 
       def lookup_through_model
+        column = @through_column
+        attribute = @through_attribute
         @through_model     = BlockStack::Model.model_for(through) unless @through_model
         @through_attribute = ("#{BlockStack::Model.model_for(from).model_name}_id".to_sym rescue nil) unless @through_attribute
         @through_column    = ("#{BlockStack::Model.model_for(to).model_name}_id".to_sym rescue nil) unless @through_column
+        if !attribute && @through_attribute
+          BlockStack::Associations.add(OneToOne.new(
+            from: through,
+            to: from,
+            column: self.attribute,
+            attribute: @through_attribute,
+            foreign_key: true
+          ), false)
+        end
+        if !column && @through_column
+          BlockStack::Associations.add(OneToOne.new(
+            from: through,
+            to: to,
+            column: self.column,
+            attribute: @through_column,
+            foreign_key: true
+          ), false)
+        end
       end
 
     end

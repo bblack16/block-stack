@@ -9,6 +9,8 @@ module BlockStack
       end
 
       def associate(obj_a, obj_b)
+        obj_b = model.find(obj_b) unless obj_b.is_a?(Model)
+        return false unless obj_a && obj_b
         return true if associated?(obj_a, obj_b)
         disassociate_all(obj_a)
         query = foreign_key? ? { attribute => obj_b.attribute(column) } : { column => obj_a.attribute(attribute) }
@@ -20,12 +22,13 @@ module BlockStack
           query = { attribute => obj_b.attribute(column) }
           obj_a.class.find_all(query).each { |i| i.update(attribute => nil) }
         else
-          query = { column => obj_b.attribute(attribute) }
+          query = { column => obj_a.attribute(attribute) }
           obj_b.class.find_all(query).each { |i| i.update(column => nil) }
         end
       end
 
       def retrieve(obj)
+        return nil unless obj.id
         model.find(column => obj.attribute(attribute))
       end
 

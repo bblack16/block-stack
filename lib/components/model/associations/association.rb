@@ -6,6 +6,7 @@ module BlockStack
     attr_of Object, :model, allow_nil: true, serialize: false
     attr_bool :cascade, default: true
     attr_sym :method_name, default_proc: :method_name_default, allow_nil: true
+    attr_bool :singular, default: true
 
     before :model, :lookup_model
 
@@ -53,8 +54,13 @@ module BlockStack
     end
 
     # Generates the opposite association for this one (for the other side)
+    # Can return an array of associations to add more than one
     def opposite
       raise BBLib::AbstractError
+    end
+
+    def dformed_options
+      model.all.map { |m| [m.id, m.setting?(:title_attribute) ? m.send(m.setting(:title_attribute)) : m.id] }.to_h
     end
 
     protected

@@ -25,6 +25,11 @@ br
               - if value.is_a?(Array)
                 ul
                   - value.each do |v|
-                    li = v
+                    - if v.is_a?(BlockStack::Model)
+                      li = v.attribute(v.setting(:title_attribute) || :id)
+                    - else
+                      li = v
+              - elsif value.is_a?(BlockStack::Model)
+                = value.attribute(value.setting(:title_attribute) || :id)
               -else
                 = value
