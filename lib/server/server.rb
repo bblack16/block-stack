@@ -40,7 +40,7 @@ module BlockStack
 
         post_api '/' do
           args = JSON.parse(request.body.read).keys_to_sym
-          BlockStack.logger.info("New #{model.clean_name} - Params #{args}")
+          BlockStack.logger.info("POST #{model.clean_name} - Params #{args}")
           item = model.new(args)
           halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
           if result = item.save
