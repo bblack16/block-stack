@@ -3,7 +3,7 @@ require 'opal-jquery'
 require 'opal-browser'
 # require 'reactrb'
 
-require_relative 'helpers'
+require_relative 'util/helpers'
 
 module BlockStack
   class UiServer < Server
@@ -215,6 +215,8 @@ module BlockStack
 
     def self.title
       settings.app_name || base_server.to_s.split('::').last
+    rescue => e
+      base_server.to_s.split('::').last
     end
 
     def self.main_menu
