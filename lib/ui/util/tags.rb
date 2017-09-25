@@ -1,27 +1,7 @@
 module BlockStack
-  # General helpers for the UI BlockStack server
-  module UiHelpers
-    def asset_prefix
-      '/assets/'
-    end
-
-    def redirect(uri, *args)
-      named = BBLib.named_args(*args)
-      if named[:notice]
-        session[:notice] = named[:notice]
-        session[:severity] = named[:severity] || :info
-      end
-      super
-    end
-
-    def name_for(model)
-      if model.is_a?(Model)
-        model.setting?(:title_attribute) ? model.attribute(model.setting(:title_attribute)) : "#{model.class.clean_name} #{model.id}"
-      else
-        model.to_s.title_case
-      end
-    end
-
+  # Tag (HTML) related methods. Exposed to UI Server and mapped
+  # directly to blockstack for access to any class.
+  module TagHelper
     def tag(type, content = nil, attributes = {})
       attr_str = attributes.map { |k, v| "#{k}=\"#{v.to_s.gsub('"', '\\"')}\"" }.join(' ')
       attr_str = ' ' + attr_str unless attr_str.empty?
@@ -70,60 +50,12 @@ module BlockStack
       end.join
     end
 
-    alias opal_tag opal_include
-
     def stylesheet_include(*paths)
       paths.map do |path|
         tag(:link, '', rel: 'stylesheet', href: "/assets/stylesheets/#{path}.css")
       end.join
     end
-
-    def image_tags(*images, **opts)
-      images.map do |image|
-        if self.class.opal.sprockets.find_asset("images/#{image}")
-          tag(:img, '', opts.except(:fallbacks, :missing).merge(src: "/assets/images/#{image}"))
-        else
-          fallbacks = opts[:fallbacks]
-          return opts[:missing] unless fallbacks && !fallbacks.empty?
-          image_tags(fallbacks.first, **opts.merge(fallbacks: fallbacks[1..-1]))
-        end
-      end.compact.join
-    end
-
-    alias_method :image_tag, :image_tags
-
-    def find_image(*images)
-      images.find { |image| self.class.opal.sprockets.find_asset("images/#{image}") }
-    end
-
-    def image?(image)
-      find_image(image) ? true : false
-    end
-
-    def loading_messages
-      @loading_messages ||= [
-        'The hamster has been placed on the wheel...',
-        'One sec... Let me go load that for you!',
-        'Turning knobs and pressing buttons...',
-        'Hold on... Flipping bits...',
-        'Good things come to those who wait.',
-        'Something cool is coming!',
-        'Loading...',
-        'Applying polish.',
-        'Some seriously awesome stuff is coming.',
-        'Be right there.',
-        'Hold up, let me go get something to put here...',
-        'Oh no, I\'m a bit bare, let me get something to cover this up',
-        'On my way!'
-      ]
-    end
-
-    def load_message
-      loading_messages.sample
-    end
-
-    def build_menu
-      self.class.menu
-    end
   end
+
+  extend TagHelper
 end
