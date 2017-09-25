@@ -106,6 +106,7 @@ module BlockStack
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       # base.send(:attr_float, :_score, default: nil, allow_nil: true, serialize: false, dformed: false)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
+      base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
       base.send(:init_type, :loose)
       base.send(:load_associations)
 
@@ -365,24 +366,18 @@ module BlockStack
 
       # Current list of used settings
       # ------------------------------
-      # icon [String] - Used in default views and menu as an icon (loaded from assets)
-      # fa_icon [String] - Similar to icon, but uses a font-awesome icon instead of an asset
-      # title_attribute [Symbol] - in default views this is used to set the main display
-      # =>                         attribute. If not set, id is used.
-      # attributes [Hash, Array] - A list of method names of attributes to be displayed. If none of the
-      # =>           following settings are set, this is the list that is used. If nil,
-      # =>           all attr_ setters are used as display attributes.
-      # table_attributes [Hash] - Override for attributes when being used in default tables
-      # description_attribute [Sym] - Sets the method to be used when getting a text description of the model (for views)
-      # background_image [String] - Used if default views to find an image to be used as a background image (reference to asset)
-      # background_image_url [String] - Same as above but should be an external URL
-      # global_search [Bool] - When set to false this model is not searched in global searches (to true if not set)
-      def settings
-        @settings ||= ancestor_settings
-      end
-
+      # primary_attribute [Symbol] - What is displayed as a title (method name to call)
+      # description_attribute [Symbol] - The method used for a short description
+      # detail_attribute [Symbol] - The method used for a larger description of the attribute
+      # tagline [Symbol] - Displayed under the title in some widgets
+      # background [Symbol] - The method to call to return a background image (large)
+      # thumbnail [Symbol] - The method to call to return a thumbnail
+      # icon [Symbol] - The method to call to return an icon
+      # actions [Hash] - What actions should be made available for this model via context menus
+      # searchable [Bool] - True or false to allow the model to be part of global search (Default: false)
+      # table_attributes [Array of Symbols] - An array of attributes to display in tables (nil means display all serialized fields)
       def ancestor_settings
-        settings = {}
+        settings = BBLib::HashStruct.new
         ancestors.reverse.each do |a|
           next if a == self
           settings = settings.merge(a.settings) if a.respond_to?(:settings)
