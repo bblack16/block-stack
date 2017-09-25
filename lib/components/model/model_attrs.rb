@@ -12,7 +12,7 @@ module BlockStack
           association: asc,
           default_proc: proc { |x| asc.retrieve(x) }
         }
-        p "CUSTOM: #{custom}"
+
         (opts[:blockstack] ||= {})[:display] = false unless opts[:blockstack] && opts[:blockstack][:display]
         attr_custom(asc.method_name, opts.merge(custom).merge(defaults)) do |args|
           items = [args].flatten.compact.map do |arg|
