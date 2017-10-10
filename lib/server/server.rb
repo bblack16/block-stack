@@ -25,10 +25,12 @@ module BlockStack
         ivar_plural = "@#{plural}"
 
         get_api '/' do
+          limit = params[:limit]&.to_i || 25
+          offset = ((params[:page]&.to_i || 1) - 1) * limit
           if params[:query]
             model.search(params[:query])
           else
-            model.all
+            model.all(limit: limit, offset: offset)
           end.map(&:serialize)
         end
 
@@ -79,6 +81,20 @@ module BlockStack
 
         true
       end
+
+      def add_global_search
+        set global_search: true
+
+        get_api '/search' do
+          @results = nil
+          if params[:query]
+            @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
+              next unless model.setting(:global_search)
+              model.search(params[:query])
+            end.compact.uniq
+          end
+        end
+      end
     end
 
     def self.build_route(path, api: false, prefixed: false)
@@ -88,6 +104,32 @@ module BlockStack
         path
       end
       path.end_with?('/') ? "#{path}?" : path
+    end
+
+    def self.load_controllers
+      controllers.each do |cont|
+        cont.assets = assets if cont.respond_to?(:assets=)
+        cont.base_server(self)
+        use cont
+      end
+    end
+
+    def self.controllers
+      [settings.controller_base].flatten.compact.flat_map(&:descendants).reject { |c| c == self }
+    end
+
+    def self._running_server
+      @_running_server
+    end
+
+    def self.run!(*args)
+      @_running_server = self if self >= Server
+      load_controllers
+      super
+    end
+
+    def self.base_server
+      self
     end
 
     def self.route_prefix
@@ -158,6 +200,11 @@ module BlockStack
     def api_routes
       self.class.api_routes
     end
+
+    # TODO Fix logging
+    # before do
+    #   BlockStack.logger.info("[#{request.request_method}] #{request.path} (#{request.host}): params = #{params}")
+    # end
 
     after do
       if api_routes.include?(request.env['sinatra.route']) || request[:api_mode]

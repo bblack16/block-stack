@@ -6,21 +6,26 @@
   margin: 5px
   background-color: #eff0f1
   min-height: 400px
-  .card-image
-    border-top-left-radius: 3px
-    border-top-right-radius: 3px
-    border: 1px solid #cccccc
-    width: 300px
-    height: 175px
-    background-color: white
+  .image-wrapper
+    max-width: 300px
+    max-height: 175px
+    margin: 3px auto
+    .card-image
+      border-top-left-radius: 3px
+      border-top-right-radius: 3px
+      border: 1px solid #cccccc
+      background-color: white
+      max-height: 150px
   .missing-image
     width: 300px
     height: 175px
   .card-body
     padding: 5px 10px
-    p
+    .tagline
       font-size: 14px
       color: grey
+    .description
+      font-size: 15px
   .card-footer
     position: absolute
     bottom: 0px

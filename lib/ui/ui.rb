@@ -9,7 +9,7 @@ module BlockStack
   class UiServer < Server
 
     enable :sessions
-    set global_search: false
+    set global_search: false, precompile: false
 
     helpers UiHelpers
 
@@ -17,10 +17,6 @@ module BlockStack
 
     Opal.use_gem 'bblib'
     Opal.use_gem 'dformed'
-
-    # before do
-    #   request[:menu] = build_menu
-    # end
 
     def self.assets
       @assets ||= default_assets
@@ -155,55 +151,23 @@ module BlockStack
             @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
               next unless model.setting(:global_search)
               model.search(params[:query])
-            end.compact.uniq.sort_by { |r| r._score }
+            end.compact.uniq
           end
           slim :'defaults/global_search'
-        end
-
-        get_api '/search' do
-          @results = nil
-          if params[:query]
-            @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
-              next unless model.setting(:global_search)
-              model.search(params[:query])
-            end.compact.uniq.sort_by { |r| r._score }
-          end
         end
       end
     end
 
     def self.precompile!
-      info("BlockStack: Compiling assets in #{settings.public_folder}...")
-      # FileUtils.rm_rf(settings.public_folder)
+      BlockStack.logger.info("BlockStack: Compiling assets in #{settings.public_folder}...")
       environment = opal.sprockets
       manifest = Sprockets::Manifest.new(environment.index, settings.public_folder)
-      manifest.compile(%w(*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
-    end
-
-    def self.load_controllers
-      controllers.each do |cont|
-        cont.assets = assets if cont.respond_to?(:assets=)
-        cont.base_server(self)
-        use cont
-      end
-    end
-
-    def self.controllers
-      [settings.controller_base].flatten.compact.flat_map(&:descendants).reject { |c| c == self }
-    end
-
-    def self._running_server
-      @_running_server
+      manifest.compile([/stylesheets\/[\w\d\s]+\.css/] + %w(application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
     def self.run!(*args)
-      @_running_server = self if self == UiServer
-      load_controllers
+      precompile! if settings.precompile
       super
-    end
-
-    def self.base_server
-      self
     end
 
     def self.menu

@@ -2,34 +2,55 @@ sass:
   .info
     table
       margin: auto
+      &.description
+        width: 100%
+      &.details
+        margin: auto
       td
         padding: 5px
       td.label
         font-weight: bold
         text-align: right
+  .thumbnail-image
+    max-width: 400px
+    max-height: 300px
+    margin: 0 15px
+    display: inline-block
+    img
+      max-width: 100%
+      max-height: 100%
+  .tagline
+    color: #959595
+    font-size: 115%
+    text-align: center
+  td.image
+    width: auto
+  .details
+    &.middle-align
+      margin: auto
+      padding: 25px
+      width: auto
+    &.float-right
+      width: 400px
 
 
 == slim :'defaults/header'
-
-br
-
-.centered
-  .info
-    table
-      tbody
-        - @model.attributes.each do |key|
-          - value = @model.attribute(key)
+- tag = @model.setting_call(:tagline)
+- img = @model.image_for(:thumbnail, class: 'height-3')
+- desc = @model.describe
+.centered.info
+  br
+  - if tag
+    .tagline
+      == tag
+  - if desc || img
+    .float-left
+      table.description
+        tbody
           tr
-            td.label = key.to_s.title_case
-            td
-              - if value.is_a?(Array)
-                ul
-                  - value.each do |v|
-                    - if v.is_a?(BlockStack::Model)
-                      li = v.attribute(v.setting(:title_attribute) || :id)
-                    - else
-                      li = v
-              - elsif value.is_a?(BlockStack::Model)
-                = value.attribute(value.setting(:title_attribute) || :id)
-              -else
-                = value
+            - if img
+              td.image.thumbnail-image == img
+            - if desc
+              td.details
+                == desc
+.details class="#{img || desc ? 'float-right' : 'middle-align'}" == slim :'defaults/widgets/details'

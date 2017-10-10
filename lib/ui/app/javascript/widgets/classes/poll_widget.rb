@@ -1,55 +1,37 @@
-class PollWidget < React::Component::Base
-  attr_accessor :timer, :url, :updating, :content, :interval
+module Widgets
+  class PollWidget < TimerWidget
+    attr_str :url
+    attr_str :content
 
-  before_mount do
-    load_defaults
-    refresh_content
-    start
-  end
-
-  def load_defaults
-    # use this to set url and custom interval
-  end
-
-  def updating?
-    updating == true
-  end
-
-  def interval
-    @interval ||= 1
-  end
-
-  def start
-    stop
-    @timer = every(self.interval) do
-      refresh_content
-    end
-  end
-
-  def stop
-    @timer.stop if @timer
-  end
-
-  def restart
-    stop
-    start
-  end
-
-  def render
-    div { 'Someone really should have overriden this...' }
-  end
-
-  protected
-
-  def refresh_content
-    return if updating?
-    self.updating = true
-    HTTP.get(url) do |response|
-      if response.ok?
-        self.updating = false
-        self.content = response.json
-        force_update!
+    def update
+      render(:div) do
+        context.to_s
       end
+    end
+
+    protected
+
+    def context
+      content
+    end
+
+    def refresh
+      refresh_content
+      super
+    end
+
+    def refresh_content
+      return if updating?
+      self.updating = true
+      HTTP.get(url) do |response|
+        if response.ok?
+          self.updating = false
+          self.content = response.json
+        end
+      end
+    rescue => e
+      puts "Error: #{e}"
+      self.updating = false
     end
   end
 end

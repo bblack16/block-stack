@@ -1,14 +1,14 @@
 .card.height-1.transition-all-2
-  - if src = @item.image_for(:thumbnail)
-    == tag(:img, nil, src: src, class: 'card-image')
-  - else
-    .missing-image
-      i.fa.fa-picture-o
+  .image-wrapper
+    - if src = @item.image_for(:thumbnail, class: 'card-image')
+      == src
+    - else
+      .missing-image
+        i.fa.fa-picture-o
   .card-body
     h4.text-center = name_for(@item)
-    - desc_attr = @item.setting(:description_attribute)
-    - if desc_attr
-      p == @item.attribute?(desc_attr) ? @item.attribute(desc_attr) : @item.send(desc_attr)
+    .tagline == @item.send(@item.setting(:tagline)) if @item.setting?(:tagline)
+    .description == @item.describe
   .card-footer
     .btn-group.height-2
       == link_to(:show, @item, class: 'btn btn-secondary')

@@ -16,6 +16,15 @@ sass:
     transform: translate(-50%, -50%)
     bottom: -38px
     left: 50%
+  #logo
+    transform: translate(-50%, -50%)
+    top: 50%
+    left: 50%
+    z-index: 2
+    position: absolute
+    max-height: 300px
+    min-height: 100px
+    min-width: 100px
 
 - header_attributes = { style: '' }
 /- header_attributes[:style] = "background-image: url(#{@model.image_for(:background)})" if @model.image_for(:background)
@@ -25,16 +34,13 @@ sass:
 
 section.header *header_attributes
   .backdrop
-    == image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
-  /- if @model.setting?(:icon)
-  /  == image_tag(@model.setting(:icon), class: 'icon')
-  /- elsif @model.setting?(:fa_icon)
-  /  i class="fa fa-#{@model.setting(:fa_icon)}"
-  /- elsif image?("#{@model.dataset_name}/icon")
-  /  == image_tag("#{@model.dataset_name}/icon", class: 'icon')
+    == @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
   - if single
     - if exists
-      h1.text-center.bold = "#{name_for(@model)}"
+      - if @model.setting?(:logo) && logo = @model.image_for(:logo, id: :logo)
+        == logo
+      - else
+        h1.text-center.bold = "#{name_for(@model)}"
     - else
       h1.text-center.bold = "Create New #{@model.class.clean_name}"
     a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back

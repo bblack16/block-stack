@@ -16,8 +16,8 @@ module BlockStack
         when [Array]
           payload.map { |elem| clean_values(elem) }
         when [Hash]
-          payload.hmap { |k, v| [clean_values(k), clean_values(v)] }
-        when [String], [Integer], [Fixnum], [Float], [TrueClass], [FalseClass], [NilClass]
+          payload.hmap { |k, v| [clean_values(k).title_case.gsub('_', ''), clean_values(v)] }
+        when [String], [Integer], [Fixnum], [Float], [TrueClass], [FalseClass]
           payload
         else
           payload.to_s

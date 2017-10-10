@@ -57,9 +57,30 @@ module BlockStack
       Model.next_db = db
       if defined?(Mongo::Client) && db.is_a?(Mongo::Client)
         Models::Mongo
+      elsif db == nil
+        Models::Memory
       else
         Models::SQL
       end
+    end
+
+    def self.default_settings
+      BBLib::HashStruct.new(
+        primary_attribute: [:name, :title],
+        description_attribute: :describe,
+        detail_attribute: :details,
+        tagline: :tagline,
+        background: :background,
+        thumbnail: :thumbnail,
+        thumbnail_back: :thumbnail_back,
+        icon: :icon,
+        logo: :logo,
+        images: [:images, :screenshots],
+        # actions: {
+        #
+        # },
+        searchable: false
+      )
     end
 
     def self.abstract_error
@@ -104,7 +125,6 @@ module BlockStack
       base.send(:after, :delete, :delete_associations)
       base.send(:after, :dformed_form, :add_associations_to_form, send_value: true, modify_value: true)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
-      # base.send(:attr_float, :_score, default: nil, allow_nil: true, serialize: false, dformed: false)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
       base.send(:init_type, :loose)
@@ -303,7 +323,7 @@ module BlockStack
         if namespace.const_defined?(const_name)
           @controller = namespace.const_get(const_name)
         else
-          @controller = namespace.const_set(const_name.split('::').last, Class.new(BlockStack::Controller))
+          @controller = namespace.const_set(const_name.split('::').last, Class.new(BlockStack::UiController))
         end
       end
 
@@ -340,27 +360,13 @@ module BlockStack
 
       def associations
         return polymorphic_model.associations if is_polymorphic_child?
-        BlockStack::Associations.associations[dataset_name]
+        BlockStack::Associations.associations[dataset_name] || []
       end
-
-      # BlockStack::Association.descendants.each do |association|
-      #   define_method(association.type) do |name, opts = {}|
-      #     BlockStack::Associations.add(association.new(opts.merge(from: dataset_name, to: name)))
-      #   end
-      # end
 
       def create(*payloads)
         return polymorphic_model.create(*payloads) if is_polymorphic_child?
         payloads.all? do |payload|
           new(payload).save
-        end
-      end
-
-      def image_for(type)
-        if setting(:images) && setting(:images)[type]
-          send(setting(:images)[type]).to_s.to_s.gsub(/\s/, '%20') rescue nil
-        else
-          "/assets/images/#{dataset_name}/#{type}".gsub(/\s/, '%20')
         end
       end
 
@@ -377,7 +383,7 @@ module BlockStack
       # searchable [Bool] - True or false to allow the model to be part of global search (Default: false)
       # table_attributes [Array of Symbols] - An array of attributes to display in tables (nil means display all serialized fields)
       def ancestor_settings
-        settings = BBLib::HashStruct.new
+        settings = Model.default_settings
         ancestors.reverse.each do |a|
           next if a == self
           settings = settings.merge(a.settings) if a.respond_to?(:settings)
@@ -395,6 +401,17 @@ module BlockStack
 
       def set(hash)
         hash.each { |k, v| settings[k.to_sym] = v }
+      end
+
+      def image_for(type, attributes = {})
+        tag = setting_call(type)
+        tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
+        tag
+      end
+
+      def setting_call(name)
+        return nil unless setting?(name)
+        tag = send(setting(name)) if respond_to?(setting(name).to_s)
       end
     end
 
@@ -460,10 +477,6 @@ module BlockStack
       self.class.db
     end
 
-    # def save
-    #   BlockStack::Model.abstract_error
-    # end
-
     def save_associations
       _attrs.find_all { |name, a| a[:options][:association] }.each do |name, opts|
         items = [send(name)].flatten(1).flat_map do |value|
@@ -476,23 +489,11 @@ module BlockStack
       end
     end
 
-    # def delete(cascade = true)
-    #   BlockStack::Model.abstract_error
-    # end
-
     def delete_associations
       debug { "Deleting associations for #{self.class.clean_name} #{id}." }
       BlockStack::Associations.associations_for(self).all? do |asc|
         debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
         asc.delete(self)
-      end
-    end
-
-    def image_for(type)
-      if setting(:images) && setting(:images)[type]
-        send(setting(:images)[type]).to_s.gsub(/\s/, '%20') rescue nil
-      else
-        self.class.image_for(type)
       end
     end
 
@@ -511,6 +512,29 @@ module BlockStack
       id && self.class.exist?(id)
     end
 
+    def image_for(type, attributes = {})
+      tag = setting_call(type)
+      tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
+      tag
+    end
+
+    def describe
+      setting_call(:description_attribute)
+    end
+
+    def setting_call(name)
+      return nil unless setting?(name)
+      tag = send(setting(name)) if respond_to?(setting(name).to_s)
+    end
+
+    def details
+      if setting?(:detail_attribute)
+        send(settings.detail_attribute)
+      else
+        serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
+      end
+    end
+
     def dformed_form(form)
       DFormed.form_for(self, bypass: true)
     end
@@ -523,9 +547,8 @@ module BlockStack
         case [asc.class]
         when [BlockStack::Associations::OneToOne], [BlockStack::Associations::ManyToOne]
           if asc.is_a?(BlockStack::Associations::ManyToOne) || asc.foreign_key?
-            form.remove(asc.method_name, "#{asc.method_name}_label")
-            form.replace("#{asc.attribute}_label".to_sym, type: :label, label: asc.model.clean_name)
-            form.replace(asc.attribute, value: values.first, name: asc.attribute, type: :select, options: asc.dformed_options)
+            form.remove(asc.method_name)
+            form.replace(asc.attribute, value: values.first, label: asc.model.clean_name, name: asc.attribute, type: :select, options: asc.dformed_options)
           else
             form.field(asc.method_name)&.value = values.first
           end

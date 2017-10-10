@@ -2,10 +2,12 @@ module BlockStack
   # Tag (HTML) related methods. Exposed to UI Server and mapped
   # directly to blockstack for access to any class.
   module TagHelper
-    def tag(type, content = nil, attributes = {})
-      attr_str = attributes.map { |k, v| "#{k}=\"#{v.to_s.gsub('"', '\\"')}\"" }.join(' ')
-      attr_str = ' ' + attr_str unless attr_str.empty?
-      "<#{type}#{attr_str}>#{content}</#{type}>"
+    def tag(type, content = nil, attributes = {}, &block)
+      # attr_str = attributes.map { |k, v| "#{k}=\"#{v.to_s.gsub('"', '\\"')}\"" }.join(' ')
+      # attr_str = ' ' + attr_str unless attr_str.empty?
+      BBLib::HTML::Tag.new(type, content: content, attributes: attributes, &block)
+      # puts tag.to_str, "<#{type}#{attr_str}>#{content}</#{type}>", '-' * 30
+      # "<#{type}#{attr_str}>#{content}</#{type}>"
     end
 
     def link_to(url, text, label = {}, attributes = {})

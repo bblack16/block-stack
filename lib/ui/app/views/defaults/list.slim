@@ -32,11 +32,10 @@ sass:
     td.title
       font-size: 20px
       margin: 8px
-      width: 30%
-    td.description
-      color: #8c8c8c
-      font-size: 15px
-      width: 60%
+      width: 100%
+      div.description
+        color: #8c8c8c
+        font-size: 15px
     td.type
       background-color: #676767
       color: white
@@ -60,7 +59,7 @@ sass:
     tr
       td.image
         - if src = @item.image_for(:thumbnail)
-          == tag(:img, nil, src: src, class: 'card-image')
+          == src
         - else
           .missing-image.float-left
             i.fa.fa-picture-o
@@ -69,8 +68,8 @@ sass:
         == link_to(:show, @item, @item.id, class: 'btn btn-secondary')
       td.title
         = name_for(@item)
-      td.description
-        == @item.attribute(@item.setting(:description_attribute))
+        .description
+          == @item.attribute(@item.setting(:description_attribute))
       td.actions
         == slim :'defaults/widgets/action_dropdown'
       td.type

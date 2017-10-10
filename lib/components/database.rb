@@ -27,9 +27,13 @@ module BlockStack
         Mongo::Client.new(*args)
       when :sqlite, :postgres, :mysql, :odbc, :oracle
         require_relative 'model/adapters/sql'
-        db = Sequel.send(type, *args)
-        db.loggers = [BlockStack.logger]
-        db
+        type = :mysql2 if type == :mysql
+        Sequel.send(type, *args).tap do |db|
+          db.loggers = [BlockStack.logger]
+        end
+      when :memory
+        require_relative 'model/adapters/memory'
+        nil
       else
         raise ArgumentError, "Unknown database type '#{type}'."
       end
