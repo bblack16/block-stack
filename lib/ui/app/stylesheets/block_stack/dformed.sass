@@ -1,6 +1,31 @@
 .dform-save
   cursor: pointer
 
+div.dform
+  margin: auto
+  display: table
+  .dformed-vform
+    .section-label
+      font-size: 20px
+      text-align: left
+      padding: 20px 0px
+    table.fields
+      background-color: white
+      box-shadow: 0px 2px 6px #ababab
+      width: 100%
+      tr
+        border-bottom: 1px solid #eee
+        td
+          padding: 10px
+          &.dformed-label
+            vertical-align: top
+        td:nth-child(odd)
+          padding-left: 35px
+          font-size: 14px
+        td:nth-child(even)
+          padding-right: 35px
+          font-size: 14px
+
 .dform
   label
     font-weight: bold

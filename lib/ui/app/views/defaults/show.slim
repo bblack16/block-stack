@@ -1,16 +1,18 @@
 sass:
   .info
-    table
-      margin: auto
-      &.description
-        width: 100%
-      &.details
+    .basics
+      padding-right: 35px
+      table
         margin: auto
-      td
-        padding: 5px
-      td.label
-        font-weight: bold
-        text-align: right
+        &.details
+          margin: auto
+        td
+          padding: 5px
+          &.label
+            font-weight: bold
+            text-align: right
+          &.description
+            vertical-align: top
   .thumbnail-image
     max-width: 400px
     max-height: 300px
@@ -44,13 +46,13 @@ sass:
     .tagline
       == tag
   - if desc || img
-    .float-left
-      table.description
+    .float-left.basics
+      table
         tbody
           tr
             - if img
               td.image.thumbnail-image == img
             - if desc
-              td.details
+              td.description
                 == desc
-.details class="#{img || desc ? 'float-right' : 'middle-align'}" == slim :'defaults/widgets/details'
+.details class="#{img || desc ? 'float-left' : 'middle-align'}" == slim :'defaults/widgets/details'

@@ -1,16 +1,11 @@
-.card.height-1.transition-all-2
-  .image-wrapper
+.card.transition-all-2
+  a.image-wrapper href="#{link_to(:show, @item, '').attributes[:href]}"
     - if src = @item.image_for(:thumbnail, class: 'card-image')
       == src
     - else
       .missing-image
         i.fa.fa-picture-o
   .card-body
-    h4.text-center = name_for(@item)
+    == link_to(:show, @item, name_for(@item), class: 'text-center card-title')
     .tagline == @item.send(@item.setting(:tagline)) if @item.setting?(:tagline)
     .description == @item.describe
-  .card-footer
-    .btn-group.height-2
-      == link_to(:show, @item, class: 'btn btn-secondary')
-      == link_to(:edit, @item, class: 'btn btn-secondary')
-      == link_to(:delete, @item, class: 'btn btn-secondary')
