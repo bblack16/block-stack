@@ -47,5 +47,9 @@ sass:
                     li = v
           - elsif value.is_a?(BlockStack::Model)
             == value.attribute(value.setting(:title_attribute) || :id)
+          - elsif value.is_a?(Time)
+            == value.strftime('%B %d, %Y %I:%M:%S %p')
+          - elsif value.is_a?(Date)
+            == value.strftime('%B %d, %Y')
           - else
             == value
