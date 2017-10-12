@@ -175,10 +175,10 @@ module BlockStack
           end
           logger.info("Creating table for #{self}: #{dataset_name} (#{attr_columns.size} columns)")
           BlockStack::Models::SQL._current_model(self)
-          db.create_table?(dataset_name) do |t|
+          db.create_table?(dataset_name) do
             BlockStack::Models::SQL._current_model.attr_columns.each do |config|
               BlockStack.logger.debug("Adding column to database: #{config[:name]} (#{config[:type]}, options = #{config[:options]})")
-              t.send(config[:type], config[:name], config[:options])
+              send(config[:type], config[:name], config[:options])
             end
           end
           debug("Table #{dataset_name} created.")
