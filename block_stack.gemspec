@@ -37,4 +37,10 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'bblib', '~> 0.4'
   spec.add_runtime_dependency 'sinatra', '~> 2.0'
   spec.add_runtime_dependency 'gyoku', '~> 1.3.1'
+  spec.add_runtime_dependency 'sass'
+  spec.add_runtime_dependency 'slim'
+  spec.add_runtime_dependency 'opal'
+  spec.add_runtime_dependency 'opal-jquery'
+  spec.add_runtime_dependency 'opal-browser'
+  spec.add_runtime_dependency 'dformed'
 end

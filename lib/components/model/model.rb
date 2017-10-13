@@ -65,22 +65,24 @@ module BlockStack
     end
 
     def self.default_settings
-      BBLib::HashStruct.new(
-        primary_attribute: [:name, :title],
-        description_attribute: :describe,
-        detail_attribute: :details,
-        tagline: :tagline,
-        background: :background,
-        thumbnail: :thumbnail,
-        thumbnail_back: :thumbnail_back,
-        icon: :icon,
-        logo: :logo,
-        images: [:images, :screenshots],
-        # actions: {
-        #
-        # },
-        searchable: false
-      )
+      BBLib::HashStruct.new.tap do |ds|
+        {
+          primary_attribute: [:name, :title, :subject],
+          description_attribute: [:description, :overview, :describe],
+          detail_attribute: :details,
+          tagline: [:tagline, :id],
+          background: :background,
+          thumbnail: :thumbnail,
+          thumbnail_back: :thumbnail_back,
+          icon: :icon,
+          logo: :logo,
+          images: [:images, :screenshots],
+          # actions: {
+          #
+          # },
+          searchable: false
+        }.each { |k, v| ds[k] = v }
+      end
     end
 
     def self.abstract_error
@@ -411,7 +413,13 @@ module BlockStack
 
       def setting_call(name)
         return nil unless setting?(name)
-        tag = send(setting(name)) if respond_to?(setting(name).to_s)
+        tag = nil
+        [setting(name)].flatten.each do |v|
+          p "V: #{v} - #{tag}"
+          next if tag
+          tag = send(v) if respond_to?(v.to_s)
+        end
+        tag
       end
     end
 
@@ -519,16 +527,22 @@ module BlockStack
     end
 
     def describe
-      setting_call(:description_attribute)
+      "Created At #{attribute(:created_at).strftime('%Y-%m-%d %H:%M:%S')}<br>Last Modified At #{attribute(:updated_at).strftime('%Y-%m-%d %H:%M:%S')}"
     end
 
     def setting_call(name)
       return nil unless setting?(name)
-      tag = send(setting(name)) if respond_to?(setting(name).to_s)
+      tag = nil
+      [setting(name)].flatten.each do |v|
+        p "V: #{v} - #{tag}"
+        next if tag
+        tag = send(v) if respond_to?(v.to_s)
+      end
+      tag
     end
 
     def details
-      if setting?(:detail_attribute)
+      if setting?(:detail_attribute) && settings.detail_attribute != :details
         send(settings.detail_attribute)
       else
         serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
@@ -574,10 +588,10 @@ module BlockStack
     #     super
     #   end
     # end
-
-    def respond_to_missing?(method, inc_priv = false)
-      Associations.association?(dataset_name, method) || super
-    end
+    #
+    # def respond_to_missing?(method, inc_priv = false)
+    #   Associations.association?(dataset_name, method) || super
+    # end
 
     def cache_association(method)
       self.class.send(:define_method, Associations.association_for(dataset_name, method).method_name) do

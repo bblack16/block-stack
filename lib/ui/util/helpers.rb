@@ -22,6 +22,12 @@ module BlockStack
       super
     end
 
+    def squish(string, *args)
+      chopped = BBLib.chars_up_to(string, *args)
+      return chopped if chopped == string
+      BBLib::HTML::Tag.new(:span, content: chopped, attributes: { title: string })
+    end
+
     def loading_messages
       @loading_messages ||= [
         'The hamster has been placed on the wheel...',

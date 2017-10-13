@@ -6,8 +6,8 @@ module BlockStack
 
     def self.crud(custom_model = nil, opts = {})
       custom_model = model unless custom_model
-      add_sub_menu(:index, text: 'All', href: "/#{route_prefix}")
-      add_sub_menu(:new, text: 'New', href: "/#{route_prefix}/new")
+      add_sub_menu(:index, text: "Browse #{custom_model.clean_name.pluralize}", href: "/#{route_prefix}")
+      add_sub_menu(:new, text: "New #{custom_model.clean_name}", href: "/#{route_prefix}/new")
       super(custom_model, opts)
     end
 

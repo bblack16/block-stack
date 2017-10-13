@@ -21,10 +21,12 @@ module Loaders
     Loaders.alertify
 
     Loaders.date_pickers
+    Loaders.toggle
     Loaders.select_2
     Loaders.ripple
     Loaders.floating_labels
     Loaders.autosize_textareas
+    Loaders.baguette_box_galleries
 
     # Fires off any notices on the page
     Loaders.notices
@@ -99,6 +101,15 @@ module Loaders
     Element['.time-picker'].JS.flatpickr({enableTime: true, noCalendar: true}.to_n)
   end
 
+  def self.toggle
+    Element['input.toggle'].each do |elem|
+      label = Element['<label class="switch"/>']
+      slider = Element["<span class='slider round #{elem.attr(:class)}'\>"]
+      label.append(elem.clone, slider)
+      elem.replace_with(label)
+    end
+  end
+
   def self.select_2
     Element['.select-2'].JS.select2({
 			theme: 'bootstrap',
@@ -143,12 +154,23 @@ module Loaders
 
   def self.autosize_textareas
     Element['textarea.autosize'].on :input do |evt|
-      evt.target.css(:height, 'auto')
-      evt.target.css(:height, `#{evt.target}[0].scrollHeight`.to_s + 'px')
+      clone = evt.target.clone
+      clone.css(:height, 'auto')
+      Element['body'].append(clone)
+      evt.target.css(:height, `#{clone}[0].scrollHeight`.to_s + 'px')
+      clone.remove
     end
+    Element['textarea.autosize'].trigger(:input)
   end
 
   def self.baguette_box_galleries
+    Element["img.baguette-image"].each do |elem|
+      gallery = Element["<div class='gallery'/>"]
+      wrapper = Element["<a href='#{elem.attr(:src)}'/>"]
+      gallery.append(wrapper)
+      wrapper.append(elem.clone)
+      elem.replace_with(gallery)
+    end
     `baguetteBox.run('.gallery');`
   end
 

@@ -26,4 +26,6 @@ table.data_table.nowrap.responsive.default.table-striped.table-bordered data-pag
             td
               a.btn.btn-outline-primary.btn-sm style='min-width: 25px' href="/#{@model.plural_name}/#{mod.id}" = mod.attribute(key)
           - else
-            td == mod.attribute?(key) ? mod.attribute(key) : (mode.send(key) rescue 'ERROR')
+            - value = mod.attribute?(key) ? mod.attribute(key) : (mode.send(key) rescue 'ERROR')
+            - value = value.join_terms if value.is_a?(Array)
+            td == squish(value, 164)

@@ -2,6 +2,7 @@ sass:
   .info
     .basics
       padding-right: 35px
+      max-width: 70%
       table
         margin: auto
         &.details
@@ -39,7 +40,7 @@ sass:
 
 == slim :'defaults/header'
 - tag = @model.setting_call(:tagline)
-- img = @model.image_for(:thumbnail, class: 'height-3')
+- img = @model.image_for(:thumbnail, class: 'height-3 baguette-image')
 - desc = @model.describe
 .centered.info
   br
@@ -57,7 +58,3 @@ sass:
               td.description
                 == desc
 .details class="#{img || desc ? 'float-right' : 'middle-align'}" == slim :'defaults/widgets/details'
-
-label.switch
-  input type="checkbox" name="test"
-  span.slider.round.yesno

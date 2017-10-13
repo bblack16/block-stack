@@ -8,10 +8,10 @@ nav#menu.transition-all-1
       h2.navbar-brand.text-center = menu[:title].upcase
       - if self.class.base_server.settings.global_search
         form action='/search'
-          .floating-label
-            /i.fa.fa-search.white
+          .floating-label.search
             input#global-search.ripple type='text' name='query'
             label Search
+            i.fa.fa-search.white.float-left
           input#global-search-submit.hidden type='submit'
     section.menu
       ul.menu-list
