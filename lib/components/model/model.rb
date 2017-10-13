@@ -415,7 +415,6 @@ module BlockStack
         return nil unless setting?(name)
         tag = nil
         [setting(name)].flatten.each do |v|
-          p "V: #{v} - #{tag}"
           next if tag
           tag = send(v) if respond_to?(v.to_s)
         end
@@ -534,7 +533,6 @@ module BlockStack
       return nil unless setting?(name)
       tag = nil
       [setting(name)].flatten.each do |v|
-        p "V: #{v} - #{tag}"
         next if tag
         tag = send(v) if respond_to?(v.to_s)
       end
