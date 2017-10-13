@@ -38,5 +38,5 @@ module BlockStack
   end
 end
 
-BlockStack::UiServer.set(controller_base: BlockStack::Controller)
+BlockStack::UiServer.set(controller_base: BlockStack::UiController)
 BlockStack::UiController.set(controller_base: nil)
