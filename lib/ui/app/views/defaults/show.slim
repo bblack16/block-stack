@@ -43,7 +43,7 @@ sass:
 == slim :'defaults/header'
 - tag = @model.setting_call(:tagline)
 - img = @model.image_for(:thumbnail, class: 'height-3 baguette-image')
-- desc = @model.setting_call(:description_attribute)
+- desc = @model.setting_call(:description)
 .centered.info
   br
   - if tag

@@ -11,4 +11,4 @@
       td.title
         == link_to(:show, @item, squish(name_for(@item), 128), class: 'card-title')
         .tagline == squish(@item.setting_call(:tagline), 164)
-        .description == squish(@item.setting_call(:description_attribute), 300)
+        .description == squish(@item.setting_call(:description), 300)

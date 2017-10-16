@@ -184,6 +184,23 @@ module BlockStack
       formatters[format] = { formatter: (formatter || block), content_type: content_type }
     end
 
+    def determine_format(request, params)
+      if request.accept.size == 1
+        begin
+          match, _f = formatters.find do |name, f|
+            next unless f[:formatter].respond_to?(:mime_types)
+            f[:formatter].mime_types.any? { |m| m == request.accept.first.entry.downcase }
+          end
+          return match if match
+        rescue => e
+          BlockStack.logger.warn("Error while determining format for request via accept header. Error follows...")
+          BlockStack.logger.warn(e)
+        end
+      end
+      return params[:format].to_s.downcase.to_sym if params[:format]
+      File.extname(request.path_info).sub('.', '').to_s.downcase.to_sym
+    end
+
     def self.api_routes
       @api_routes ||= inherited_api_routes
     end
@@ -208,7 +225,8 @@ module BlockStack
 
     after do
       if api_routes.include?(request.env['sinatra.route']) || request[:api_mode]
-        format = (params[:format] || File.extname(request.path_info).sub('.', '')).to_s.downcase.to_sym
+        format = determine_format(request, params)
+        # format = (params[:format] || File.extname(request.path_info).sub('.', '')).to_s.downcase.to_sym
         if formatter = formatters[format] || formatters[default_formatter]
           formatter[:formatter].respond_to?(:process) ? formatter[:formatter].process(response, request, params) : formatter[:formatter].call(response, request, params)
           content_type formatter[:content_type]

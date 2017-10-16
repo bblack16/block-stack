@@ -29,6 +29,10 @@ module BlockStack
         end.join("\n")
         response.body = header_row + rows
       end
+
+      def self.mime_types
+        ['text/csv', 'text/tsv']
+      end
     end
   end
 end

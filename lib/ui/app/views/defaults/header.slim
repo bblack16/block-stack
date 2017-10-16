@@ -26,9 +26,6 @@ sass:
     min-height: 100px
     min-width: 100px
 
-- header_attributes = { style: '' }
-/- header_attributes[:style] = "background-image: url(#{@model.image_for(:background)})" if @model.image_for(:background)
-
 - single = @model && !@model.is_a?(Class)
 - exists = single && @model.exist?
 

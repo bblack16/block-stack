@@ -23,6 +23,10 @@ module BlockStack
           payload.to_s
         end
       end
+
+      def self.mime_types
+        ['text/xml', 'application/xml']
+      end
     end
   end
 end

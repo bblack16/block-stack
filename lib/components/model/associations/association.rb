@@ -60,7 +60,7 @@ module BlockStack
     end
 
     def dformed_options
-      model.all.map { |m| [m.id, m.setting_call(:primary_attribute) || m.id] }.to_h
+      model.all.map { |m| [m.id, m.setting_call(:title) || m.id] }.to_h
     end
 
     protected

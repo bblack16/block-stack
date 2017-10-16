@@ -8,4 +8,4 @@
   .card-body
     == link_to(:show, @item, squish(name_for(@item), 64), class: 'text-center card-title')
     .tagline == squish(@item.setting_call(:tagline), 164)
-    .description == squish(@item.setting_call(:description_attribute), 150)
+    .description == squish(@item.setting_call(:description), 150)

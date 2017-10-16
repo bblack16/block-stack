@@ -33,10 +33,6 @@ module BlockStack
     end
   end
 
-  def self.fuzzy_matcher
-    @fuzzy_matcher ||= BBLib::FuzzyMatcher.new(case_sensitive: false, convert_roman: true, remove_symbols: true, move_articles: true)
-  end
-
   # This module is used as a contract between a class and the BlockStack
   # framework. All of the methods defined below should be implemented on the
   # model class. Some methods have default implementations, others require
@@ -67,9 +63,9 @@ module BlockStack
     def self.default_settings
       BBLib::HashStruct.new.tap do |ds|
         {
-          primary_attribute: [:name, :title, :subject],
-          description_attribute: [:description, :overview, :describe],
-          detail_attribute: :details,
+          title: [:name, :title, :subject],
+          description: [:description, :overview, :describe],
+          details: :details,
           tagline: [:tagline, :id],
           background: :background,
           thumbnail: :thumbnail,
@@ -77,16 +73,9 @@ module BlockStack
           icon: :icon,
           logo: :logo,
           images: [:images, :screenshots],
-          # actions: {
-          #
-          # },
-          searchable: false
+          global_search: false
         }.each { |k, v| ds[k] = v }
       end
-    end
-
-    def self.abstract_error
-      raise AbstractError, "Method :#{caller_locations(1,1)[0].label} is abstract and should have been redefined."
     end
 
     def self.model_for(name)
@@ -153,13 +142,13 @@ module BlockStack
       # limit, offset, sort (aka order)
       unless base.respond_to?(:find_all)
         base.send(:define_singleton_method, :find_all) do |query, opts = {}|
-          BlockStack::Model.abstract_error
+          raise AbstractError
         end
       end
 
       unless base.respond_to?(:all)
         base.send(:define_singleton_method, :all) do |opts = {}|
-          BlockStack::Model.abstract_error
+          raise AbstractError
         end
       end
 
@@ -374,8 +363,8 @@ module BlockStack
 
       # Current list of used settings
       # ------------------------------
-      # primary_attribute [Symbol] - What is displayed as a title (method name to call)
-      # description_attribute [Symbol] - The method used for a short description
+      # title [Symbol] - What is displayed as a title (method name to call)
+      # description [Symbol] - The method used for a short description
       # detail_attribute [Symbol] - The method used for a larger description of the attribute
       # tagline [Symbol] - Displayed under the title in some widgets
       # background [Symbol] - The method to call to return a background image (large)
@@ -406,9 +395,10 @@ module BlockStack
       end
 
       def image_for(type, attributes = {})
-        tag = setting_call(type)
-        tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
-        tag
+        setting_call(type).tap do |tag|
+          attributes[:class] = attributes[:class].to_s + " " + tag.attributes[:class].to_s if tag.is_a?(BBLib::HTML::Tag) && tag.attributes[:class]
+          tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
+        end
       end
 
       def setting_call(name)
@@ -463,7 +453,7 @@ module BlockStack
       _attrs.include?(name) && respond_to?(name)
     end
 
-    def update(params)
+    def update(params, save_after = true)
       params.each do |k, v|
         if attribute?(k)
           send("#{k}=", v)
@@ -471,7 +461,7 @@ module BlockStack
           warn("Unknown attribute #{k} passed to #{self.class} in update params. Ignoring it...")
         end
       end
-      save
+      save_after ? save : true
     end
 
     def refresh
@@ -520,9 +510,10 @@ module BlockStack
     end
 
     def image_for(type, attributes = {})
-      tag = setting_call(type)
-      tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
-      tag
+      setting_call(type).tap do |tag|
+        attributes[:class] = attributes[:class].to_s + " " + tag.attributes[:class].to_s if tag.is_a?(BBLib::HTML::Tag) && tag.attributes[:class]
+        tag.attributes = tag.attributes.merge(attributes) if tag.is_a?(BBLib::HTML::Tag)
+      end
     end
 
     def describe
@@ -591,15 +582,15 @@ module BlockStack
     #   Associations.association?(dataset_name, method) || super
     # end
 
-    def cache_association(method)
-      self.class.send(:define_method, Associations.association_for(dataset_name, method).method_name) do
-        BlockStack::Associations.retrieve(self, method)
-      end
-      self.class.send(:define_method, "#{Associations.association_for(dataset_name, method).method_name}=") do |*args|
-        args.each do |arg|
-          BlockStack::Associations.association_for(self, method).associate(self, arg)
-        end
-      end
-    end
+    # def cache_association(method)
+    #   self.class.send(:define_method, Associations.association_for(dataset_name, method).method_name) do
+    #     BlockStack::Associations.retrieve(self, method)
+    #   end
+    #   self.class.send(:define_method, "#{Associations.association_for(dataset_name, method).method_name}=") do |*args|
+    #     args.each do |arg|
+    #       BlockStack::Associations.association_for(self, method).associate(self, arg)
+    #     end
+    #   end
+    # end
   end
 end

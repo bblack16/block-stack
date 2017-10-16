@@ -30,6 +30,8 @@ module Loaders
 
     # Fires off any notices on the page
     Loaders.notices
+
+    Loaders.lazy_load
   end
 
   def self.menu_slider
@@ -103,10 +105,12 @@ module Loaders
 
   def self.toggle
     Element['input.toggle'].each do |elem|
+      parent = elem.parent
+      elem.detach
       label = Element['<label class="switch"/>']
       slider = Element["<span class='slider round #{elem.attr(:class)}'\>"]
-      label.append(elem.clone, slider)
-      elem.replace_with(label)
+      label.append(elem, slider)
+      parent.append(label)
     end
   end
 
@@ -165,11 +169,13 @@ module Loaders
 
   def self.baguette_box_galleries
     Element["img.baguette-image"].each do |elem|
+      parent = elem.parent
+      elem.detach
       gallery = Element["<div class='gallery'/>"]
       wrapper = Element["<a href='#{elem.attr(:src)}'/>"]
       gallery.append(wrapper)
-      wrapper.append(elem.clone)
-      elem.replace_with(gallery)
+      wrapper.append(elem)
+      parent.append(gallery)
     end
     `baguetteBox.run('.gallery');`
   end
@@ -180,7 +186,11 @@ module Loaders
 
   def self.notices
     Element['#notice'].each do |elem|
-      Alert.log(elem.html, type: elem.attr('notice-severity'), delay: 0, position: 'top right') if elem.text.strip != ''
+      Alert.log(elem.html, type: elem.attr('notice-severity'), delay: 6000, position: 'top right') if elem.text.strip != ''
     end
+  end
+
+  def self.lazy_load
+    `lazyload();`
   end
 end
