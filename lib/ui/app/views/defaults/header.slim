@@ -29,7 +29,7 @@ sass:
 - single = @model && !@model.is_a?(Class)
 - exists = single && @model.exist?
 
-section.header *header_attributes
+section.header
   .backdrop
     == @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
   - if single
