@@ -26,7 +26,7 @@ module BlockStack
         `alertify.closeLogOnClick(true).logPosition("bottom right").log("Saving form...");`
         case method
         when :post
-          HTTP.post(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json) do |response|
+          HTTP.post(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json, contentType: 'application/json') do |response|
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
               if url = btn.attr(:df_save_redirect)
@@ -38,7 +38,7 @@ module BlockStack
             end
           end
         when :put
-          HTTP.put(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json) do |response|
+          HTTP.put(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json, contentType: 'application/json') do |response|
             `console.log(#{response})`
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
