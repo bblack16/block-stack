@@ -51,10 +51,6 @@ body.closed-menu
       bottom: 0
       left: 0
 
-  .dropdown-item
-    color: black
-    &:hover
-      background-color: rgba(#3c88d2, 0.52)
 
   #footer
     font-family: VarelaRound-Regular
@@ -104,6 +100,16 @@ body.closed-menu
     border: none
     background-color: #efefef
     float: none
+
+  .dropdown-item
+    color: black
+    position: relative
+    &:hover
+      background-color: rgba(#3c88d2, 0.52)
+    i.icon
+      font-size: 24px !important
+      color: #a5a5a5
+      top: 2px !important
 
 #menu.hide
   left: -275px
