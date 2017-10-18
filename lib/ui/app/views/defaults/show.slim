@@ -41,7 +41,7 @@ sass:
       margin-right: 25px
 
 
-== slim :'defaults/header'
+== slim :'defaults/header', {}, model: @model
 - tag = @model.setting_call(:tagline)
 - img = @model.image_for(:thumbnail, class: 'height-3 baguette-image')
 - desc = @model.setting_call(:description)

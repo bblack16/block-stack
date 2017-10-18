@@ -42,14 +42,13 @@ sass:
     - if model.setting?(:logo) && logo = model.image_for(:logo, id: :logo)
       - title = logo
     - else
-      - title = name_for(model)
+      - title = model.setting_call(:title)
   - elsif single
     - title = "Create New #{model.class.clean_name}"
   - else
     - title = model.clean_name.pluralize
   - subtitle = nil
   - background = @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
-
 
 section.header class="#{color}"
   .backdrop
