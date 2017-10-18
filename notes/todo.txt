@@ -1,6 +1,10 @@
 
 Need / Fixes
 -------------------
+Wigitize views (somehow)
+Control over what views are created by crud method
+Remove route call
+Sanitize payload hooks for default API routes
 Split blockstack out into api/ui
 Merge controllers back into one class
 Better asset mapping to servers
