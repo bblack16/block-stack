@@ -1,11 +1,21 @@
+== stylesheet_include 'navbars/vertical'
+
 - menu = build_menu
+- menu = build_menu
+- brand = menu[:title].upcase
+- if brand.include?(' ')
+  - split = brand.split(' ', 2)
+- else
+  - mid = brand.size / 2
+  - split = [brand[0...mid], brand[mid..-1]]
+- brand = "<span class='first'>#{split.first}</span>#{split.last}"
 
 #menu-toggle.fa.fa-bars.transition-all-1
 
 nav#menu.transition-all-1
   header
     section.top
-      h2.navbar-brand.text-center = menu[:title].upcase
+      h2.navbar-brand.text-center == brand
       - if self.class.base_server.settings.global_search
         form action='/search'
           .floating-label.search
@@ -35,4 +45,9 @@ nav#menu.transition-all-1
                       i.icon.fa.transition-all-0-75 class="fa-#{sub_attributes[:fa_icon]}"
                     = sub_attributes[:text] || sub_name
     section.bottom
-      == slim :'partials/footer'
+      #footer.text-center.bold
+        span.fa.fa-diamond style='padding-right: 5px'
+        span = "Powered by BlockStack (#{BlockStack::VERSION})"
+        br
+        span blockstack-widget="Clock" Loading current time...
+        span.fa.fa-clock-o style='padding-left: 5px'

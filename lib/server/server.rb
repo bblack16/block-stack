@@ -132,6 +132,10 @@ module BlockStack
       self
     end
 
+    def base_server
+      self.class.base_server
+    end
+
     def self.route_prefix
       settings.prefix
     rescue => e

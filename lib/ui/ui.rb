@@ -9,7 +9,7 @@ module BlockStack
   class UiServer < Server
 
     enable :sessions
-    set global_search: false, precompile: false
+    set global_search: false, precompile: false, navbar: :default
 
     helpers UiHelpers
 

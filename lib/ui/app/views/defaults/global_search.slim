@@ -1,7 +1,7 @@
 
 .hidden#notice notice-severity='info' = "Found a total of #{BBLib.plural_string(@results.size, 'result')}."
 
-section.header.purple
+section.header.green
   h1.text-center Search Results
 
 - if @results.nil? || @results.empty?

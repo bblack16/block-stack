@@ -1,11 +1,15 @@
 
-body.closed-menu
-  padding-left: 0px
+$limegreen: rgba(51, 255, 0, 0.62)
+
+body
+  padding-left: 275px
+  &.closed-menu
+    padding-left: 0px
 
 #menu
-  color: white
-  background-color: #3a3939
-  box-shadow: 2px 0px 10px #3a3939
+  // color: white
+  // background-color: #3a3939
+  // box-shadow: 2px 0px 10px #3a3939
   overflow: hidden
   z-index: 99
   position: fixed
@@ -14,12 +18,13 @@ body.closed-menu
   left: 0
   width: 275px
   height: 100%
+  border-right: 2px solid #bdbcbc
 
   .menu-icon
     padding-right: 5px
 
   .floating-label.search
-    margin: 0 15px
+    margin: 15px
     #global-search
       width: 100%
       margin-right: 15px
@@ -27,27 +32,28 @@ body.closed-menu
       border-top: none
       border-left: none
       border-right: none
-      color: white
+      color: #848484
     i
       position: absolute
       right: 0
       top: 0
+      color: #848484
 
   header
     height: 100%
+    background-color: #f5f5f5
+    color: #848484
     section.top
       padding-top: 35px
       padding-bottom: 20px
       text-align: center
     section.menu
       height: 100%
-      background-color: #505050
-      width: 95%
+      width: 100%
     section.bottom
       height: 50px
       position: absolute
       width: 275px
-      background-color: #3a3939
       bottom: 0
       left: 0
 
@@ -62,11 +68,14 @@ body.closed-menu
     text-align: center
 
   .navbar-brand
-    width: 100%
-    color: $limegreen !important
-    font-size: 35px
+    font-size: 28px
+    height: 100%
+    padding: 0px 1.5vw
+    padding-top: 10px
     font-weight: bold
-    padding-right: 40px
+    color: #848484
+    span.first
+      color: #26c714
 
   ul.menu-list
     list-style-type: none
@@ -78,7 +87,7 @@ body.closed-menu
       a
         padding-left: 40px
       &:hover
-        background-color: #3c86d2
+        background-color: rgba(111, 111, 111, 0.07)
       .icon
         position: absolute
         top: 5px
@@ -88,21 +97,21 @@ body.closed-menu
         max-width: 30px
         width: 100%
     li.active
-      background-color: $limegreen
+      font-weight: bold
     a.parent
       text-decoration: none !important
-      color: white
+      color: #848484
 
   .dropdown-menu.block_stack_nav
     position: relative
     width: 100%
     border-radius: 0px
     border: none
-    background-color: #efefef
+    background-color: white
     float: none
+    color: #848484
 
   .dropdown-item
-    color: black
     position: relative
     &:hover
       background-color: rgba(#3c88d2, 0.52)
@@ -125,11 +134,16 @@ body.closed-menu
   left: 5px
   cursor: pointer
   text-shadow: 0px 0px 1px black
+  border-radius: 100%
   &:hover
     color: #e2e1e1
 
 #menu-toggle.dark
-  color: #3a3939
+  color: #6f6f6f
+  padding: 12px 15px
+  text-align: center
+  background-color: #ffffff
+  box-shadow: 2px 2px 6px rgba(#000000, 0.5)
   font-size: 30px
   text-shadow: 0px 0px 1px white
   -webkit-transform: rotate(360deg)

@@ -1,9 +1,13 @@
 
 Need / Fixes
 -------------------
+Fix transition bug with navbars (due to transition effect)
+Model uniqueness (other than just by id)
+Better default show view
+Create dark themes for both navbars
 Wigitize views (somehow)
 Control over what views are created by crud method
-Remove route call
+Method to remove a route
 Sanitize payload hooks for default API routes
 Split blockstack out into api/ui
 Merge controllers back into one class
@@ -11,8 +15,6 @@ Better asset mapping to servers
 Better auto build directory support (via server perhaps and auto add assets)
 Auto load models and controllers (optionally)
 Server autobuild and run
-Model uniqueness (other than just by id)
-Better default show view
 Section search by type
 Have existing records updated when new fields are added (for SQL)
 Improve Logging
@@ -80,7 +82,6 @@ Some sort of auto history
 
 Decision
 -------------------
-Keep reactrb?
 Highlight.js support?
 Give CRUD a different main page other than index
 Break models out into separate gem
@@ -88,6 +89,7 @@ Break models out into separate gem
 
 Longer Term
 -------------------
+Build Horizontal menu
 Documentation
   README
   Comments (YARD)
@@ -100,6 +102,8 @@ Clean up sass/javascript code
 -----------------
 DONE
 -----------------
+Make vertical menu and horizontal menu options
+Refactor vertical menu
 Add support for content type header for api
 Models Auto Build Controllers if not present (via setting maybe?)
 Improve list view to use "horizontal cards"

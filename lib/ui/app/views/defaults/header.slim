@@ -50,7 +50,7 @@ sass:
   - subtitle = nil
   - background = @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
 
-section.header class="#{color}"
+section.header class="#{color} #{background ? ' with-image' : nil}"
   .backdrop
     == background
   - if title.is_a?(BBLib::HTML::Tag)
@@ -60,17 +60,18 @@ section.header class="#{color}"
     - if subtitle
       br
       h4.text-center.subtitle == subtitle
-  /a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back
-  /- else
-  /  h1.text-center.bold = @model.clean_name.pluralize
-  /  a.btn.btn-outline-success#new href="/#{@model.plural_name}/new" = "New #{@model.clean_name}"
-/  - if single && exists
-/    #actions
-/      == slim :'defaults/widgets/action_buttons'
-/  - elsif !single
-/    #actions
-/      .btn-group.text-center
-/        - type = params[:display] || session[:display]
-/        a.btn.btn-secondary.fa.fa-table href='?display=table' title='Display as a table.' class="#{type == 'table' ? 'active' : nil}"
-/        a.btn.btn-secondary.fa.fa-id-card-o href='?display=cards' title='Display as cards.' class="#{type == 'cards' ? 'active' : nil}"
-/        a.btn.btn-secondary.fa.fa-list href='?display=list' title='Display as a list.' class="#{type == 'list' ? 'active' : nil}"
+  - if defined?(model)
+    - if single
+      a.btn.btn-outline-danger#back href="/#{@model.class.plural_name}" Back
+    - else
+      a.btn.btn-outline-success#new href="/#{@model.plural_name}/new" = "New #{@model.clean_name}"
+    - if single && exists
+      #actions
+        == slim :'defaults/widgets/action_buttons'
+    - elsif !single
+      #actions
+        .btn-group.text-center
+          - type = params[:display] || session[:display]
+          a.btn.btn-secondary.fa.fa-table href='?display=table' title='Display as a table.' class="#{type == 'table' ? 'active' : nil}"
+          a.btn.btn-secondary.fa.fa-th href='?display=cards' title='Display as cards.' class="#{type == 'cards' ? 'active' : nil}"
+          a.btn.btn-secondary.fa.fa-th-list href='?display=list' title='Display as a list.' class="#{type == 'list' ? 'active' : nil}"
