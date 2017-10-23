@@ -193,12 +193,6 @@ module BlockStack
           text: 'Home',
           href: '/',
           fa_icon: 'home',
-          title: 'Head to the home page',
-          tooltip: 'true',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          class: 'pmd-tooltip',
           active_when: [
             '/'
           ]

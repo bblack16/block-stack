@@ -45,10 +45,10 @@ module BlockStack
               method = data[:options][:sql_type]
             else
               method = case data[:type]
-              when :string, :integer, :float, :array, :date, :boolean
+              when :string, :integer, :float, :date, :boolean
                 data[:type]
               when :dir, :file, :symbol
-                :string
+                :tring
               when :integer_between
                 :integer
               when :float_between
@@ -57,17 +57,17 @@ module BlockStack
                 :timestamp
               when :element_of
                 :string
-              when :elements_of
-                :array
+              when :elements_of, :array
+                :string
               when :hash
                 :json
               when :of
                 sql_column_type_for(*data[:options][:classes])
               when :array_of
-                :array
+                :string
               else
                 :text
-              end
+              end.to_s.capitalize
             end
             { type: method, name: name, options: data[:sql] || {} }
           end.compact
@@ -158,8 +158,10 @@ module BlockStack
           result.hmap do |k, v|
             [
               k.to_sym,
-              if _attrs[k.to_sym] && [:hash, :array, :array_of, :elements_of].any? { |t| t == _attrs[k.to_sym][:type] } && v.is_a?(String)
+              if _attrs[k.to_sym] && ([:hash, :array, :array_of, :elements_of].any? { |t| t == _attrs[k.to_sym][:type] } || [_attrs[k.to_sym][:classes]].flatten.any? { |c| c.is_a?(Class) && c.ancestors.include?(BBLib::Effortless) }) && v.is_a?(String)
                 JSON.parse(v)
+              elsif v.is_a?(Sequel::Postgres::JSONArray)
+                v.keys_to_sym
               else
                 v
               end
@@ -246,7 +248,7 @@ module BlockStack
         end
 
         def serialize_for_sql
-          serialize.hmap do |k, v|
+          hash = serialize.hmap do |k, v|
             [
               k,
               if BBLib.is_a?(v, Array, Hash)
@@ -258,6 +260,8 @@ module BlockStack
               end
             ]
           end
+          hash.delete(:id) unless hash[:id]
+          hash
         end
 
         def delete

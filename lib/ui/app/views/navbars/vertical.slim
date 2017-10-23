@@ -32,7 +32,7 @@ nav#menu.transition-all-1
             - if attributes[:icon]
               == image_tag(attributes[:icon], class: 'icon transition-all-0-75')
             - elsif attributes[:fa_icon]
-              i.icon.fa.transition-all-0-75 class="fa-#{attributes[:fa_icon]}"
+              i.icon.fa.transition-all-0-75 class="fa-#{attributes[:fa_icon]}#{active ? ' active' : nil}"
             a.transition-all-0-75.parent id="menu_#{name}" class="nav-link#{sub ? ' dropdown-toggle' : nil}" *attributes.except(:text, :sub, :active_when, :icon, :fa_icon) data-toggle="#{sub ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
               = attributes[:text] || name
             - if sub

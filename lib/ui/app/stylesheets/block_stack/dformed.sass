@@ -36,11 +36,25 @@ div.dform
     vertical-align: top
 
   .multi_field
-    div
+    display: table
+    div, input, select, textarea
       float: left
     .btn
       float: left
       display: block
+    table.fields.dformed-hform
+      border: none
+      box-shadow: none
+      float: left
+      width: auto
+      td
+        padding: 5px
+        &.dformed-label
+          vertical-align: middle
+          height: 100%
+          padding: 5px
+        &.dformed-field
+          padding: 5px
 
   input, textarea, select
     transition: all 0.5s ease

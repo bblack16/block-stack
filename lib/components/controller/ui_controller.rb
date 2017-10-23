@@ -28,11 +28,11 @@ module BlockStack
         model.dataset_name => {
           text: model.clean_name.pluralize,
           href: "/#{model.dataset_name}",
-          icon: model.setting(:icon) || "#{model.dataset_name}/icon",
+          # icon: model.setting(:icon),
           fa_icon: model.setting(:fa_icon),
           active_when: [/\/#{Regexp.escape(model.dataset_name)}/],
           sub: sub_menus
-        }
+        }.select { |k, v| v }
       }
     end
   end

@@ -30,6 +30,9 @@ module BlockStack
         type = :mysql2 if type == :mysql
         Sequel.send(type, *args).tap do |db|
           db.loggers = [BlockStack.logger]
+          if type == :postgres
+            db.extension :pg_array, :pg_json
+          end
         end
       when :memory
         require_relative 'model/adapters/memory'
