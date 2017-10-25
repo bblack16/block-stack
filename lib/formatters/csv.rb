@@ -1,5 +1,6 @@
 module BlockStack
   module Formatters
+    # TODO Added download support for csv files
     class CSV < Formatter
 
       def delimiter
@@ -8,6 +9,10 @@ module BlockStack
 
       def self.mime_types
         'text/csv'
+      end
+
+      def self.format
+        :csv
       end
 
       def self.content_type

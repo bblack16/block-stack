@@ -4,11 +4,15 @@ module BlockStack
       attr_of Proc, :key_formatter, default: proc { |key| key.to_s.title_case.drop_symbols }
 
       def self.mime_types
-        ['text/yaml', 'application/yaml', 'application/x-yaml']
+        ['text/xml', 'application/xml']
       end
 
       def self.content_type
-        :yaml
+        :xml
+      end
+
+      def self.format
+        :xml
       end
 
       def process(body, params = {})

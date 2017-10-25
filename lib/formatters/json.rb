@@ -9,8 +9,13 @@ module BlockStack
         :json
       end
 
+      def self.format
+        :json
+      end
+
       def process(body, params = {})
-        body.to_json
+        body = { data: body } unless BBLib.is_a?(body, Array, Hash)
+        params.include?(:pretty) ? ::JSON.pretty_generate(body) : body.to_json
       end
     end
   end

@@ -9,6 +9,10 @@ module BlockStack
         :yaml
       end
 
+      def self.format
+        [:yaml, :yml]
+      end
+
       def process(body, params = {})
         body.to_yaml
       end
