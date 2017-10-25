@@ -35,6 +35,7 @@ module BlockStack
             end
           end
         when Hash
+          # TODO Support hash with arrays as values (somehow?)
           columns = data.keys
           content = data.values
         end
