@@ -1,12 +1,15 @@
 require 'opal'
 require 'opal-jquery'
 require 'opal-browser'
-require 'reactrb'
+# require 'reactrb'
 
-require_relative 'helpers'
+require_relative 'util/helpers'
 
 module BlockStack
   class UiServer < Server
+
+    enable :sessions
+    set global_search: false, precompile: false, navbar: :default
 
     helpers UiHelpers
 
@@ -14,10 +17,6 @@ module BlockStack
 
     Opal.use_gem 'bblib'
     Opal.use_gem 'dformed'
-
-    before do
-      request[:menu] = build_menu
-    end
 
     def self.assets
       @assets ||= default_assets
@@ -34,8 +33,8 @@ module BlockStack
       }
     end
 
-    def self.prefix
-      @prefix ||= '/assets'
+    def self.assets_prefix
+      @assets_prefix ||= '/assets'
     end
 
     def self.maps_prefix
@@ -79,88 +78,140 @@ module BlockStack
           asset_path(type, *paths)
         end
       end
+
+      def crud(model, opts = {})
+        name        = model.model_name
+        plural      = model.plural_name
+        ivar        = "@#{name}"
+        ivar_plural = "@#{plural}"
+        prefix      = "#{opts[:prefix] || plural}"
+        engine      = opts[:engine] || :slim
+
+        get '/' do
+          session[:display] = params[:display] if params[:display]
+          begin
+            limit = params[:limit]&.to_i || 25
+            offset = ((params[:page]&.to_i || 1) - 1) * limit
+            instance_variable_set(ivar_plural, model.all(limit: limit, offset: offset))
+            send(engine, :"#{prefix}/index")
+          rescue Errno::ENOENT => e
+            @models     = instance_variable_get(ivar_plural)
+            @model      = model
+            slim :'defaults/index'
+          end
+        end
+
+        get '/new' do
+          begin
+            @model = model.new(opts[:defaults] || {})
+            instance_variable_set(ivar, @model)
+            send(engine, :"#{prefix}/new")
+          rescue Errno::ENOENT => e
+            slim :'defaults/new'
+          end
+        end
+
+        get '/:id' do
+          begin
+            @model = model.find(params[:id])
+            if @model
+              instance_variable_set(ivar, @model)
+              send(engine, :"#{prefix}/show")
+            else
+              redirect "/#{route_prefix}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+            end
+          rescue Errno::ENOENT => e
+            slim :'defaults/show'
+          end
+        end
+
+        get '/:id/edit' do
+          begin
+            @model = model.find(params[:id])
+            if @model
+              instance_variable_set(ivar, @model)
+              send(engine, :"#{prefix}/edit")
+            else
+              redirect "/#{route_prefix}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+            end
+          rescue Errno::ENOENT => e
+            slim :'defaults/edit'
+          end
+        end
+
+        super
+      end
+
+      def add_global_search
+        set global_search: true
+
+        get '/search' do
+          @results = nil
+          if params[:query]
+            @results = BlockStack::Model.included_classes_and_descendants.flat_map do |model|
+              next unless model.setting(:global_search)
+              model.search(params[:query])
+            end.compact.uniq
+          end
+          slim :'defaults/global_search'
+        end
+      end
     end
 
     def self.precompile!
-      p "BlockStack: Compiling assets in #{settings.public_folder}..."
-      # FileUtils.rm_rf(settings.public_folder)
+      BlockStack.logger.info("BlockStack: Compiling assets in #{settings.public_folder}...")
       environment = opal.sprockets
       manifest = Sprockets::Manifest.new(environment.index, settings.public_folder)
-      manifest.compile(%w(*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
+      manifest.compile([/stylesheets\/[\w\d\s]+\.css/] + %w(application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
+    def self.run!(*args)
+      precompile! if settings.precompile
+      super
+    end
 
-    def self.menu(env)
+    def self.menu
       {
-        title: title(env),
-        main_menu: main_menu(env)
+        title: title,
+        main_menu: main_menu
       }
     end
 
-    def self.title(env)
-      to_s.split('::').last
+    def self.title
+      settings.app_name || base_server.to_s.split('::').last
+    rescue => e
+      base_server.to_s.split('::').last
     end
 
-    def self.main_menu(env)
-      {
+    def self.main_menu
+      @main_menu ||= construct_menu
+    end
+
+    def self.construct_menu
+      menu = {
         home: {
           text: 'Home',
           href: '/',
-          title: 'Head to the home page',
-          tooltip: 'true',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          class: 'pmd-tooltip',
+          fa_icon: 'home',
           active_when: [
             '/'
           ]
-        },
-        sub_menu: {
-          text: 'Dropdown Menu',
-          href: '',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          active_when: [
-            '/never__'
-          ],
-          sub: {
-            option1: {},
-            option2: {},
-            option3: {}
-          }
-        },
-        examples: {
-          text: 'Examples',
-          href: '/examples',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-replace': "true",
-          active_when: [
-            '/examples'
-          ]
-        },
-        gems: {
-          text: '',
-          href: '/gems',
-          title: 'View the currently loaded gems on the server.',
-          tooltip: 'true',
-          style: 'float: right',
-          class: 'fa fa-diamond transition-all-2 gem',
-          'data-placement': 'bottom',
-          'data-animation': 'true',
-          'data-push': "true",
-          active_when: [
-            '/gems'
-          ]
         }
       }
+      controllers.sort_by(&:to_s).map do |c|
+        begin
+          menu = menu.merge(c.main_menu)
+        rescue => e
+          puts e
+          nil
+        end
+      end
+      menu
     end
 
     def self.load_assets
       assets[:assets].each do |path|
-        BBLib.scan_files(path, /#{Regexp.escape(path)}\/?(controllers|models)\/.*\.rb$/i, recursive: true) do |file|
+        BBLib.scan_files(path, /#{Regexp.escape(path)}\/models\/.*\.rb$/i, recursive: true) do |file|
           begin
             puts "Loaded #{file}"
             require file
@@ -168,16 +219,7 @@ module BlockStack
             puts "Failed to load #{file}: #{e}"
           end
         end
-        Controller.descendants.each do |cont|
-          cont.assets = assets
-          use cont
-        end
       end
-    end
-
-    def self.run!(*args)
-      super
-      load_assets
     end
 
     helpers do
@@ -199,13 +241,12 @@ module BlockStack
       redirect request.path_info.sub('fonts', 'assets/fonts')
     end
 
-    get '/' do
-      slim :index
-    end
-
-    get '/examples' do
-      slim :examples
-    end
-
+    # get '/' do
+    #   slim :index
+    # end
+    #
+    # get '/examples' do
+    #   slim :examples
+    # end
   end
 end

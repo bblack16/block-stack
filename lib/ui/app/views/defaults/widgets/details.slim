@@ -1,0 +1,56 @@
+sass:
+  table.details
+    border: 3px solid #d4d4d4
+    font-size: 15px
+    box-shadow: 2px 2px 10px #c8c8c8
+    margin: auto
+    width: 100%
+    tr
+      th
+        padding: 10px 15px
+        font-size: 20px
+        font-weight: normal
+        text-align: center
+        background: #efefef
+        background: -moz-linear-gradient(top, #efefef 0%, #e2e2e2 0%, #f4f4f4 100%)
+        background: -webkit-linear-gradient(top, #efefef 0%,#e2e2e2 0%,#f4f4f4 100%)
+        background: linear-gradient(to bottom, #efefef 0%,#e2e2e2 0%,#f4f4f4 100%)
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#f4f4f4',GradientType=0 )
+      &:nth-child(even)
+        background-color: #f6f6f6
+      &:nth-child(odd)
+        background-color: #f4f4f4
+      border: 1px solid #d4d4d4
+      td.detail-label
+        text-align: right
+        font-weight: bold
+        padding: 10px 15px
+
+- details = @model.details
+
+.detail-widget
+  table.details
+    tr
+      th colspan=2 = "#{@model.class.clean_name} Details"
+    - details.each do |label, value|
+      tr
+        td.detail-label = label
+        td.detail
+          - if value.is_a?(Array)
+            - if value.empty?
+              i.grey None
+            - else
+              ul
+                - value.each do |v|
+                  - if v.is_a?(BlockStack::Model)
+                    li = v.attribute(v.setting(:title_attribute) || :id)
+                  - else
+                    li = v
+          - elsif value.is_a?(BlockStack::Model)
+            == value.attribute(value.setting(:title_attribute) || :id)
+          - elsif value.is_a?(Time)
+            == value.strftime('%B %d, %Y %I:%M:%S %p')
+          - elsif value.is_a?(Date)
+            == value.strftime('%B %d, %Y')
+          - else
+            == value

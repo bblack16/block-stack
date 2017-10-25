@@ -1,0 +1,18 @@
+
+
+primary_attribute [Symbol] - What is displayed as a title (method name to call)
+description_attribute [Symbol] - The method used for a short description
+show_partial [Symbol] - The name of a custom partial to load for a large description
+detail_attribute [Symbol] - The method to call to return key value pairs to be used when generating details.
+                            When left blank, all attributes are used.
+tagline [Symbol] - Displayed under the title in some widgets
+background [Symbol] - The method to call to return a background image (large)
+thumbnail [Symbol] - The method to call to return a thumbnail
+thumbnail_back [Symbol] - The method to call to return a back image for the thumbnail. This tends to be the back of a box for example.
+icon [Symbol] - The method to call to return an icon
+logo [Symbol] - The method to call to return a logo for this item (prefered clear)
+images [Symbol] The method to call to retrieve an array of images (screenshots for example)
+
+actions [Hash] - What actions should be made available for this model via context menus
+searchable [Bool] - True or false to allow the model to be part of global search (Default: false)
+table_attributes [Array of Symbols] - An array of attributes to display in tables (nil means display all serialized fields)

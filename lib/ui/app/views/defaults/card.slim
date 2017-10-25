@@ -1,0 +1,11 @@
+.card.transition-all-2
+  a.image-wrapper href="#{link_to(:show, @item, '').attributes[:href]}"
+    - if src = @item.image_for(:thumbnail, class: 'card-image')
+      == src
+    - else
+      .missing-image
+        i.fa.fa-picture-o
+  .card-body
+    == link_to(:show, @item, squish(name_for(@item), 64), class: 'text-center card-title')
+    .tagline == squish(@item.setting_call(:tagline), 164)
+    .description == squish(@item.setting_call(:description), 150)

@@ -1,0 +1,214 @@
+
+Need / Fixes
+-------------------
+Fix transition bug with navbars (due to transition effect)
+Model uniqueness (other than just by id)
+Better default show view
+Create dark themes for both navbars
+Wigitize views (somehow)
+Control over what views are created by crud method
+Method to remove a route
+Sanitize payload hooks for default API routes
+Split blockstack out into api/ui
+Merge controllers back into one class
+Better asset mapping to servers
+Better auto build directory support (via server perhaps and auto add assets)
+Auto load models and controllers (optionally)
+Server autobuild and run
+Section search by type
+Have existing records updated when new fields are added (for SQL)
+Improve Logging
+  Add request logging
+  Add render logging
+Make DFormed fields for:
+  Range
+  Regex
+  WYSIWYG
+  Slider
+  Interval (text based)
+  Cron
+  Code
+attr alias elements of (for hash maps)
+Store item type view (side filter, top sort)
+Fix DFormed registry to use effortless descendants (hard with Opal)
+Change descendants to work in Opal (not use ObjectSpace)
+Possibly have DFormed element use init foundation
+Advanced search for models (per field and dformed search field)
+  This could also be store like filtering (fields on the left or right)
+Redirect to show page on save for create
+Dformed form helpers for models
+Associations for non-saved items
+Lazy load images / info
+Allow multiple sub menus to be open
+Ensure menu goes to scroll when too large for the page
+Make associations in show view links
+  May need to change many to many to many to many through
+Baguette box gallery helper
+
+Nice to have
+-------------------
+More main menu styling
+Animations on save and delete
+DFormed floating labels
+DFormed helper method for objects
+More settings for models
+Add data table styling (enhance, make footer go to bottom of page)
+Text collapse
+Save only saves if changes have been made
+Auto hide main menu when on small screens
+Refine search method in SQL
+Refine search method in Mongo
+Model add association to many (append, not replace)
+Polymorphic Model DFormed support
+Many to many disassociate on update
+Many to many via array on both sides
+Fix star rating to support up to ten stars or half stars
+Associations based on multiple fields
+
+Dreams
+-------------------
+Websocket support
+Databinding via websockets
+Built in console
+Automated db migrations in models
+Make API routes and normal routes the same, with format toggle
+Authentication hooks (need a library)
+Role based authorization
+  Maintenance mode
+Light/Dark Theme
+Code Mirror Support
+Hot loading? (possible?)
+Some sort of auto history
+
+Decision
+-------------------
+Highlight.js support?
+Give CRUD a different main page other than index
+Break models out into separate gem
+
+
+Longer Term
+-------------------
+Build Horizontal menu
+Documentation
+  README
+  Comments (YARD)
+Clean up gemspec and add final dependencies
+Improve logging throughout
+Clean up sass/javascript code
+
+
+
+-----------------
+DONE
+-----------------
+Make vertical menu and horizontal menu options
+Refactor vertical menu
+Add support for content type header for api
+Models Auto Build Controllers if not present (via setting maybe?)
+Improve list view to use "horizontal cards"
+Fix Toggle DFormed type
+Baguette box gallerys and lightbox images
+Switch boolean to toggle in dformed
+Add sections to dformed forms (or create section form)
+Refactor and better support model settings
+Fix the split between server and ui server
+Reimplement widget classes without reactrb
+Add back in auto creation of one to one for through table associations
+Environment Modes
+  Precompile Assets (via setting)
+Investigate paths not displaying correctly for attr_file (has to do with apostraphe)
+DFormed Star Rating not staying set
+Refactor dformed to have labels be included in fields again
+Split helper methods for BlockStack
+  Tags
+  Images
+  Model Related Methods
+attr_element_of using proc
+Fix requirement on app name in Server
+Move associations into attrs
+Have associations mapped on class load (automate second asc)
+Have associations associate on save only
+Model association in forms
+Model associations in default show view
+Fix one through one not updating properly via UI
+DFormed styles don't seem to be working
+Polymorphic Models (SQL + Mongo)
+Make global search more dynamic (hide search by default)
+Test many to many
+Test one through one
+Enhance associations to avoid deleting them before reattaching
+Model association belong to (cascading delete)
+Test one to many
+Test many to one
+Test one_to_one
+Adapters (SQL/Mongo) as mixins
+Refactor associations into objects
+Associations through attr methods
+attr defaults using procs
+Improve Dynamic DB detection to auto inject DB
+Prevent repeat calls to sqlite master table (likely create table)
+Logger set up for SQL and Mongo
+Dynamic DB creation in blockstack (dynamic requires)
+Move default DB storage to BlockStack module
+Model settings inherit from ancestors
+Model Aggregations
+  avg
+  max
+  min
+  distinct
+Auto load models/controls into main menu
+Dynamic Menu System per controller
+Global Search
+  Model defined "global search"
+Add search functionality to CRUD (UI + API)
+Build default widgets for models
+  Cards
+  List Item
+  Table
+Main Menu icons
+Error handling on API methods (no model found for example)
+Remove javascript specifics from DFormed loader (alertify)
+Redirect to show page on save on update
+Added better default display for arrays in show view (li)
+Refine Delete: Add confirmation dialog
+Refine Delete: Add redirect when in html
+Move updated/created to base Model class
+Ensure created/updated is hidden in forms
+Fix created/updated to be auto
+Figure out what is wrong with author (array in dformed)
+Fix main menu header
+Main menu styling
+Remove unused javascript/stylesheets from vendor
+Remove reactrb (for now)
+Remove old unused custom js/css
+Breakout loaders
+Breakout blockstack SASS into individual files
+Fix action dropdown on index page
+Fix multiple query calls on index page
+API show page broken
+Better association calls (pluralizing is a pain)
+Fix many_to_one association
+Remove namespace methods from simple_init (possibly duplicatedin familytree)
+Add update method to model
+Fix array in DFormed (values load wrong) - caused by sql serialization
+Default form should put when saving existing object
+Save is saving duplicates in crud using dformed
+Test all API routes built by crud method
+Enhance pluralize/singularize to only do last word
+Model association adders (associate using class or id)
+Dynamic database model registration (if db is sql, use sql)
+Make alertify wrapper in opal for logs
+Make alertify wrapper in opal for prompts and alerts
+Pagination for models
+Fix format issues (csv and xml)
+
+----------------------
+Not Doing
+----------------------
+Build default widgets for models
+  Newest
+  Recently Modified
+Default background image search
+Add background image support per model
+oldest_by, latest_by for models

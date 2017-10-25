@@ -1,0 +1,39 @@
+== stylesheet_include 'navbars/default'
+
+- menu = build_menu
+- brand = menu[:title].upcase
+- if brand.include?(' ')
+  - split = brand.split(' ', 2)
+- else
+  - mid = brand.size / 2
+  - split = [brand[0...mid], brand[mid..-1]]
+- brand = "<span class='first'>#{split.first}</span>#{split.last}"
+
+div#main-menu.vertical
+  nav.title == brand
+  - menu[:main_menu].each do |name, attributes|
+    - sub = attributes[:sub] && !attributes[:sub].empty?
+    - active = attributes[:active_when]&.any? { |exp| exp.is_a?(Regexp) ? exp =~ request.path_info : exp.to_s == request.path_info }
+    nav.menu-item class="#{active ? ' active' : nil}"
+      - if attributes[:icon]
+        == image_tag(attributes[:icon], class: 'icon')
+      - elsif attributes[:fa_icon]
+        i.icon.fa class="fa-#{attributes[:fa_icon]}#{active ? ' active' : nil}"
+      a.link id="menu_#{name}" class="#{sub ? ' dropdown-toggle' : nil}" *attributes.except(:text, :sub, :active_when, :icon, :fa_icon) data-toggle="#{sub ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
+        = attributes[:text] || name
+      - if sub
+        .dropdown-menu.block_stack_nav aria-labelledby="menu_#{name}"
+          - attributes[:sub].each do |sub_name, sub_attributes|
+            a.dropdown-item *sub_attributes.except(:text)
+              - if sub_attributes[:icon]
+                == image_tag(sub_attributes[:icon], class: 'icon')
+              - elsif sub_attributes[:fa_icon]
+                i.icon.fa class="fa-#{sub_attributes[:fa_icon]}"
+              = sub_attributes[:text] || sub_name
+  - if self.class.base_server.settings.global_search
+    form#search action='/search'
+      .floating-label.search
+        input#global-search.ripple type='text' name='query'
+        label Search
+        i.fa.fa-search.white.float-left
+      input#global-search-submit.hidden type='submit'

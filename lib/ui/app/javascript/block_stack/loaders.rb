@@ -2,6 +2,13 @@
 module Loaders
 
   def self.load_all
+    # Main Menu slider
+    Loaders.menu_slider
+
+    Loaders.dformed
+
+    # Load delete links
+    Loaders.delete_model_buttons
 
     # Initialize tooltips and data tables
     Loaders.tooltips
@@ -14,15 +21,20 @@ module Loaders
     Loaders.alertify
 
     Loaders.date_pickers
+    Loaders.toggle
     Loaders.select_2
     Loaders.ripple
     Loaders.floating_labels
     Loaders.autosize_textareas
-    # Loaders.baguette_box_galleries
-    Loaders.slider
+    Loaders.baguette_box_galleries
+
+    # Fires off any notices on the page
+    Loaders.notices
+
+    Loaders.lazy_load
   end
 
-  def self.slider
+  def self.menu_slider
     Element['#menu-toggle'].on :click do |event|
       menu = Element['#menu']
       if menu.has_class?(:hide)
@@ -37,8 +49,30 @@ module Loaders
     end
   end
 
+  def self.delete_model_buttons
+    Element['.delete-model-btn'].each do |elem|
+      elem.on :click do |evt|
+        url = elem.attr(:'del-url')
+        evt.prevent_default
+
+        Alert.confirm('Are you sure?') do |e|
+          elem.attr('disabled', true)
+          HTTP.delete(url) do |response|
+            if response.json[:status] == :success
+              Alert.success("Successfully deleted")
+              BlockStack.redirect(elem.attr('re-url') || '/', 1)
+            else
+              Alert.error("Failed to delete")
+              elem.attr('disabled', false)
+            end
+          end
+        end
+      end
+    end
+  end
+
   def self.tooltips
-    Element['[tooltip="true"],[data-toggle="tooltip"]'].JS.tooltip
+    Element['[tooltip="true"],[data-toggle="tooltip"],[title]'].JS.tooltip
   end
 
   def self.data_tables
@@ -64,19 +98,27 @@ module Loaders
   end
 
   def self.date_pickers
-    Element['.date-picker'].JS.dateDropper
-    Element['.time-picker'].JS.timeDropper({ mouseWheel: true, format: 'HH:mm' }.to_n)
+    Element['.date-time-picker'].JS.flatpickr({ enableTime: true, altInput: true }.to_n)
+    Element['.date-picker'].JS.flatpickr({ altInput: true }.to_n)
+    Element['.time-picker'].JS.flatpickr({enableTime: true, noCalendar: true}.to_n)
+  end
+
+  def self.toggle
+    Element['input.toggle'].each do |elem|
+      parent = elem.parent
+      elem.detach
+      label = Element['<label class="switch"/>']
+      slider = Element["<span class='slider round #{elem.attr(:class)}'\>"]
+      label.append(elem, slider)
+      parent.append(label)
+    end
   end
 
   def self.select_2
     Element['.select-2'].JS.select2({
-      tags: true,
 			theme: 'bootstrap',
       allowClear: true
     }.to_n)
-    Element['.select-2'].each do |elem|
-      elem.parent.append(Element['<span class="fa fa-caret-down" style="position: absolute; right: 5px"/>'])
-    end
   end
 
   def self.ripple
@@ -116,13 +158,39 @@ module Loaders
 
   def self.autosize_textareas
     Element['textarea.autosize'].on :input do |evt|
-      evt.target.css(:height, 'auto')
-      evt.target.css(:height, `#{evt.target}[0].scrollHeight`.to_s + 'px')
+      clone = evt.target.clone
+      clone.css(:height, 'auto')
+      Element['body'].append(clone)
+      evt.target.css(:height, `#{clone}[0].scrollHeight`.to_s + 'px')
+      clone.remove
     end
+    Element['textarea.autosize'].trigger(:input)
   end
 
   def self.baguette_box_galleries
+    Element["img.baguette-image"].each do |elem|
+      parent = elem.parent
+      elem.detach
+      gallery = Element["<div class='gallery'/>"]
+      wrapper = Element["<a href='#{elem.attr(:src)}'/>"]
+      gallery.append(wrapper)
+      wrapper.append(elem)
+      parent.append(gallery)
+    end
     `baguetteBox.run('.gallery');`
   end
 
+  def self.dformed
+    BlockStack.load_forms
+  end
+
+  def self.notices
+    Element['#notice'].each do |elem|
+      Alert.log(elem.html, type: elem.attr('notice-severity'), delay: 6000, position: 'top right') if elem.text.strip != ''
+    end
+  end
+
+  def self.lazy_load
+    `lazyload();`
+  end
 end

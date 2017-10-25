@@ -1,0 +1,53 @@
+== stylesheet_include 'navbars/vertical'
+
+- menu = build_menu
+- menu = build_menu
+- brand = menu[:title].upcase
+- if brand.include?(' ')
+  - split = brand.split(' ', 2)
+- else
+  - mid = brand.size / 2
+  - split = [brand[0...mid], brand[mid..-1]]
+- brand = "<span class='first'>#{split.first}</span>#{split.last}"
+
+#menu-toggle.fa.fa-bars.transition-all-1
+
+nav#menu.transition-all-1
+  header
+    section.top
+      h2.navbar-brand.text-center == brand
+      - if self.class.base_server.settings.global_search
+        form action='/search'
+          .floating-label.search
+            input#global-search.ripple type='text' name='query'
+            label Search
+            i.fa.fa-search.white.float-left
+          input#global-search-submit.hidden type='submit'
+    section.menu
+      ul.menu-list
+        - menu[:main_menu].each do |name, attributes|
+          - sub = attributes[:sub] && !attributes[:sub].empty?
+          - active = attributes[:active_when]&.any? { |exp| exp.is_a?(Regexp) ? exp =~ request.path_info : exp.to_s == request.path_info }
+          li.transition-all-0-75 class="nav-item#{sub ? ' dropdown' : nil}#{active ? ' active' : nil}"
+            - if attributes[:icon]
+              == image_tag(attributes[:icon], class: 'icon transition-all-0-75')
+            - elsif attributes[:fa_icon]
+              i.icon.fa.transition-all-0-75 class="fa-#{attributes[:fa_icon]}#{active ? ' active' : nil}"
+            a.transition-all-0-75.parent id="menu_#{name}" class="nav-link#{sub ? ' dropdown-toggle' : nil}" *attributes.except(:text, :sub, :active_when, :icon, :fa_icon) data-toggle="#{sub ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
+              = attributes[:text] || name
+            - if sub
+              .dropdown-menu.block_stack_nav aria-labelledby="menu_#{name}"
+                - attributes[:sub].each do |sub_name, sub_attributes|
+                  a.transition-all-1.dropdown-item *sub_attributes.except(:text)
+                    - if sub_attributes[:icon]
+                      == image_tag(sub_attributes[:icon], class: 'icon transition-all-0-75')
+                    - elsif sub_attributes[:fa_icon]
+                      i.icon.fa.transition-all-0-75 class="fa-#{sub_attributes[:fa_icon]}"
+                    = sub_attributes[:text] || sub_name
+    section.bottom
+      #footer.text-center.bold
+        span.fa.fa-diamond style='padding-right: 5px'
+        span = "Powered by BlockStack (#{BlockStack::VERSION})"
+        br
+        span blockstack-widget="Clock" Loading current time...
+        span.fa.fa-clock-o style='padding-left: 5px'

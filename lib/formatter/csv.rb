@@ -3,7 +3,7 @@ module BlockStack
     module CSV
       def self.process(response, request, params)
         payload = response.body
-        delimiter = params[:format].to_sym == :tsv ? "\t" : ","
+        delimiter = params[:format].to_s.to_sym == :tsv ? "\t" : ","
         if payload.is_a?(Hash)
           headers = payload.keys
           content = [payload.values]
@@ -21,12 +21,17 @@ module BlockStack
           headers = ['']
           content = [[payload.to_s]]
         end
-        headers.map { |header| "\"#{header.to_s.gsub('"', '\\"')}\"" }.join(delimiter) + "\n" +
-        response.body = content.map do |row|
+        header_row = headers.map { |header| "\"#{header.to_s.gsub('"', '\\"')}\"" }.join(delimiter) + "\n"
+        rows = content.map do |row|
           row.map do |value|
             "\"#{value.to_s.gsub('"', '\\"')}\""
           end.join(delimiter)
         end.join("\n")
+        response.body = header_row + rows
+      end
+
+      def self.mime_types
+        ['text/csv', 'text/tsv']
       end
     end
   end

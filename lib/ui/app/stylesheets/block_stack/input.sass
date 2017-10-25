@@ -1,0 +1,73 @@
+// Text Area Autosize Styling
+
+textarea.autosize
+  overflow-y: hidden
+  transition: all 0.3s ease
+
+// Floating Labels
+
+.floating-label
+  display: block
+  position: relative
+  margin-top: 20px
+
+  input, textarea, select
+    background: none
+    display: inline-block
+    border: none
+    border-bottom: solid 1px #b9b9b9
+    width: 100%
+    transition: all 0.3s ease
+    padding: 0px
+    padding-bottom: 2px
+    color: rgb(89, 89, 89)
+    &::-webkit-input-placeholder
+      color: transparent
+    &:-moz-placeholder
+      color: transparent
+    &::-moz-placeholder
+      color: transparent
+    &:-ms-input-placeholder
+      color: transparent
+
+    &:focus,
+    &:active
+      outline: none
+      &::-webkit-input-placeholder
+        color: #d2d2d2
+      &:-moz-placeholder
+        color: #d2d2d2
+      &::-moz-placeholder
+        color: #d2d2d2
+      &:-ms-input-placeholder
+        color: #d2d2d2
+
+  label
+    transform: translateY(-50%)
+    position: absolute
+    top: 15px
+    left: 0px
+    pointer-events: none
+    transition: all 0.3s ease
+    color: #b9b9b9
+
+  input:focus, textarea:focus, select:focus
+    border-bottom: 2px solid #2199bf
+    color: rgb(60, 60, 60)
+    padding-bottom: 0px
+
+  input:focus + label,
+  input.has-value + label,
+  textarea:focus + label,
+  textarea.has-value + label,
+  select:focus ~ label,
+  select.has-value ~ label
+    top: -10px
+    font-size: 85%
+    opacity: 75%
+    color: #999
+
+  input:focus + label,
+  textarea:focus + label,
+  select:focus + label
+    color: #2199bf

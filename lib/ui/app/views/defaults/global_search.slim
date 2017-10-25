@@ -1,0 +1,14 @@
+
+.hidden#notice notice-severity='info' = "Found a total of #{BBLib.plural_string(@results.size, 'result')}."
+
+section.header.green
+  h1.text-center Search Results
+
+- if @results.nil? || @results.empty?
+  br
+  br
+  h3.text-center.grey Sorry, nothing matched your query
+  p.text-center.grey You may need to try something different
+- else
+  - @models = @results
+  == slim :'defaults/horizontal_cards'

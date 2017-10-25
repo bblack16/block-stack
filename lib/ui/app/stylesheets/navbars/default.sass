@@ -1,0 +1,66 @@
+body
+  margin-top: 60px
+#main-menu.vertical
+  height: 60px
+  background-color: white
+  border-bottom: 1px solid #d4d4d4
+  z-index: 80
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  nav
+    float: left
+    vertical-align: middle
+    margin: 0px 1vw
+    text-align: center
+    height: 100%
+    position: relative
+    transition: border 0.1s ease
+    &.title
+      font-size: 28px
+      height: 100%
+      padding: 0px 1.5vw
+      padding-top: 10px
+      font-weight: bold
+      color: #848484
+      span.first
+        color: #26c714
+    &.menu-item
+      &:hover
+        border-bottom: 5px solid #36cd58
+      &.active
+        border-bottom: 5px solid #1dc9da
+      a.link
+        height: 100%
+        padding-top: 20px
+        text-decoration: none
+        color: #2a2a2a
+        display: table-cell
+        font-size: 15px
+      .icon
+        color: #636363
+        font-size: 22px
+        float: left
+        padding-top: 18px
+        padding-right: 5px
+        &.active
+          color: #1dc9da
+  a.dropdown-item
+    padding-right: 45px
+    .icon
+      padding-top: 0px
+    &:hover
+      background-color: rgba(0, 114, 255, 0.16)
+  .dropdown-menu
+    padding-right: 0
+#search
+  width: 200px
+  padding-right: 10px
+  float: right
+  .search
+    i
+      position: absolute
+      left: -25px
+      top: 8px
+      color: grey
