@@ -160,7 +160,7 @@ module BlockStack
               k.to_sym,
               if _attrs[k.to_sym] && ([:hash, :array, :array_of, :elements_of].any? { |t| t == _attrs[k.to_sym][:type] } || [_attrs[k.to_sym][:classes]].flatten.any? { |c| c.is_a?(Class) && c.ancestors.include?(BBLib::Effortless) }) && v.is_a?(String)
                 JSON.parse(v)
-              elsif v.is_a?(Sequel::Postgres::JSONArray)
+              elsif defined?(Sequel::Postgres) && v.is_a?(Sequel::Postgres::JSONArray)
                 v.keys_to_sym
               else
                 v
