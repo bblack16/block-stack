@@ -18,16 +18,19 @@ module BlockStack
 
     helpers ServerHelpers
 
-    attr_ary_of String, :api_routes, singleton: true, default_proc: :inherited_api_routes, add_rem: true
+    attr_ary_of String, :api_routes, singleton: true, default: [], add_rem: true
     attr_ary_of Formatter, :formatters, default_proc: :default_formatters, singleton: true
     attr_sym :default_format, default: :json, allow_nil: true, singleton: true
 
     bridge_method :route_map, :route_names, :api_routes, :formatters, :default_formatters, :default_format
+    bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer
 
     # Setup default settings
     # TODO Finalize settings
     set(
-      controller_base: nil  #Set this to a class that inherits from BlockStack::Controller
+      controller_base: nil,  #Set this to a class that inherits from BlockStack::Controller
+      log_requests: true,
+      log_params: true
     )
 
     class << self
@@ -42,6 +45,20 @@ module BlockStack
           send(verb, route, opts.merge(api: true), &block)
         end
       end
+
+      [:debug, :info, :warn, :error, :fatal].each do |sev|
+        define_method(sev) do |*args|
+          args.each { |a| logger.send(sev, a) }
+        end
+      end
+    end
+
+    def self.logger
+      @logger ||= BBLib.logger
+    end
+
+    def self.logger=(logr)
+      @logger = logr
     end
 
     def self.prefix
@@ -99,6 +116,7 @@ module BlockStack
       (@controllers ||= []).delete(controller)
     end
 
+    # Builds a set of default formatters for API routes
     def self.default_formatters
       [
         BlockStack::Formatters::HTML.new,
@@ -111,6 +129,14 @@ module BlockStack
       ]
     end
 
+    before do
+      if settings.log_requests && message = log_request
+        info(message)
+      end
+    end
+
+    # Check each response to see if it is an API route.
+    # If it is an API route we will attempt to format the response.
     after do
       if api_routes.include?(request.env['sinatra.route'].to_s)
         formatter = pick_formatter(request, params)
@@ -121,10 +147,30 @@ module BlockStack
           halt 406, "No formatter found"
         end
       end
+
+      if settings.log_requests && message = log_request_finished
+        info(message)
+      end
+    end
+
+    def self.request_timer
+      @request_timer ||= BBLib::TaskTimer.new
+    end
+
+    # This is called in a before block to log requests. Can be overriden in sub classes.
+    # To disable request logging either set log_requests to false or make this method return nil.
+    def log_request
+      request_timer.start(request.object_id)
+      "Processing new request (#{request.object_id}) from #{request.host}: #{request.request_method} #{request.path}#{ settings.log_params ? " - #{params}" : nil}"
+    end
+
+    def log_request_finished
+      "Finished processing request (#{request.object_id}) from #{request.host} (#{request.request_method} #{request.path}). Took #{request_timer.stop(request.object_id).to_duration}."
     end
 
     # Override default Sinatra run. Registers controllers before running.
-    def run!(*args)
+    def self.run!(*args)
+      logger.info("Starting up your BlockStack server")
       register_controllers
       super
     end
@@ -145,6 +191,7 @@ module BlockStack
     # Loads all controllers into this server via rack
     def self.register_controllers
       controllers.each do |controller|
+        debug("Registering new controller: #{controller}")
         controller.base_server = self
         use controller
       end
@@ -156,23 +203,28 @@ module BlockStack
       [settings.controller_base].flatten.compact.flat_map(&:descendants).uniq.reject { |c| c == self }
     end
 
+    # This method is invoked any time the prefix of the server is changed.
+    # All existing routes will have their route prefix updated.
     def self.change_prefix(old, new)
+      if old
+        info("Changing prefix from '#{old}' to '#{new}'...")
+      else
+        info("Adding route prefix to existing routes: #{new}")
+      end
       routes.each do |verb, rts|
         rts.each do |route|
           current = route[0].to_s
+          full = "#{verb} #{current}"
+          if api_routes.include?(full)
+            verb, path = api_routes.delete(full).split(' ', 2)
+            path = path.sub(/^\/#{Regexp.escape(old)}/i, '') if old
+            logger.debug("Changing API route from '#{current}' to /#{new}#{path}")
+            add_api_routes("#{verb} /#{new}#{path}")
+          end
           current = current.sub(/^\/#{Regexp.escape(old)}/i, '') if old
           route[0] = Mustermann.new("/#{new}#{current}", route[0].options)
         end
       end
-    end
-
-    def self.inherited_api_routes
-      ancestors.flat_map do |ancestor|
-        next if ancestor == self
-        if ancestor.respond_to?(:api_routes)
-          ancestor.api_routes
-        end
-      end.compact.uniq
     end
   end
 end
