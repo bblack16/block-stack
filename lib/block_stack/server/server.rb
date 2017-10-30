@@ -30,7 +30,8 @@ module BlockStack
     set(
       controller_base: nil,  #Set this to a class that inherits from BlockStack::Controller
       log_requests: true,
-      log_params: true
+      log_params: true,
+      auto_serialize: true # If true all objects that respond to serialize will be serialized before being passed to the formatter (api routes only)
     )
 
     class << self
@@ -54,7 +55,7 @@ module BlockStack
     end
 
     def self.logger
-      @logger ||= BBLib.logger
+      @logger ||= BlockStack.logger
     end
 
     def self.logger=(logr)
@@ -64,6 +65,12 @@ module BlockStack
     def self.prefix
       @prefix
     end
+
+    def self.base_server
+      self
+    end
+
+    bridge_method :base_server
 
     def self.prefix=(pre)
       pre = pre.to_s.uncapsulate('/')
@@ -141,8 +148,16 @@ module BlockStack
       if api_routes.include?(request.env['sinatra.route'].to_s)
         formatter = pick_formatter(request, params)
         if formatter
+          body = response.body
+          if settings.auto_serialize
+            if body.respond_to?(:serialize)
+              body = body.serialize
+            elsif body.is_a?(Array)
+              body = body.map { |obj| obj.respond_to?(:serialize) ? obj.serialize : obj }
+            end
+          end
           content_type(formatter.content_type)
-          response.body = formatter.process(response.body, params)
+          response.body = formatter.process(body, params)
         else
           halt 406, "No formatter found"
         end

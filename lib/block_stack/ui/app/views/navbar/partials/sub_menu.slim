@@ -1,0 +1,16 @@
+
+- level = 1 unless defined?(level)
+
+ul.dropdown-menu.block_stack_nav class="#{level > 1 ? 'sub-dropdown' : nil}" aria-labelledby="menu_#{item.clean_title}"
+  - item.items.each do |sub_item|
+    li.dropdown-item class="#{sub_item.sub_menu? ? ' dropdown-submenu' : nil}"
+      a.dropdown-item id="menu_#{sub_item.clean_title}" *sub_item.attributes data-toggle="#{sub_item.sub_menu? ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
+        - if sub_item.icon
+          == image_tag(sub_item.icon, class: 'icon')
+        - elsif sub_item.fa_icon
+          i.icon.fa class="fa-#{sub_item.fa_icon}"
+        = sub_item.title
+        - if sub_item.sub_menu?
+          i.sub-caret.fa.fa-caret-right
+      - if sub_item.sub_menu?
+        == slim :'navbar/partials/sub_menu', {}, item: sub_item, level: level + 1
