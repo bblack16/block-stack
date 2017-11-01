@@ -1,1 +1,6 @@
-== slim :'widget/header', {}, title: "Welcome to BlockStack 1.0"
+sass:
+  body
+    background-image: url('/assets/images/blocks.jpg')
+    background-size: cover
+
+== slim :'widget/header', {}, title: "Welcome to BlockStack #{BlockStack::VERSION.split('.')[0..-2].join('.')}", subtitle: "Currently running: #{base_server}"

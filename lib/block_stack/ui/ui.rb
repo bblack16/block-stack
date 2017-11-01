@@ -17,7 +17,6 @@
 # Custom BlockStack Widgets (Javascript)
 # UI Widgets (custom render method)
 
-
 require_relative 'menu/menu'
 require_relative 'helpers/general'
 require_relative 'helpers/images'
@@ -36,7 +35,8 @@ module BlockStack
       assets_prefix: '/assets/', # Sets the default route prefix for assets. Normally this should not be changed.
       maps_prefix: '/__OPAL_SOURCE_MAPS__', # Sets the maps route for opal. Do not change unless you know what you are doing.
       app_name: nil, # Set to a string to override the class name being used as the server name.
-      navbar: :default # Sets the name of the navbar view to render the main menu
+      navbar: :default, # Sets the name of the navbar view to render the main menu
+      default_renderer: :slim # Sets the default rendering engine to be used when calling the render method.
     )
 
     Opal.use_gem 'bblib'
@@ -103,6 +103,10 @@ module BlockStack
       end
       menu
     end
+    # 
+    # def simple(view, renderer = settings.default_renderer, locals = {}, &block)
+    #   send(renderer, view.to_sym, opts.delete(:options), locals, &block)
+    # end
 
     helpers do
       def find_template(views, name, engine, &block)

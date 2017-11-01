@@ -91,7 +91,9 @@ module BlockStack
 
     # Get a list of all registered routes grouped by http verb
     def self.route_map(include_controllers = true)
-      BlockStack::VERBS.hmap { |verb| [verb, route_names(verb)] }
+      routes = BlockStack::VERBS.hmap { |verb| [verb, route_names(verb)] }
+      controllers.each { |c| routes = routes.deep_merge(c.route_map) }
+      routes
     end
 
     # Convenient way to delete a route from this server
