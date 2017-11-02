@@ -8,7 +8,7 @@ module BlockStack
     def title
       self.class.title
     end
-    
+
     def redirect(uri, *args)
       named = BBLib.named_args(*args)
       if named[:notice]
@@ -22,6 +22,10 @@ module BlockStack
       chopped = BBLib.chars_up_to(string, *args)
       return chopped if chopped == string
       BBLib::HTML::Tag.new(:span, content: chopped, attributes: { title: string })
+    end
+
+    def render_block(view, engine = settings.default_renderer, **locals, &block)
+      self.send(engine, "blocks/#{view}".to_sym, locals.delete(:options) || {}, locals, &block)
     end
   end
 end

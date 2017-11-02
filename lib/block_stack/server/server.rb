@@ -18,6 +18,8 @@ module BlockStack
 
     helpers ServerHelpers
 
+    use Rack::Deflater
+
     attr_ary_of String, :api_routes, singleton: true, default: [], add_rem: true
     attr_ary_of Formatter, :formatters, default_proc: :default_formatters, singleton: true
     attr_sym :default_format, default: :json, allow_nil: true, singleton: true
@@ -62,25 +64,36 @@ module BlockStack
       @logger = logr
     end
 
-    def self.prefix
-      @prefix
-    end
-
     def self.base_server
       self
     end
 
     bridge_method :base_server
 
+    def self.prefix
+      @prefix
+    end
+
     def self.prefix=(pre)
-      pre = pre.to_s.uncapsulate('/')
+      pre = pre.to_s.uncapsulate('/') if pre
       return @prefix if @prefix == pre
       change_prefix(@prefix, pre)
       @prefix = pre
     end
 
+    def self.api_prefix
+      @api_prefix
+    end
+
+    def self.api_prefix=(pre)
+      pre = pre.to_s.uncapsulate('/') if pre
+      return @api_prefix if @api_prefix == pre
+      change_prefix(@prefix, pre)
+      @api_prefix = pre
+    end
+
     def self.build_route(path, verb, api: false)
-      path = "/#{settings.prefix}#{path}" if settings.prefix
+      path = "#{api && api_prefix ? "/#{api_prefix}" : nil}/#{settings.prefix}#{path}" if settings.prefix
       (path.end_with?('/') ? "#{path}?" : path) + (verb == :get && api ? '(.:format)?' : '')
     end
 
@@ -209,6 +222,7 @@ module BlockStack
     def self.register_controllers
       controllers.each do |controller|
         debug("Registering new controller: #{controller}")
+        p self
         controller.base_server = self
         use controller
       end
@@ -235,11 +249,14 @@ module BlockStack
           if api_routes.include?(full)
             verb, path = api_routes.delete(full).split(' ', 2)
             path = path.sub(/^\/#{Regexp.escape(old)}/i, '') if old
-            logger.debug("Changing API route from '#{current}' to /#{new}#{path}")
+            replace = "#{api_prefix ? "/#{api_prefix}" : nil}/#{new}"
+            logger.debug("Changing API route from '#{current}' to /#{replace}#{path}")
             add_api_routes("#{verb} /#{new}#{path}")
+          else
+            replace = new
           end
           current = current.sub(/^\/#{Regexp.escape(old)}/i, '') if old
-          route[0] = Mustermann.new("/#{new}#{current}", route[0].options)
+          route[0] = Mustermann.new("/#{replace}#{current}", route[0].options)
         end
       end
     end

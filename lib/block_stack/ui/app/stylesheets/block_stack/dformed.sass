@@ -1,0 +1,94 @@
+.dform-save
+  cursor: pointer
+
+div.dform
+  margin: auto
+  display: table
+  .dformed-vform
+    .section-label
+      font-size: 20px
+      text-align: left
+      padding: 20px 0px
+    table.fields
+      background-color: white
+      box-shadow: 0px 2px 6px #ababab
+      width: 100%
+      tr
+        border-bottom: 1px solid #eee
+        td
+          padding: 10px
+          &.dformed-label
+            vertical-align: top
+        td:nth-child(odd)
+          padding-left: 35px
+          font-size: 14px
+        td:nth-child(even)
+          padding-right: 35px
+          font-size: 14px
+
+.dform
+  label
+    font-weight: bold
+    text-align: right
+  td.label
+    text-align: right
+    padding: 8px 15px
+    vertical-align: top
+
+  .multi_field
+    display: table
+    div, input, select, textarea
+      float: left
+    .btn
+      float: left
+      display: block
+    table.fields.dformed-hform
+      border: none
+      box-shadow: none
+      float: left
+      width: auto
+      td
+        padding: 5px
+        &.dformed-label
+          vertical-align: middle
+          height: 100%
+          padding: 5px
+        &.dformed-field
+          padding: 5px
+
+  input, textarea, select
+    transition: all 0.5s ease
+    border: 1px solid #b9b9b9
+    padding: 5px 10px
+    font-size: 15px
+    border-radius: 3px
+    width: 300px
+    &:focus
+      border: 1px solid #2e9ce2
+      box-shadow: 0 0 8px #2e9ce2
+      outline: none
+    &.select2-search__field
+      border: none
+      background-color: transparent
+      &:focus
+        border: none
+        background-color: transparent
+        box-shadow: none
+
+  input[type=number]
+    width: 100px
+    text-align: center
+    padding-right: 5px
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button
+    opacity: 1
+
+  .multi_field
+    &.empty_placeholder
+      i
+        padding: 2px 5px
+        color: grey
+
+  .flatpickr-input
+    background-color: white

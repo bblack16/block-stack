@@ -1,7 +1,13 @@
 module BlockStack
   class Controller < Server
 
-    attr_of Server, :base_server, singleton: true
+    def self.base_server
+      @base_server
+    end
+
+    def self.base_server=(bs)
+      @base_server = bs
+    end
 
     def self.controllers
       []

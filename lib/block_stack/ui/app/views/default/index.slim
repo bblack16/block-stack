@@ -1,12 +1,2 @@
-== slim :'defaults/header', model: @model
+== render_block :header, model: @model
 br
-.centered
-  .centered
-    == slim :'defaults/widgets/paginator'
-  - case (params[:display] || session[:display]).to_s
-  - when 'cards'
-    == slim :'defaults/cards'
-  - when 'list'
-    == slim :'defaults/horizontal_cards'
-  - else
-    == slim :'defaults/table'

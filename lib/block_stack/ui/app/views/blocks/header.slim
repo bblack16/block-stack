@@ -38,16 +38,16 @@ sass:
   - single = model && !model.is_a?(Class)
   - exists = single && model.exist?
   - if exists
-    - if model.setting?(:logo) && logo = model.image_for(:logo, id: :logo)
-      - title = logo
-    - else
-      - title = model.setting_call(:title)
+    /- if model.setting?(:logo) && logo = model.image_for(:logo, id: :logo)
+    /  - title = logo
+    /- else
+    /  - title = model.setting_call(:title)
   - elsif single
     - title = "Create New #{model.class.clean_name}"
   - else
     - title = model.clean_name.pluralize
   - subtitle = nil
-  - background = @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
+  /- background = @model.image_for(:background, class: 'ken-burns') || image_tag("#{@model.dataset_name}/background", class: 'ken-burns')
 
 section.header class="#{color} #{background ? ' with-image' : nil}"
   .backdrop
@@ -66,7 +66,7 @@ section.header class="#{color} #{background ? ' with-image' : nil}"
       a.btn.btn-outline-success#new href="/#{@model.plural_name}/new" = "New #{@model.clean_name}"
     - if single && exists
       #actions
-        == slim :'defaults/widgets/action_buttons'
+        /== slim :'defaults/widgets/action_buttons'
     - elsif !single
       #actions
         .btn-group.text-center

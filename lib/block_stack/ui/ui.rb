@@ -42,6 +42,10 @@ module BlockStack
     Opal.use_gem 'bblib'
     Opal.use_gem 'dformed'
 
+    def self.api_prefix
+      @api_prefix ||= 'api'
+    end
+
     def self.default_asset_paths
       [File.expand_path("../app", __FILE__)]
     end
@@ -103,10 +107,6 @@ module BlockStack
       end
       menu
     end
-    # 
-    # def simple(view, renderer = settings.default_renderer, locals = {}, &block)
-    #   send(renderer, view.to_sym, opts.delete(:options), locals, &block)
-    # end
 
     helpers do
       def find_template(views, name, engine, &block)
