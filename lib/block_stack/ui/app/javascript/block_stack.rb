@@ -11,12 +11,11 @@ require 'javascript/block_stack/loaders'
 require 'javascript/block_stack/dformed'
 require 'javascript/blocks/block'
 
-Document.on 'ready turbolinks:load' do
-  # Load params into a constant
-  # TODO: Determine if this is needed
-  # PARAMS = JSON.parse(Element['#params'].attr('json'))
-  # Element['#params'].remove
+Document.on 'turbolinks:load' do
+  Loaders.load_all
+end
 
+Document.ready? do
   Loaders.load_all
 end
 

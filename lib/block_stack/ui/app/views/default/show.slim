@@ -1,1 +1,3 @@
-== render_block :header, model: @model
+== render_block :header, title: @model.clean_name, subtitle: "ID: #{@model.id}", background: "#{@model.plural_name}/background"
+br
+== render_block :details, title: "#{@model.clean_name} Details", data: @model.serialize

@@ -2,7 +2,6 @@ module BlockStack
   # Image related helpers for UI servers running sprockets.
   module ImageHelper
     def image_tags(*images, **opts)
-      # opts[:class] = opts[:class].to_s + " lazyload" if opts.include?(:class)
       images.map do |image|
         if self.class.opal.sprockets.find_asset("images/#{image}")
           tag(:img, '', opts.except(:fallbacks, :missing).merge(src: "/assets/images/#{image}"))

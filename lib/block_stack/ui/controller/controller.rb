@@ -42,6 +42,32 @@ module BlockStack
           slim :'default/new'
         end
       end
+
+      get '/:id' do
+        begin
+          @model = model.find(params[:id])
+          if @model
+            send(engine, :"#{model.plural_name}/show")
+          else
+            redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+          end
+        rescue Errno::ENOENT => e
+          slim :'default/show'
+        end
+      end
+
+      get '/:id/edit' do
+        begin
+          @model = model.find(params[:id])
+          if @model
+            send(engine, :"#{model.plural_name}/edit")
+          else
+            redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
+          end
+        rescue Errno::ENOENT => e
+          slim :'default/edit'
+        end
+      end
     end
 
   end

@@ -1,0 +1,14 @@
+== stylesheet_include('blocks/details')
+
+- title = nil unless locals[:title]
+
+table.details.height-2
+  - if title
+    thead
+      tr
+        th.text-center colspan=2 == title
+  tbody
+    - data.each do |name, value|
+      tr
+        td.label == name
+        td.value == display_value(value, name)

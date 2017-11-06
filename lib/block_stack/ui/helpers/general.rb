@@ -27,5 +27,20 @@ module BlockStack
     def render_block(view, engine = settings.default_renderer, **locals, &block)
       self.send(engine, "blocks/#{view}".to_sym, locals.delete(:options) || {}, locals, &block)
     end
+
+    def display_value(value, label = nil)
+      case value
+      when Array
+        value.join_terms
+      when Time
+        value.strftime(settings.time_format)
+      when Date
+        value.strftime(settings.date_format)
+      when Float, Integer
+        label.nil? || label =~ /[^\_\-\.]id[$\s\_\-\.]/i ? value : value.to_delimited_s
+      else
+        value.to_s
+      end
+    end
   end
 end

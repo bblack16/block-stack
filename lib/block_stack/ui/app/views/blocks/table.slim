@@ -1,0 +1,40 @@
+/ headers [Array of Symbols or Strings]
+/ data [Array of Hash or Object]
+
+== stylesheet_include('blocks/table')
+
+- data = [data] unless data.is_a?(Array)
+
+- unless locals[:headers] && headers
+  - headers = case data.first
+  - when Hash
+    - data.first.keys
+  - when BBLib::Effortless
+    - data.first._attrs.reject { |k, v| v[:options][:singleton] }.keys.hmap { |k| [k.to_s.gsub('_', ' ').title_case, k] }
+  - else
+    - { 'ID': :object_id, 'Name': :to_s, 'Class': :class }
+
+- headers = headers.hmap { |h| [h, h] } if headers.is_a?(Array)
+- max = 256 unless locals[:max]
+- empty = nil unless locals[:empty]
+- page_length = 25 unless locals[:page_length]
+
+table.data-table.default.responsive data-page-length="#{page_length}"
+  thead
+    tr
+      - headers.each do |header, method|
+        th.ripple data-ripple-color='rgb(215, 215, 215)' = squish(header.to_s, max)
+  tbody
+    - [data].flatten(1).each do |obj|
+      tr
+        - headers.each do |header, method|
+          - if obj.is_a?(Hash)
+            - value = obj[method]
+          - elsif obj.respond_to?(method)
+            - value = obj.send(method)
+          - else
+            - value = empty
+          - value = display_value(value, method)
+          - if method == :id && obj.is_a?(BlockStack::Model)
+            - value = link_to(:show, obj, value, class: 'btn btn-outline-primary')
+          td == squish(value.to_s, max)

@@ -27,7 +27,7 @@ module BlockStack
 
     helpers TagHelper, ImageHelper, GeneralHelper
 
-    attr_ary_of String, :asset_paths, singleton: true, default_proc: :default_asset_paths, add_rem: true, adder: 'add_asset_path', remover: 'remove_asset_path', uniq: true
+    # attr_ary_of String, :asset_paths, singleton: true, default_proc: :default_asset_paths, add_rem: true, uniq: true
     attr_of Menu, :menu, default_proc: :build_main_menu, singleton: true
 
     set(
@@ -36,11 +36,33 @@ module BlockStack
       maps_prefix: '/__OPAL_SOURCE_MAPS__', # Sets the maps route for opal. Do not change unless you know what you are doing.
       app_name: nil, # Set to a string to override the class name being used as the server name.
       navbar: :default, # Sets the name of the navbar view to render the main menu
-      default_renderer: :slim # Sets the default rendering engine to be used when calling the render method.
+      default_renderer: :slim, # Sets the default rendering engine to be used when calling the render method.
+      time_format: '%Y-%m-%d %H:%M:%S', # Set the default time format to use when displaying times across various widgets
+      date_format: '%B %d, %Y' # Set the default date format to use when displaying dates across various widgets
     )
 
     Opal.use_gem 'bblib'
     Opal.use_gem 'dformed'
+
+    def self.asset_paths
+      @asset_paths ||= default_asset_paths
+    end
+
+    def self.asset_paths=(paths)
+      @asset_paths = [paths].flatten
+    end
+
+    def self.add_asset_path(path, index = 0)
+      return true if asset_paths.include?(path)
+      asset_paths.insert(index, path)
+      setup_sprockets
+      controllers.each { |c| c.add_asset_path(path, index) }
+      return asset_paths.include?(path)
+    end
+
+    def self.remove_asset_path(path)
+      asset_paths.delete(path)
+    end
 
     def self.api_prefix
       @api_prefix ||= 'api'
@@ -66,7 +88,7 @@ module BlockStack
 
     def self.setup_sprockets
       asset_paths.each do |path|
-        opal.append_path(path) if @opal && !@opal.sprockets.paths.include?(path)
+        @opal.append_path(path) if @opal && !@opal.sprockets.paths.include?(path)
       end
     end
 
@@ -79,6 +101,7 @@ module BlockStack
 
     def self.run!(*args)
       register_controllers
+      controllers.each { |c| c.asset_paths = self.asset_paths }
       precompile! if settings.precompile
       logger.info("Booting up your BlockStack UI server...")
       super

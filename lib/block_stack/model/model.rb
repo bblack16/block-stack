@@ -34,7 +34,7 @@ module BlockStack
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
-      base.send(:bridge_method, :db)
+      base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name)
 
       ##########################################################
       # Add basic implementations of query methods
