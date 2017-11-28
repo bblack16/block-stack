@@ -1,3 +1,6 @@
-== render_block :header, title: @model.class.clean_name, subtitle: "ID: #{@model.id}"
+== stylesheet_include 'default/edit'
+
+== render_block :header, title: @model.class.clean_name, subtitle: "ID: #{@model.id}" do
+  == link_to(:show, @model, 'Cancel', class: 'btn btn-outline-danger cancel-button')
 br
-== slim :'default/_form'
+== render_block(:form, model: @model)

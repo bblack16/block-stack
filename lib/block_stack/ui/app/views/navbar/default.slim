@@ -10,7 +10,7 @@
 - brand = "<span class='first'>#{split.first}</span>#{split.last}"
 
 div#main-menu.vertical
-  nav.title == brand
+  a.title href='/' == brand
   - menu.items.each do |item|
     - active = item.active?(request.path_info)
     nav.menu-item class="#{active ? ' active' : nil}"
@@ -22,6 +22,10 @@ div#main-menu.vertical
         = item.title
       - if item.sub_menu?
         == slim :'navbar/partials/sub_menu', {}, item: item, level: 1
+
+  nav.float-right.time
+    i.fa.fa-clock-o
+    .clock blockstack-block='Clock' = Time.now.strftime('%H:%M:%S')
 
 / TODO: Move the javascript below to Opal and make it much more robust (only open one menu at a time, autoclose on hide)
 javascript:

@@ -220,6 +220,7 @@ module BlockStack
 
       module InstanceMethods
         def save
+          return false unless super
           if exist?
             dataset.where(id: id).update(serialize_sql)
           else
@@ -230,6 +231,7 @@ module BlockStack
         end
 
         def delete
+          super
           dataset.where(id: id).delete
         end
 

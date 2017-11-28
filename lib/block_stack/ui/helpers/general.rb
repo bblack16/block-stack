@@ -24,8 +24,8 @@ module BlockStack
       BBLib::HTML::Tag.new(:span, content: chopped, attributes: { title: string })
     end
 
-    def render_block(view, engine = settings.default_renderer, **locals, &block)
-      self.send(engine, "blocks/#{view}".to_sym, locals.delete(:options) || {}, locals, &block)
+    def render_block(view, locals = {}, &block)
+      Block.new(type: view).render(self, locals, &block)
     end
 
     def display_value(value, label = nil)

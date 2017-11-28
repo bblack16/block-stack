@@ -1,17 +1,12 @@
 == stylesheet_include('blocks/header')
 
-- title = '' unless locals[:title]
-- subtitle = nil unless locals[:subtitle]
-- background = nil unless locals[:background]
-- color = 'blue' unless locals[:color]
-- animated = true unless locals.include?(:animated)
-
 - background = image_tag(background, class: "#{animated ? 'ken-burns' : nil}") unless background.is_a?(BBLib::HTML::Tag)
 
-section.header class="#{color} #{background ? ' with-image' : nil}" style="#{defined?(height) ? "height: #{height}px" : nil}"
+section.header class="#{color} #{background ? ' with-image' : nil}" style="#{defined?(height) ? "height: #{height}px" : nil}" *attributes
   - if background
     .backdrop == background
   .header-text
-    .title.text-center.bold == title
+    .title.text-center.bold.animated.fadeIn == title
     - if subtitle
-      .sub-title.text-center.subtitle == subtitle
+      .sub-title.text-center.subtitle.animated.fadeIn == subtitle
+  == yield if block_given?

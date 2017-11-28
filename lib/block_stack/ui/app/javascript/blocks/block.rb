@@ -1,7 +1,11 @@
-Document.on 'ready turbolinks:load' do
+Document.on 'turbolinks:load' do
   after(1) do
     Blocks.load_blocks
   end
+end
+
+Document.ready? do
+  Blocks.load_blocks
 end
 
 module Blocks

@@ -1,8 +1,6 @@
 == stylesheet_include('blocks/details')
 
-- title = nil unless locals[:title]
-
-table.details.height-2
+table *attributes
   - if title
     thead
       tr
@@ -12,3 +10,5 @@ table.details.height-2
       tr
         td.label == name
         td.value == display_value(value, name)
+
+    == yield if block_given?

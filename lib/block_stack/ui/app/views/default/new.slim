@@ -1,3 +1,6 @@
-== render_block :header, title: "New #{@model.class.clean_name}"
+== stylesheet_include 'default/new'
+
+== render_block :header, title: "New #{@model.class.clean_name}", color: :green do
+  == link_to(:index, @model, 'Cancel', class: 'btn btn-outline-danger back-button')
 br
-== slim :'default/_form'
+== render_block(:form, model: @model)

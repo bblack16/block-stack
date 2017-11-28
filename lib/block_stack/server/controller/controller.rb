@@ -26,6 +26,8 @@ module BlockStack
       @model = mdl if mdl.is_a?(BlockStack::Model)
     end
 
+    # TODO Add error message returns for save methods
+    # TODO Break into several methods that are linked with crud
     def self.crud(opts = {})
       self.model = opts[:model] if opts[:model]
       self.prefix = opts.include?(:prefix) ? opts[:prefix] : model.plural_name
@@ -51,14 +53,18 @@ module BlockStack
 
       # Create
       post_api '/' do
-        args = JSON.parse(request.body.read).keys_to_sym
-        BlockStack.logger.info("POST #{model.clean_name} - Params #{args}")
-        item = model.new(args)
-        halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
-        if result = item.save
-          { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
-        else
-          { result: result, status: :error, message: "Failed to save #{model.model_name}" }
+        begin
+          args = JSON.parse(request.body.read).keys_to_sym
+          BlockStack.logger.info("POST #{model.clean_name} - Params #{args}")
+          item = model.new(args)
+          halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
+          if result = item.save
+            { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
+          else
+            { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
+          end
+        rescue => e
+          { status: :error, message: "Failed to save due to the following error: #{e}" }
         end
       end unless opts.include?(:create) && !opts[:create]
 

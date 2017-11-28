@@ -97,6 +97,7 @@ module Loaders
     `alertify.parent(document.body)`
   end
 
+  # TODO Add calendar icon to inputs
   def self.date_pickers
     Element['.date-time-picker'].JS.flatpickr({ enableTime: true, altInput: true }.to_n)
     Element['.date-picker'].JS.flatpickr({ altInput: true }.to_n)

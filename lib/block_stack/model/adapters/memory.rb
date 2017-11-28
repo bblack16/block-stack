@@ -70,10 +70,12 @@ module BlockStack
 
       module InstanceMethods
         def save
+          return false unless super
           db.save(dataset_name, self)
         end
 
         def delete
+          super
           db.delete(dataset_name, self)
         end
       end

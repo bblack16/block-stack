@@ -222,7 +222,6 @@ module BlockStack
     def self.register_controllers
       controllers.each do |controller|
         debug("Registering new controller: #{controller}")
-        p self
         controller.base_server = self
         use controller
       end

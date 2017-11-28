@@ -1,4 +1,5 @@
 require_relative 'model_associations'
+require_relative 'validation/validation'
 
 ####################
 # Features
@@ -29,16 +30,16 @@ module BlockStack
 
       base.singleton_class.send(:after, :all, :find_all, :latest_by, :oldest_by, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
-      base.send(:after, :save, :save_associations)
-      base.send(:after, :delete, :delete_associations)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
-      base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name)
+      base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
+      base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
+      base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
 
       ##########################################################
       # Add basic implementations of query methods
-      # Only if they are not already defined by the adapter
+      # Only if they are not already defined by the adapter or class
       ##########################################################
       base.instance_eval do
         def find(query)
@@ -221,6 +222,50 @@ module BlockStack
       def instantiate_all(*results)
         results.map { |r| instantiate(r) }
       end
+
+      def validate(attribute, type, message = nil, **opts, &block)
+        opts = opts.merge(message: message) if message
+        opts = opts.merge(expressions: block, type: :custom) if block
+        self.validations << Validation.new(opts.merge(attribute: attribute, type: type))
+      end
+
+      def dform(obj = self)
+        DFormed.form_for(obj, bypass: true)
+      end
+
+      # Returns the controller class for this model if one exists.
+      # If the build param is set to true, a class will be dynamically
+      # instantiated if one does not already exist.
+      def controller(build = false, crud: false)
+        raise RuntimeError, "BlockStack::Controller not found. You must require it first if you wish to use it: require 'block_stack/server'" unless defined?(BlockStack::Controller)
+        return @controller if @controller
+        controller_class = BlockStack.setting(:default_controller) unless controller_class.is_a?(BlockStack::Controller)
+        # Figure out this classes namespace
+        namespace = self.to_s.split('::')[0..-2].join('::')
+        if namespace.empty?
+          namespace = Object
+          const_name = "#{self}Controller"
+        else
+          namespace = Object.const_get(namespace)
+          const_name = "#{namespace}::#{self}Controller"
+        end
+        # Look for a controller class that matches our model in the same namespace
+        if namespace.const_defined?(const_name)
+          self.controller = namespace.const_get(const_name)
+        elsif build
+          # If a match was not found and build was set to true, we will create a new controller
+          self.controller = namespace.const_set(const_name.split('::').last, Class.new(controller_class))
+          controller.crud(self) if crud
+        else
+          return nil
+        end
+        @controller
+      end
+
+      def controller=(cont)
+        raise RuntimeError, "BlockStack::Controller not found. You must require it first if you wish to use it: require 'block_stack/server'" unless defined?(BlockStack::Controller)
+        @controller = cont
+      end
     end
 
     module InstanceMethods
@@ -254,6 +299,7 @@ module BlockStack
       end
 
       def update(params, save_after = true)
+        return false unless valid?
         params.each do |k, v|
           if attribute?(k)
             send("#{k}=", v)
@@ -270,33 +316,61 @@ module BlockStack
         end
       end
 
-      # def save
-      #   raise AbstractError, "The save method should have been redefined in an adapter..."
-      # end
-      #
-      # def delete
-      #   raise AbstractError, "The delete method should have been redefined in an adapter..."
-      # end
+      def save
+        logger.debug("Saving new #{clean_name}")
+        return false unless valid?
+        save_associations
+      end
+
+      def delete
+        logger.debug("Deleting #{clean_name} with ID #{id}.")
+        delete_associations
+      end
 
       def save_associations
-      _attrs.find_all { |name, a| a[:options][:association] }.each do |name, opts|
-        items = [send(name)].flatten(1).flat_map do |value|
-          next unless value
-          value.save unless value.exist?
-          value
-        end.compact
-        items = items.first if opts[:options][:association].singular?
-        opts[:options][:association].associate(self, items) if items
+        _attrs.find_all { |name, a| a[:options][:association] }.each do |name, opts|
+          items = [send(name)].flatten(1).flat_map do |value|
+            next unless value
+            value.save unless value.exist?
+            value
+          end.compact
+          items = items.first if opts[:options][:association].singular?
+          opts[:options][:association].associate(self, items) if items
+        end
       end
-    end
 
-    def delete_associations
-      debug { "Deleting associations for #{self.class.clean_name} #{id}." }
-      BlockStack::Associations.associations_for(self).all? do |asc|
-        debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
-        asc.delete(self)
+      def valid?
+        return true if validations.empty?
+        validate
+        self.errors.empty?
       end
-    end
+
+      def errors
+        validate
+        errors
+      end
+
+      def validate
+        self.errors.clear
+        validations.each do |validation|
+          valid = validation.valid?(self)
+          next if valid
+          (errors[validation.attribute] ||= []).push(validation.message)
+        end
+        self.errors = errors.hmap { |k, v| [k, v.uniq] }
+      end
+
+      def delete_associations
+        debug { "Deleting associations for #{self.class.clean_name} #{id}." }
+        BlockStack::Associations.associations_for(self).all? do |asc|
+          debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
+          asc.delete(self)
+        end
+      end
+
+      def dform
+        self.class.dform(self)
+      end
     end
 
   end

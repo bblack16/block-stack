@@ -2,6 +2,10 @@ module BlockStack
   class Controller < BlockStack::Server
     attr_ary_of Menu::Item, :sub_menus, default: [], singleton: true, add_rem: true, adder: 'add_sub_menu', remover: 'remove_sub_menu'
 
+    set(
+      default_view_folder: 'default' # Sets the default folder to load fallback views from.
+    )
+
     class << self
       alias crud_api crud
     end
@@ -30,7 +34,7 @@ module BlockStack
         rescue Errno::ENOENT => e
           @model = model
           @models = model.all
-          slim :'default/index'
+          slim :"#{settings.default_view_folder}/index"
         end
       end
 
@@ -39,7 +43,7 @@ module BlockStack
           @model = model.new(opts[:new_defaults] || {})
           send(engine, :"#{model.plural_name}/new")
         rescue Errno::ENOENT => e
-          slim :'default/new'
+          slim :"#{settings.default_view_folder}/new"
         end
       end
 
@@ -52,7 +56,7 @@ module BlockStack
             redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
           end
         rescue Errno::ENOENT => e
-          slim :'default/show'
+          slim :"#{settings.default_view_folder}/show"
         end
       end
 
@@ -65,7 +69,7 @@ module BlockStack
             redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
           end
         rescue Errno::ENOENT => e
-          slim :'default/edit'
+          slim :"#{settings.default_view_folder}/edit"
         end
       end
     end

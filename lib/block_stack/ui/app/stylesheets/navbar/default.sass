@@ -4,11 +4,22 @@ body
   height: 60px
   background-color: white
   border-bottom: 1px solid #d4d4d4
-  z-index: 80
+  z-index: 100
   position: fixed
   top: 0
   left: 0
   width: 100%
+  a.title
+    font-size: 28px
+    height: 100%
+    padding: 0px 1.5vw
+    padding-top: 10px
+    font-weight: bold
+    color: #848484
+    float: left
+    text-decoration: none !important
+    span.first
+      color: #26c714
   nav
     float: left
     vertical-align: middle
@@ -17,15 +28,17 @@ body
     height: 100%
     position: relative
     transition: border 0.1s ease
-    &.title
-      font-size: 28px
-      height: 100%
-      padding: 0px 1.5vw
-      padding-top: 10px
-      font-weight: bold
-      color: #848484
-      span.first
-        color: #26c714
+    &.time
+      color: #959595
+      font-size: 14px
+      text-align: center
+      padding-top: 18px
+      i.fa
+        float: right
+        padding-left: 3px
+        font-size: 20px
+      .clock
+        float: left
     &.menu-item
       &:hover
         border-bottom: 5px solid #36cd58
