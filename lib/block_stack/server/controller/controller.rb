@@ -54,15 +54,17 @@ module BlockStack
       # Create
       post_api '/' do
         begin
-          args = JSON.parse(request.body.read).keys_to_sym
+          args = json_request
           BlockStack.logger.info("POST #{model.clean_name} - Params #{args}")
           item = model.new(args)
           halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
           if result = item.save
             { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
           else
-            { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
+            { status: :error, message: "Failed to save #{model.model_name}" }
           end
+        rescue InvalidModel => e
+          { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
         rescue => e
           { status: :error, message: "Failed to save due to the following error: #{e}" }
         end
@@ -71,7 +73,7 @@ module BlockStack
       # Update
       put_api '/:id' do
         begin
-          args = JSON.parse(request.body.read).keys_to_sym
+          args = json_request
           BlockStack.logger.info("Update #{model.clean_name} #{params[:id]} - Params #{args}")
           item = model.find(params[:id])
           halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
@@ -98,6 +100,20 @@ module BlockStack
       end unless opts.include?(:delete) && !opts[:delete]
 
       true
+    end
+
+    protected
+
+    def method_missing(method, *args, &block)
+      if base_server && base_server.respond_to?(method)
+        base_server.send(method, *args, &block)
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method, include_private = false)
+      base_server && base_server.respond_to?(method) || super
     end
   end
 end
