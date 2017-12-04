@@ -7,55 +7,56 @@ module BlockStack
 
   def self.load_forms
     Element['.dform'].each_with_index do |form, id|
-      next if form.attr('df_loaded')
-      form_id = form.attr('df_name') || "form_#{id}"
-      if form.attr('df_get_from')
-        form_controller.download(form.attr('df_get_from'), form_id, form)
+      next if form.attr('df-loaded')
+      form_id = form.attr('df-name') || "form_#{id}"
+      if form.attr('df-get-from')
+        form_controller.download(form.attr('df-get-from'), form_id, form)
       else
-        form_data = JSON.parse(form.attr('df_form_data'))
+        form_data = JSON.parse(form.attr('df-form-data'))
         form_controller.add_and_render(form_id, form_data, form)
       end
-      form.attr('df_form_data', '')
-      form.attr('df_loaded', true)
+      form.attr('df-form-data', '')
+      form.attr('df-loaded', true)
     end
 
     Element['.dform-save'].each do |btn, id|
-      next unless btn.attr('df_name') && btn.attr('df_save_to')
-      next if btn.attr('df_loaded')
-      method = (btn.attr('df_method') || :post).downcase
+      next unless btn.attr('df-name') && btn.attr('df-save-to')
+      next if btn.attr('df-loaded')
+      method = (btn.attr('df-method') || :post).downcase
       btn.on :click do |evt|
         btn.attr(:disabled, true)
         `alertify.closeLogOnClick(true).logPosition("bottom right").log("Saving form...");`
         case method
         when :post
-          HTTP.post(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json, contentType: 'application/json') do |response|
+          HTTP.post(btn.attr('df-save-to'), data: form_controller.values(btn.attr('df-name')).to_json, contentType: 'application/json') do |response|
+            `console.log(#{response})`
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
-              if url = btn.attr(:df_save_redirect)
+              if url = btn.attr('df-save-redirect')
                 after(2) { `window.location.href = #{url}` }
               end
             else
               `alertify.closeLogOnClick(true).logPosition("bottom right").error(#{response.json[:message] || "Failed to save"});`
-              mark_form_invalid(btn.attr('df_name'), response.json[:result])
+              mark_form_invalid(btn.attr('df-name'), response.json[:result])
               btn.attr(:disabled, false)
             end
           end
         when :put
-          HTTP.put(btn.attr('df_save_to'), data: form_controller.values(btn.attr('df_name')).to_json, contentType: 'application/json') do |response|
+          HTTP.put(btn.attr('df-save-to'), data: form_controller.values(btn.attr('df-name')).to_json, contentType: 'application/json') do |response|
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
-              if url = btn.attr(:df_save_redirect)
+              if url = btn.attr('df-save-redirect')
                 after(2) { `window.location.href = #{url}` }
               end
             else
               `alertify.closeLogOnClick(true).logPosition("bottom right").error(#{response.json[:message] || "Failed to save"});`
-              mark_form_invalid(btn.attr('df_name'), response.json[:result])
+              mark_form_invalid(btn.attr('df-name'), response.json[:result])
               btn.attr(:disabled, false)
             end
           end
         end
       end
-      btn.attr('df_loaded', true)
+      btn.attr('df-loaded', true)
     end
   end
 

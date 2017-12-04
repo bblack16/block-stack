@@ -3,4 +3,4 @@
 == render_block :header, title: @model.class.clean_name, subtitle: "ID: #{@model.id}" do
   == link_to(:show, @model, 'Cancel', class: 'btn btn-outline-danger cancel-button')
 br
-== render_block(:form, model: @model)
+== render_block(:form, model: @model, method: :put, save_to: "/api/#{model.class.plural_name}/#{model.id}", save_redirect: "/#{model.class.plural_name}/#{model.id}")

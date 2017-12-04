@@ -1,7 +1,27 @@
 == stylesheet_include 'dformed'
 
-.dform-block.dform df_name='form' df_class="#{model.class}" df_form_data="#{DFormed.form_for(model).serialize(true).to_json}" *attributes
+- if model && (model.is_a?(BBLib::Effortless) || model.is_a?(Class) && model.ancestors.include?(BBLib::Effortless))
+  - form = DFormed.form_for(model).serialize(true)
+  - df_class = model.is_a?(Class) ? model.to_s : model.class.to_s
+
+- unless form
+  h2 Cannot Render DForm
+  = model
+  = model.is_a?(BBLib::Effortless)
+  = form
+
+- if form.is_a?(DFormed::Form)
+  - form = form.serialize(true)
+
+- form_attributes = { 'df-name': name, 'df-class': df_class, 'df-form-data': form.to_json }
+- save_attributes = { title: save_text, 'df-name': name, 'df-save-to': save_to, 'df-method': method.to_s.downcase, 'df-save-redirect': save_redirect }
+
+.dform-block.dform *attributes.merge(form_attributes)
 br
-button.dform-save.btn.btn-outline-primary.btn-lg.text-center#save title="Save this #{model.class.clean_name}" df_name='form' df_save_to="/api/#{model.class.plural_name}#{model.exist? ? "/#{model.id}" : nil}" df_method="#{model.exist? ? 'PUT' : 'POST'}" df_save_redirect='/#{model.class.plural_name}#{model.id ? "/#{model.id}" : nil}' Save
+button.dform-save.btn.btn-outline-primary.btn-lg.text-center#save *save_attributes Save
 
 == yield if block_given?
+
+/.dform-block.dform df_name="#{name}" df_class="#{model.class}" df_form_data="#{DFormed.form_for(model).serialize(true).to_json}" *attributes
+/br
+/button.dform-save.btn.btn-outline-primary.btn-lg.text-center#save title="Save this #{model.class.clean_name}" df_name="#{name}" df_save_to="/api/#{model.class.plural_name}#{model.exist? ? "/#{model.id}" : nil}" df_method="#{model.exist? ? 'PUT' : 'POST'}" df_save_redirect='/#{model.class.plural_name}#{model.id ? "/#{model.id}" : nil}' Save

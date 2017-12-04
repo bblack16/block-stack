@@ -23,7 +23,13 @@ div#main-menu.vertical
       - if item.sub_menu?
         == slim :'navbar/partials/sub_menu', {}, item: item, level: 1
 
-  nav.float-right.time
+  - if current_user
+    nav.float-right.user
+      i.fa.fa-user-circle
+      a.link id="menu_user" href="/session/logout" = current_user.display_name
+        = 'Logout'
+
+  nav.float-right.time.menu-item
     i.fa.fa-clock-o
     .clock blockstack-block='Clock' = Time.now.strftime('%H:%M:%S')
 

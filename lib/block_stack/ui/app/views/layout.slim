@@ -5,10 +5,9 @@ html
     == stylesheet_include('application')
     == opal_include('application.js')
   body
-    /#params json="#{params.to_h.merge(session[:params] || {}).merge(route: env['PATH_INFO']).to_json}"
     == slim :"navbar/#{base_server.settings.navbar}"
-    /- if session[:notice]
-      /#notice.hidden notice-severity="#{session.delete(:severity)}"
-        /i.fa.fa-exclamation-circle.notice-icon
-        /span = session.delete(:notice)
+    - if session[:notice]
+      #notice.hidden notice-severity="#{session.delete(:severity)}"
+        i.fa.fa-exclamation-circle.notice-icon
+        span = session.delete(:notice)
     == yield
