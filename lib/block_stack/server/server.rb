@@ -151,6 +151,12 @@ module BlockStack
       ]
     end
 
+    def json_request
+      JSON.parse(request.body.read).keys_to_sym
+    rescue => e
+      {}
+    end
+
     before do
       if settings.log_requests && message = log_request
         info(message)
