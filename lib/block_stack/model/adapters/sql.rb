@@ -219,18 +219,18 @@ module BlockStack
       end
 
       module InstanceMethods
-        def save
-          return false unless super
+        protected
+
+        def adapter_save
           if exist?
             dataset.where(id: id).update(serialize_sql)
           else
             self.id = dataset.insert(serialize_sql)
-            refresh
           end
           id ? true : false
         end
 
-        def delete
+        def adapter_delete
           super
           dataset.where(id: id).delete
         end
@@ -240,7 +240,8 @@ module BlockStack
         end
 
         def serialize_sql
-          hash = serialize.hmap do |k, v|
+          puts "SERIALIZE: #{change_set.diff}, #{change_set.changes?}"
+          hash = change_set.diff.hmap do |k, v|
             [
               k,
               if BBLib.is_a?(v, Array, Hash)

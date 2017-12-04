@@ -69,13 +69,13 @@ module BlockStack
       end
 
       module InstanceMethods
-        def save
-          return false unless super
+        protected
+
+        def adapter_save
           db.save(dataset_name, self)
         end
 
-        def delete
-          super
+        def adapter_delete
           db.delete(dataset_name, self)
         end
       end

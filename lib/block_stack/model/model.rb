@@ -1,5 +1,7 @@
 require_relative 'model_associations'
 require_relative 'validation/validation'
+require_relative 'exceptions/invalid_model'
+require_relative 'changeset'
 
 ####################
 # Features
@@ -30,9 +32,11 @@ module BlockStack
 
       base.singleton_class.send(:after, :all, :find_all, :latest_by, :oldest_by, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
+      base.send(:after, :initialize, :reset_change_set)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
+      base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false)
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
       base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
@@ -314,12 +318,19 @@ module BlockStack
         self.class.find(id).serialize.each do |k, v|
           send("#{k}=", v) if k.respond_to?("#{k}=")
         end
+        reset_change_set
+        true
       end
 
       def save
+        return false unless change_set.changes? # Check for changes first
         logger.debug("Saving new #{clean_name}")
-        return false unless valid?
+        # Check the model to see if it is valid
+        raise InvalidModel, "Several fields were invalid when saving this model: #{errors.keys.join_terms}" unless valid?
+        self.updated_at = Time.now
+        adapter_save
         save_associations
+        refresh
       end
 
       def delete
@@ -370,6 +381,20 @@ module BlockStack
 
       def dform
         self.class.dform(self)
+      end
+
+      protected
+
+      def adapter_save
+        # Define some logic here on each adapter
+      end
+
+      def adapter_delete
+        # Define custom delete logic for each adapter
+      end
+
+      def reset_change_set
+        change_set.reset
       end
     end
 
