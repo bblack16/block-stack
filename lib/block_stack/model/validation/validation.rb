@@ -5,7 +5,7 @@ module BlockStack
     TYPES = [
       :exists, :not_empty, :empty, :eq, :gt, :gte, :lt,
       :lte, :in, :contains, :start_with, :end_with, :matches,
-      :length, :uniq, :custom
+      :length, :uniq, :uniq_or_nil, :custom
     ]
 
     MODES = [:any, :all, :none]
@@ -16,11 +16,14 @@ module BlockStack
     attr_ary :expressions, default: []
     attr_bool :inverse, default: false
     attr_str :message, default: 'Invalid value'
+    attr_bool :allow_nil, default: false
 
     alias expression expressions
 
     def valid?(model)
+      @model = model
       value = model.attribute(attribute)
+      return true if value.nil? && allow_nil?
       mode_method = (mode == :none ? :any : mode)
       if expressions.empty?
         valid = send(type, value, nil)
@@ -85,8 +88,14 @@ module BlockStack
       value.to_s =~ exp
     end
 
-    def uniq(value, exp, model)
-      !model.class.distinct(attribute).include?(value)
+    def uniq(value, exp)
+      if @model.exist?
+        !@model.class.find_all(attribute => value).any? do |match|
+          match == @model
+        end
+      else
+        !@model.class.distinct(attribute).include?(value)
+      end
     end
 
     def custom(value, exp)
