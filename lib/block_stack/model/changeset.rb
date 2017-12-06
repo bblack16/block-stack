@@ -18,12 +18,23 @@ module BlockStack
         end
       end
 
+      alias changes diff
+
       def changes?
-        !diff.empty?
+        !diff.empty? || associations_changed?
       end
 
       def reset
-        self.original = object.serialize.dup
+        self.original = object.serialize.dup.hmap { |k, v| [k, (v.dup rescue v)] }
+      end
+
+      def associations_changed?
+        return true unless object.exist?
+        old_obj = object.class.find(object.id)
+        object.associations.any? do |association|
+          name = association.method_name
+          object.send(name) != old_obj.send(name)
+        end
       end
     end
   end
