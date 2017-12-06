@@ -20,6 +20,7 @@ module BlockStack
       add_sub_menus(
         {
           title: model.clean_name.pluralize,
+          fa_icon: fa_icon,
           items: [
             { title: 'Browse', fa_icon: 'eye', attributes: { href: "/#{prefix}/" } },
             { title: 'New Game', fa_icon: 'plus', attributes: { href: "/#{prefix}/new" } }
