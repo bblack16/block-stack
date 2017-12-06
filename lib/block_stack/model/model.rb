@@ -1,6 +1,7 @@
 require_relative 'model_associations'
 require_relative 'validation/validation'
 require_relative 'exceptions/invalid_model'
+require_relative 'exceptions/invalid_association'
 require_relative 'changeset'
 
 ####################
@@ -32,14 +33,15 @@ module BlockStack
 
       base.singleton_class.send(:after, :all, :find_all, :latest_by, :oldest_by, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
-      base.send(:after, :initialize, :reset_change_set)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
-      base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false)
+      base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false, dformed: false)
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
       base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
+
+      base.load_associations
 
       ##########################################################
       # Add basic implementations of query methods
@@ -95,13 +97,13 @@ module BlockStack
           find_all(query).map { |i| i.attribute(field) }.sum
         end unless respond_to?(:sum)
 
-        def sample(field, query = {})
+        def sample(query = {})
           query ? find_all(query).sample : all.sample
         end unless respond_to?(:sample)
 
         def exist?(field, query = {})
           query = { id: query } unless query.is_a?(Hash)
-          query && find(query) != nil
+          (query && find(query) != nil) ? true : false
         end unless respond_to?(:exist?)
       end
     end
@@ -183,6 +185,11 @@ module BlockStack
         model_name.to_s.gsub(/_+/, ' ').title_case
       end
 
+      def attribute?(name)
+        return nil unless name
+        _attrs.include?(name)
+      end
+
       def dataset_name(new_name = nil)
         return @dataset_name = new_name.to_sym if new_name
         @dataset_name ||= plural_name
@@ -227,8 +234,8 @@ module BlockStack
         results.map { |r| instantiate(r) }
       end
 
-      def validate(attribute, type, message = nil, **opts, &block)
-        opts = opts.merge(message: message) if message
+      def validate(attribute, type, *expressions, **opts, &block)
+        opts = opts.merge(expressions: expressions) unless expressions.empty?
         opts = opts.merge(expressions: block, type: :custom) if block
         self.validations << Validation.new(opts.merge(attribute: attribute, type: type))
       end
@@ -278,7 +285,7 @@ module BlockStack
       end
 
       def exist?
-        id && self.class.exist?(id)
+        id && self.class.exist?(id) ? true : false
       end
 
       def dataset_name
@@ -302,6 +309,10 @@ module BlockStack
         _attrs.include?(name) && respond_to?(name)
       end
 
+      def associations
+        BlockStack::Associations.associations_for(self)
+      end
+
       def update(params, save_after = true)
         return false unless valid?
         params.each do |k, v|
@@ -322,14 +333,13 @@ module BlockStack
         true
       end
 
-      def save
-        return false unless change_set.changes? # Check for changes first
-        logger.debug("Saving new #{clean_name}")
-        # Check the model to see if it is valid
-        raise InvalidModel, "Several fields were invalid when saving this model: #{errors.keys.join_terms}" unless valid?
+      def save(skip_associations = false)
+        return false unless change_set.changes?
+        logger.debug("About to save #{clean_name} ID: #{id}")
+        raise InvalidModel, self unless valid?
         self.updated_at = Time.now
         adapter_save
-        save_associations
+        save_associations unless skip_associations
         refresh
       end
 
@@ -342,7 +352,7 @@ module BlockStack
         _attrs.find_all { |name, a| a[:options][:association] }.each do |name, opts|
           items = [send(name)].flatten(1).flat_map do |value|
             next unless value
-            value.save unless value.exist?
+            value.save(true) unless value.exist?
             value
           end.compact
           items = items.first if opts[:options][:association].singular?
@@ -395,6 +405,10 @@ module BlockStack
 
       def reset_change_set
         change_set.reset
+      end
+
+      def simple_init(*args)
+        reset_change_set
       end
     end
 
