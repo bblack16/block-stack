@@ -12,9 +12,10 @@ module BlockStack
       end
 
       def self.type
-        [:sqlite, :postgres, :mysql, :mysql2, :odbc, :oracle]
+        [:sqlite, :postgres, :mysql, :mysql2, :odbc, :oracle, :mssql]
       end
 
+      # TODO Should an adapter be made per SQL DB with a parent mixin?
       def self.client
         [
           'Sequel::SQLite::Database', 'Sequel::Postgres::Database', 'Sequel::MySQL::Database',
@@ -117,6 +118,23 @@ module BlockStack
 
         def distinct(field, query = {})
           dataset.select(field).where(query).distinct.all.map { |i| i[field.to_sym] }
+        end
+
+        # TODO Implement this in SQL
+        def sample(query = {})
+          all.sample
+        end
+
+        # Returns the specific SQL adapter being used
+        def adapter_type
+          {
+            'Sequel::SQLite::Database': :sqlite,
+            'Sequel::Postgres::Database': :postgres,
+            'Sequel::MySQL::Database': :mysql,
+            'Sequel::ODBC::Database': :odbc,
+            'Sequel::Oracle::Database': :oracle,
+            'Sequel::MSSQL::Database': :mssql
+          }[db.class.to_s.to_sym] || :unknown
         end
 
         def table_exist?
@@ -240,7 +258,6 @@ module BlockStack
         end
 
         def serialize_sql
-          puts "SERIALIZE: #{change_set.diff}, #{change_set.changes?}"
           hash = change_set.diff.hmap do |k, v|
             [
               k,
