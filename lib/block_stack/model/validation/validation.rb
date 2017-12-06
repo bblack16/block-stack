@@ -15,8 +15,10 @@ module BlockStack
     attr_element_of MODES, :mode, default: MODES.first
     attr_ary :expressions, default: []
     attr_bool :inverse, default: false
-    attr_str :message, default: 'Invalid value'
+    attr_str :message, default: ''
     attr_bool :allow_nil, default: false
+
+    after :type=, :apply_default_message
 
     alias expression expressions
 
@@ -91,7 +93,7 @@ module BlockStack
     def uniq(value, exp)
       if @model.exist?
         !@model.class.find_all(attribute => value).any? do |match|
-          match == @model
+          match != @model
         end
       else
         !@model.class.distinct(attribute).include?(value)
@@ -101,6 +103,14 @@ module BlockStack
     def custom(value, exp)
       return false unless exp.is_a?(Proc)
       exp.call(value)
+    end
+
+    protected
+
+    # TODO Make default messages better
+    def apply_default_message
+      return unless message.empty?
+      self.message = "#{attribute} #{mode == :none ? 'cannot' : 'must'} be #{type} #{expressions.join_terms(mode == :all ? :and : :or)}."
     end
 
   end
