@@ -10,9 +10,9 @@ module BlockStack
           asc = BlockStack::Associations.add(opts[:asc] || association.new(opts.merge(from: dataset_name, to: name)))
           defaults = {
             dformed_field: { type: (asc.singular? ? :select : :multi_select) },
-            serialize: false,
-            association: asc,
-            default_proc: proc { |x| asc.retrieve(x) }
+            serialize:     false,
+            association:   asc,
+            default_proc:  proc { |x| asc.retrieve(x) }
           }
 
           (opts[:blockstack] ||= {})[:display] = false unless opts[:blockstack] && opts[:blockstack][:display]
