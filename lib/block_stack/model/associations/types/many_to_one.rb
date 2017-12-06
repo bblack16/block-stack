@@ -11,6 +11,7 @@ module BlockStack
 
       def associate(obj_a, obj_b)
         obj_b = model.find(obj_b) unless obj_b.is_a?(Model)
+        raise InvalidAssociation, "#{obj_a.class} does not have a method named #{attribute} and cannot be associated with a #{obj_b.class}." unless obj_a.respond_to?(attribute)
         return false unless obj_a && obj_b
         return true if associated?(obj_a, obj_b)
         query = { attribute => obj_b.attribute(column) }

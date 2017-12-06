@@ -12,6 +12,7 @@ module BlockStack
 
       def retrieve(obj)
         return [] unless obj.id
+        raise InvalidAssociation, "#{model} does not have a method named #{column} and cannot be associated with a #{obj.class}." unless model.attribute?(column)
         model.find_all(column => obj.attribute(attribute))
       end
 
