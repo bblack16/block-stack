@@ -85,7 +85,6 @@ module BlockStack
     def logout
       current_user.last_login = current_user.current_login
       current_user.current_login = nil
-      p current_user.change_set.diff
       current_user.save
     ensure
       session.clear
