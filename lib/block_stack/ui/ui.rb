@@ -23,6 +23,9 @@ require_relative 'helpers/images'
 require_relative 'helpers/tags'
 require_relative 'blocks/block'
 require_relative 'dformed/presets'
+require_relative 'templates/general'
+require_relative 'templates/crud'
+require_relative 'templates/admin'
 
 module BlockStack
   class Server < Sinatra::Base
