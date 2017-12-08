@@ -19,6 +19,7 @@ module BlockStack
       form.attr('df-loaded', true)
     end
 
+    # TODO Reduce duplicated code in block below
     Element['.dform-save'].each do |btn, id|
       next unless btn.attr('df-name') && btn.attr('df-save-to')
       next if btn.attr('df-loaded')
@@ -33,7 +34,7 @@ module BlockStack
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
               if url = btn.attr('df-save-redirect')
-                after(2) { `window.location.href = #{url}` }
+                after(1) { `window.location.href = #{url}` }
               end
             else
               `alertify.closeLogOnClick(true).logPosition("bottom right").error(#{response.json[:message] || "Failed to save"});`
@@ -46,7 +47,7 @@ module BlockStack
             if response.json['status'] == :success
               `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
               if url = btn.attr('df-save-redirect')
-                after(2) { `window.location.href = #{url}` }
+                after(1) { `window.location.href = #{url}` }
               end
             else
               `alertify.closeLogOnClick(true).logPosition("bottom right").error(#{response.json[:message] || "Failed to save"});`
