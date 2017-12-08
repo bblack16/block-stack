@@ -9,6 +9,9 @@
 # Route templates (global search, crud, routes)
 
 require_relative 'helpers'
+require_relative 'route_template'
+require_relative 'templates/general'
+require_relative 'templates/crud'
 
 module BlockStack
   class Server < Sinatra::Base
@@ -119,6 +122,21 @@ module BlockStack
       end
       return false unless index
       routes[verb].delete_at(index)
+    end
+
+    def self.attach_route_template(title, group = nil, **opts)
+      template = BlockStack.route_template(title, group)
+      raise ArgumentError, "No route template found with a title of #{title} and a group of #{group || :nil}." unless template
+      template.add_to(self, opts)
+      true
+    end
+
+    def self.attach_route_template_group(group, *except)
+      BlockStack.route_template_group(group).each do |template|
+        next if except.include?(template.title)
+        template.add_to(self)
+      end
+      true
     end
 
     # Provides a list of controllers that this server should use
