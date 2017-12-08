@@ -334,7 +334,7 @@ module BlockStack
       end
 
       def save(skip_associations = false)
-        return false unless change_set.changes?
+        return true unless change_set.changes?
         logger.debug("About to save #{clean_name} ID: #{id}")
         raise InvalidModel, self unless valid?
         self.updated_at = Time.now
