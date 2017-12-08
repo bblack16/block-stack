@@ -28,7 +28,6 @@ module BlockStack
 
     post_api '/session/register' do
       user = JSON.parse(request.body.read).keys_to_sym
-      p "USER INFO: #{user}"
       begin
         u = user_model.new(user)
         if result = u.save
