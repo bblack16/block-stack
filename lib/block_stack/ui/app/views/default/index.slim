@@ -1,6 +1,6 @@
 == stylesheet_include 'default/index'
 
-== render_block :header, title: @model.clean_name.pluralize do
+== render_block(:header, title: @model.clean_name.pluralize, background: "#{@model.plural_name}/background") do
   == link_to(:new, @model.new, class: 'btn btn-outline-success new-button')
 br
 == render_block :table, data: @models
