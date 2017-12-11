@@ -1,6 +1,6 @@
 module BlockStack
 
-  add_route_template(:index, :get, '/', :crud) do
+  add_template(:index, :crud, :get, '/', type: :route) do
     begin
       @models = model.all
       send(default_renderer, :"#{model.plural_name}/index")
@@ -11,7 +11,7 @@ module BlockStack
     end
   end
 
-  add_route_template(:show, :get, '/:id', :crud) do
+  add_template(:show, :crud, :get, '/:id', type: :route) do
     begin
       @model = model.find(params[:id])
       if @model
@@ -24,7 +24,7 @@ module BlockStack
     end
   end
 
-  add_route_template(:create, :get, '/new', :crud) do
+  add_template(:create, :crud, :get, '/new', type: :route) do
     begin
       @model = model
       send(default_renderer, :"#{model.plural_name}/new")
@@ -33,7 +33,7 @@ module BlockStack
     end
   end
 
-  add_route_template(:update, :get, '/:id/edit', :crud) do
+  add_template(:update, :crud, :get, '/:id/edit', type: :route) do
     begin
       @model = model.find(params[:id])
       if @model
@@ -46,7 +46,7 @@ module BlockStack
     end
   end
 
-  add_route_template(:search, :get, '/search', :crud_plus) do
+  add_template(:search, :crud_plus, :get, '/search', type: :route) do
     # TODO
   end
 end
