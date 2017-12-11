@@ -4,25 +4,29 @@
 - brand = menu.title.upcase
 - if brand.include?(' ')
   - split = brand.split(' ', 2)
+  - brand = "<span class='first'>#{split.first} </span>#{split.last}"
 - else
   - mid = brand.size / 2
   - split = [brand[0...mid], brand[mid..-1]]
-- brand = "<span class='first'>#{split.first}</span>#{split.last}"
+  - brand = "<span class='first'>#{split.first}</span>#{split.last}"
 
 div#main-menu.vertical
   a.title href='/' == brand
 
   nav.float-right.time.menu-item
-    i.fa.fa-clock-o
+    i.far.fa-clock
     .clock blockstack-block='Clock' = Time.now.strftime('%H:%M:%S')
 
   - menu.items.each do |item|
     - active = item.active?(request.path_info)
     nav.menu-item class="#{active ? ' active' : nil}"
-      - if item.icon
+      - case item.icon
+      - when String, Symbol
         == image_tag(item.icon, class: 'icon')
-      - elsif item.fa_icon
-        i.icon.fa class="fa-#{item.fa_icon}#{active ? ' active' : nil}"
+      - when BBLib::HTML::Tag
+        - icon = item.icon
+        - icon.attributes[:class] = [icon.attributes[:class], :icon].flatten
+        == icon
       a.link id="menu_#{item.clean_title}" class="#{item.sub_menu? ? ' dropdown-toggle' : nil}" *item.attributes data-toggle="#{item.sub_menu? ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
         = item.title
       - if item.sub_menu?
