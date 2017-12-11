@@ -4,11 +4,18 @@ module BlockStack
       include BBLib::Effortless
       attr_of Object, :user_class, default: BlockStack::User
 
+      setup_init_foundation(:type)
+
+      def self.type
+        self.to_s.split('::').last.method_case.to_sym
+      end
+
+      bridge_method :type
+
       # Should be overwritten in sublcasses.
       # Must return a user object if the request can be validated, otherwise
       # nil or false should be returned (indicating a failed authentication).
       def authenticate(id, secret, request = {}, params = {})
-        puts "Authenticating #{id} with #{secret}"
         build_user(name: id)
       end
 
