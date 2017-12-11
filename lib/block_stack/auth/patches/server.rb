@@ -90,29 +90,47 @@ module BlockStack
       session.clear
     end
 
-    before do
-      unless skip_auth? || !settings.authentication
-        if authenticate!
-          if settings.authorization
-            if authorize!
-              logger.debug("Authorization ALLOWED for #{current_user.name} for #{request.path_info}.")
-            else
-              logger.info("Authorization FORBIDDEN for #{current_user.name} for #{request.path_info}")
-              if settings.authorization_failure_route
-                redirect settings.authorization_failure_route, 303, notice: 'You are not authorized for that!', severity: :error
-              else
-                halt 403, 'You are not authorized for that.'
-              end
-            end
-          end
-        else
-          logger.info("Authentication not provided or failed for request #{request.object_id}.")
-          if settings.authentication_failure_route
-            redirect to(settings.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
+    def unauthorized!
+      logger.info("Authorization FORBIDDEN for #{current_user.name} for #{request.path_info}")
+      return custom_unauthorized! if respond_to?(:custom_unauthorized!)
+      if settings.authorization_failure_route
+        redirect settings.authorization_failure_route, 303, notice: 'You are not authorized for that!', severity: :error
+      else
+        halt 403, 'You are not authorized for that.'
+      end
+    end
+
+    # TODO Enhance logging to log whether auth was not provided or was but failed
+    def unauthenticated!
+      logger.info("Authentication not provided or failed for request #{request.object_id}.")
+      p "ORIGINAL UNAUTH: #{self.respond_to?(:custom_unauthenticated!)}"
+      p self
+      return custom_unauthenticated! if respond_to?(:custom_unauthenticated!)
+      if settings.authentication_failure_route
+        redirect to(settings.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
+      else
+        halt 403, 'Not authorized. Please provide valid credentials.'
+      end
+    end
+
+    def protected!
+      if authenticate!
+        if settings.authorization
+          if authorize!
+            logger.debug("Authorization ALLOWED for #{current_user.name} for #{request.path_info}.")
           else
-            halt 403, 'Not authorized. Please provide valid credentials.'
+            unauthorized!
           end
         end
+      else
+        unauthenticated!
+      end
+    end
+
+    # TODO Move to "protect_all" template
+    before do
+      unless skip_auth? || !settings.authentication
+        protected!
       end
     end
   end
