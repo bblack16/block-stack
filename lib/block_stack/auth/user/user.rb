@@ -31,9 +31,9 @@ module BlockStack
     end
 
     def save
-      if !exist? && self.class.encrypt_password
-        self.password = Encryption.encrypt(password, self.class.encrypt_password)
-      end
+      # if !exist? && self.class.encrypt_password
+      #   self.password = Encryption.encrypt(password, self.class.encrypt_password)
+      # end
       if defined?(BlockStack::Model) && self.is_a?(BlockStack::Model)
         super
       else
