@@ -1,5 +1,7 @@
 require_relative 'user/user'
-require_relative 'user/user_controller'
+# require_relative 'user/user_controller'
+
+require_relative 'helpers/basic_auth'
 
 require_relative 'encryption/encryption'
 
@@ -16,3 +18,4 @@ require_relative 'patches/controller'
 
 BlockStack.logger.info('Loaded BlockStack auth plugin.')
 BlockStack.settings.authentication = true
+BlockStack.load_all(File.expand_path('../templates', __FILE__))
