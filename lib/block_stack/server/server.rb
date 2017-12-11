@@ -9,9 +9,7 @@
 # Route templates (global search, crud, routes)
 
 require_relative 'helpers'
-require_relative 'route_template'
-require_relative 'templates/general'
-require_relative 'templates/crud'
+require_relative 'template/template'
 
 module BlockStack
   class Server < Sinatra::Base
@@ -19,16 +17,17 @@ module BlockStack
     extend BBLib::FamilyTree
     extend BBLib::Bridge
 
-    helpers ServerHelpers
+    helpers Helpers::Server
 
     use Rack::Deflater
 
+    attr_str :app_name, default_proc: proc { |x| x.to_s.method_case.gsub('_', ' ').title_case }, singleton: true
     attr_ary_of String, :api_routes, singleton: true, default: [], add_rem: true
     attr_ary_of Formatter, :formatters, default_proc: :default_formatters, singleton: true
     attr_sym :default_format, default: :json, allow_nil: true, singleton: true
 
     bridge_method :route_map, :route_names, :api_routes, :formatters, :default_formatters, :default_format
-    bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer
+    bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer, :app_name
 
     # Setup default settings
     # TODO Finalize settings
@@ -124,15 +123,15 @@ module BlockStack
       routes[verb].delete_at(index)
     end
 
-    def self.attach_route_template(title, group = nil, **opts)
-      template = BlockStack.route_template(title, group)
-      raise ArgumentError, "No route template found with a title of #{title} and a group of #{group || :nil}." unless template
+    def self.attach_template(title, group = nil, **opts)
+      template = BlockStack.template(title, group)
+      raise ArgumentError, "No BlockStack template found with a title of #{title} and a group of #{group || :nil}." unless template
       template.add_to(self, opts)
       true
     end
 
-    def self.attach_route_template_group(group, *except)
-      BlockStack.route_template_group(group).each do |template|
+    def self.attach_template_group(group, *except)
+      BlockStack.template_group(group).each do |template|
         next if except.include?(template.title)
         template.add_to(self)
       end
