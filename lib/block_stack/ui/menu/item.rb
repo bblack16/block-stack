@@ -4,12 +4,11 @@ module BlockStack
       include BBLib::Effortless
 
       attr_str :title, required: true
-
       attr_hash :attributes, default: {}
       attr_int :sort, default: 1
       attr_ary_of [String, Regexp], :active_expressions, default: []
       attr_bool :match_href, default: true
-      attr_str :icon, :fa_icon, default: nil, allow_nil: true
+      attr_of [String, Symbol, BBLib::HTML::Tag], :icon, default: nil, allow_nil: true
       attr_ary_of Item, :items, add_rem: true, default: nil, allow_nil: true
 
       def clean_title
