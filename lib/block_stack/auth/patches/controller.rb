@@ -1,6 +1,8 @@
 module BlockStack
   class Controller < BlockStack::Server
 
+    attr_bool :controller_auth, default: false
+
     def authorizations
       self.class.authorizations + (base_server ? base_server.authorizations : [])
     end
@@ -35,6 +37,30 @@ module BlockStack
 
     def self.user_model
       base_server.user_model
+    end
+
+    def authenticate!
+      # return base_server.authenticate! unless controller_auth
+    end
+
+    def authorize!
+      # return base_server.authorize! unless controller_auth
+    end
+
+    def skip_auth_routes
+      self.class.skip_auth_routes + base_server.skip_auth_routes
+    end
+
+    def unauthorized!
+      # return base_server.unauthorized! unless controller_auth
+    end
+
+    def unauthenticated!
+      # return base_server.unauthenticated! unless controller_auth
+    end
+
+    def protected!
+      # return base_server.protected! unless controller_auth
     end
 
   end
