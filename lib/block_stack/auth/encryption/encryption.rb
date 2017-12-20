@@ -21,7 +21,6 @@ module BlockStack
     end
 
     def self.all_providers
-      p Provider.descendants
       Provider.descendants.map(&:new)
     end
   end
