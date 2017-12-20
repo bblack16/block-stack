@@ -36,7 +36,7 @@ module BlockStack
     # attr_ary_of String, :asset_paths, singleton: true, default_proc: :default_asset_paths, add_rem: true, uniq: true
     attr_of Menu, :menu, default_proc: :build_main_menu, singleton: true
 
-    set(
+    config(
       precompile: false, # When set to true, assets are precompiled into the public folder
       assets_prefix: '/assets/', # Sets the default route prefix for assets. Normally this should not be changed.
       maps_prefix: '/__OPAL_SOURCE_MAPS__', # Sets the maps route for opal. Do not change unless you know what you are doing.
@@ -79,7 +79,7 @@ module BlockStack
     end
 
     def self.maps_app
-      @maps_app ||= Opal::SourceMapServer.new(sprockets, settings.maps_prefix)
+      @maps_app ||= Opal::SourceMapServer.new(sprockets, config.maps_prefix)
     end
 
     def self.opal
@@ -99,22 +99,22 @@ module BlockStack
     end
 
     def self.precompile!
-      BlockStack.logger.info("BlockStack is compiling assets in #{settings.public_folder}...")
+      BlockStack.logger.info("BlockStack is compiling assets in #{config.public_folder}...")
       environment = opal.sprockets
-      manifest = Sprockets::Manifest.new(environment.index, settings.public_folder)
+      manifest = Sprockets::Manifest.new(environment.index, config.public_folder)
       manifest.compile([/stylesheets\/[\w\d\s]+\.css/] + %w(application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
     def self.run!(*args)
       register_controllers
       controllers.each { |c| c.asset_paths = self.asset_paths }
-      precompile! if settings.precompile
+      precompile! if config.precompile
       logger.info("Booting up your BlockStack UI server...")
       super
     end
 
     def self.title
-      settings.app_name || base_server.to_s.split('::').last
+      config.app_name || base_server.to_s.split('::').last
     end
 
     bridge_method :title
@@ -143,8 +143,8 @@ module BlockStack
       end
     end
 
-    get maps_prefix do
-      maps_app.call(settings.maps_prefix)
+    get config.maps_prefix do
+      maps_app.call(config.maps_prefix)
     end
 
     get '/assets/*' do
