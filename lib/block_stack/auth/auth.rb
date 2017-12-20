@@ -1,9 +1,8 @@
-require_relative 'user/user'
-# require_relative 'user/user_controller'
+require_relative 'encryption/encryption'
+require_relative 'login/login'
 
 require_relative 'helpers/basic_auth'
-
-require_relative 'encryption/encryption'
+require_relative 'helpers/user_auth'
 
 require_relative 'authentication/exception'
 require_relative 'authentication/exception'
