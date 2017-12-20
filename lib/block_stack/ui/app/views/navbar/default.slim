@@ -32,11 +32,13 @@ div#main-menu.vertical
       - if item.sub_menu?
         == slim :'navbar/partials/sub_menu', {}, item: item, level: 1
 
-  /- if current_user
-  /  nav.float-right.user
-  /    i.fa.fa-user-circle
-  /    a.link id="menu_user" href="/session/logout" = current_user.display_name
-  /      = 'Logout'
+  - if respond_to?(:current_login) && current_login
+    nav.float-right.user
+      i.fas.fa-user-circle
+      a.link id='menu_login' class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" = current_user.display_name
+      ul.dropdown-menu.block_stack_nav  aria-labelledby="menu_login"
+        li.dropdown-item
+          a.dropdown-item id="menu_user" href="/session/logout" = 'Logout'
 
 
 / TODO: Move the javascript below to Opal and make it much more robust (only open one menu at a time, autoclose on hide)
