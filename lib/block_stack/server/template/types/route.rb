@@ -16,7 +16,6 @@ module BlockStack
       end
 
       def add_to(server, opts = {})
-        p opts[:verb] || verb, opts[:route] || route, opts
         server.send(opts[:verb] || verb, opts[:route] || route, opts[:args] || {}, &processor)
       end
     end
