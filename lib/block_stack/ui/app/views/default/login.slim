@@ -62,8 +62,9 @@ sass:
     ul.nav.nav-tabs role='tablist'
       li.nav-item.title
         a.nav-link.active data-toggle='tab' href='#sign-in' role='tab' Sign In
-      li.nav-item.title
-        a.nav-link data-toggle='tab' href='#register' role='tab' Register
+      - if config.allow_registration
+        li.nav-item.title
+          a.nav-link data-toggle='tab' href='#register' role='tab' Register
     .tab-pane.active#sign-in role='tabpanel'
       form.signin action='/session/login' method='post'
         i.fa.fa-user-circle
@@ -77,5 +78,6 @@ sass:
         br
         br
         input.btn.btn-outline-primary.btn-lg.login type='submit' value='Log In'
-    .tab-pane#register role='tabpanel'
-      == render_block :form, model: user_model, save_to: '/session/register', save_redirect: '/login'
+    - if config.allow_registration
+      .tab-pane#register role='tabpanel'
+        == render_block :form, model: config.login_model, save_to: '/session/register', save_redirect: '/login'
