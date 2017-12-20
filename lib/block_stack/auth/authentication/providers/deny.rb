@@ -5,7 +5,7 @@ module BlockStack
     class Deny < Provider
 
       # Always returns nil
-      def authenticate(id, secret, request = {}, params = {})
+      def authenticate(id, secret = nil, request: {}, params: {})
         nil
       end
 

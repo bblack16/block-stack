@@ -5,7 +5,6 @@ module BlockStack
     class Config < Memory
       TYPES = [:auto, :yaml, :json, :xml]
 
-      attr_hash :users, key: String, value: Hash, protected: true, default: {}
       attr_file :file, required: true
       attr_element_of TYPES, :type, default: :auto
       attr_str :path, default: 'users', allow_nil: true
@@ -13,22 +12,11 @@ module BlockStack
 
       after :file=, :reload_config
 
-      def add_user(user, password = nil, **details)
-        details[:password] = password if password
-        raise ArgumentError, 'You cannot add a user without a password.' unless details[:password]
-        users[user.to_s] = details.merge(password: encrypt_key(details[:password], true))
-      end
-
       protected
 
       def simple_preinit(*args)
         named = BBLib.named_args(*args)
         self.already_encrypted = named[:already_encrypted]
-      end
-
-      def encrypt_key(key, add = false)
-        return key.to_s if add && already_encrypted
-        super(key)
       end
 
       def reload_config
@@ -39,13 +27,13 @@ module BlockStack
           JSON.parse(File.read(file))
         when :xml
           # TODO Implement XML somehow
-            raise RuntimeError, 'XML is not yet available...'
+          raise RuntimeError, 'XML is not yet supported...'
         else
           raise RuntimeError, "Unknown config type, cannot load: #{file}"
         end.keys_to_sym
         hash = hash.hpath(path).first if path
         hash.each do |user|
-          add_user(user[:name], user.except(:name))
+          add_user(user.merge(encrypted: already_encrypted?))
         end
       end
 

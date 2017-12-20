@@ -3,8 +3,7 @@ module BlockStack
     class Ip < Source
 
       def credentials(request, params)
-        puts "IP: #{request.ip}"
-        [request.ip].map { |a| [a, a] }
+        request.ip
       end
 
     end

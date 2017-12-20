@@ -2,7 +2,7 @@ module BlockStack
   module Authentication
     class Provider
       include BBLib::Effortless
-      attr_of Object, :user_class, default: BlockStack::User
+      attr_of Object, :login_class, default: BlockStack::Authentication::Login
 
       setup_init_foundation(:type)
 
@@ -15,7 +15,7 @@ module BlockStack
       # Should be overwritten in sublcasses.
       # Must return a user object if the request can be validated, otherwise
       # nil or false should be returned (indicating a failed authentication).
-      def authenticate(id, secret, request = {}, params = {})
+      def authenticate(id, secret = nil, request: {}, params: {})
         build_user(name: id)
       end
 
@@ -33,8 +33,13 @@ module BlockStack
 
       protected
 
+      def simple_preinit(*args)
+        named = BBLib.named_args(*args)
+        self.login_class = named[:login_class] if named[:login_class]
+      end
+
       def build_user(*args)
-        user_class.new(*args)
+        login_class.new(*args)
       end
 
     end
