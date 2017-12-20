@@ -41,7 +41,7 @@ module BlockStack
 
     def javascript_include(*paths, type: 'text/javascript')
       paths.map do |path|
-        tag(:script, '', type: type, src: "#{settings.assets_prefix + 'javascript/' + path}" )
+        tag(:script, '', type: type, src: "#{config.assets_prefix + 'javascript/' + path}" )
       end.join
     end
 
