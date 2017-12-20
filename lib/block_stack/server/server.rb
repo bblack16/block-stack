@@ -25,13 +25,34 @@ module BlockStack
     attr_ary_of String, :api_routes, singleton: true, default: [], add_rem: true
     attr_ary_of Formatter, :formatters, default_proc: :default_formatters, singleton: true
     attr_sym :default_format, default: :json, allow_nil: true, singleton: true
+    attr_of BBLib::HashStruct, :configuration, default_proc: :inherited_config, singleton: true
 
     bridge_method :route_map, :route_names, :api_routes, :formatters, :default_formatters, :default_format
-    bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer, :app_name
+    bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer, :app_name, :config
+
+
+    def self.config(args = nil)
+      case args
+      when Hash
+        args.each { |k, v| configuration[k.to_sym] = v }
+      when String, Symbol
+        configuration.to_h.hpath(args).first
+      when nil
+        configuration
+      else
+      end
+    end
+
+    def self.inherited_config
+      ancestors.reverse.each_with_object(BBLib::HashStruct.new) do |anc, hash|
+        next if anc == self || !anc.respond_to?(:config)
+        hash.merge!(anc.config)
+      end
+    end
 
     # Setup default settings
-    # TODO Finalize settings
-    set(
+    # TODO Finalize config
+    config(
       controller_base: nil,  #Set this to a class that inherits from BlockStack::Controller
       log_requests: true,
       log_params: true,
@@ -95,7 +116,7 @@ module BlockStack
     end
 
     def self.build_route(path, verb, api: false)
-      path = "#{api && api_prefix ? "/#{api_prefix}" : nil}/#{settings.prefix}#{path}" if settings.prefix
+      path = "#{api && api_prefix ? "/#{api_prefix}" : nil}/#{prefix}#{path}" if prefix
       (path.end_with?('/') ? "#{path}?" : path) + (verb == :get && api ? '(.:format)?' : '')
     end
 
@@ -140,7 +161,7 @@ module BlockStack
 
     # Provides a list of controllers that this server should use
     def self.controllers
-      ((@controllers ||= []) + load_controller_base).uniq
+      ((@controllers ||= []) + load_controller_base).compact.uniq
     end
 
     # Add a controller to this server
@@ -175,8 +196,8 @@ module BlockStack
     end
 
     before do
-      if settings.log_requests && message = log_request
-        info(message)
+      if config.log_requests && message = log_request
+        debug(message)
       end
     end
 
@@ -187,7 +208,7 @@ module BlockStack
         formatter = pick_formatter(request, params)
         if formatter
           body = response.body
-          if settings.auto_serialize
+          if config.auto_serialize
             if body.respond_to?(:serialize)
               body = body.serialize
             elsif body.is_a?(Array)
@@ -201,7 +222,7 @@ module BlockStack
         end
       end
 
-      if settings.log_requests && message = log_request_finished
+      if config.log_requests && message = log_request_finished
         info(message)
       end
     end
@@ -214,11 +235,12 @@ module BlockStack
     # To disable request logging either set log_requests to false or make this method return nil.
     def log_request
       request_timer.start(request.object_id)
-      "Processing new request (#{request.object_id}) from #{request.host}: #{request.request_method} #{request.path}#{ settings.log_params ? " - #{params}" : nil}"
+      "Processing new request (#{request.object_id}) from #{request.host}: #{request.request_method} #{request.path}#{config.log_params ? " - #{params}" : nil}"
     end
 
     def log_request_finished
-      "Finished processing request (#{request.object_id}) from #{request.host} (#{request.request_method} #{request.path}). Took #{request_timer.stop(request.object_id).to_duration}."
+      "#{request.ip} - #{session[:user] ? session[:user].name : '-'} [#{Time.now.strftime('%d/%m/%Y:%H:%M:%S %z')}] \"#{request.request_method} #{request.path} HTTP\" #{response.status} #{response.content_length} #{request_timer.stop(request.object_id).round(3)}"
+      # "Finished processing request (#{request.object_id}) from #{request.host} (#{request.request_method} #{request.path}). Took #{request_timer.stop(request.object_id).to_duration}."
     end
 
     # Override default Sinatra run. Registers controllers before running.
@@ -253,7 +275,7 @@ module BlockStack
     # If a controller base is set, controllers are loaded from it.
     # All descendants of each controller_base will be discovered.
     def self.load_controller_base
-      [settings.controller_base].flatten.compact.flat_map(&:descendants).uniq.reject { |c| c == self }
+      [config.controller_base].flatten.compact.flat_map(&:descendants).uniq.reject { |c| c == self }
     end
 
     # This method is invoked any time the prefix of the server is changed.
