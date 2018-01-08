@@ -12,20 +12,21 @@ module BlockStack
 
     def self.crud(opts = {})
       self.model = opts[:model] if opts[:model]
+      raise RuntimeError, "No model was found for controller #{self}." unless self.model
       self.prefix = opts.include?(:prefix) ? opts[:prefix] : model.plural_name
 
       add_sub_menus(
         {
           title: model.clean_name.pluralize,
-          fa_icon: respond_to?(:fa_icon) ? fa_icon : nil ,
+          icon: config.icon,
           items: [
-            { title: 'Browse', fa_icon: 'list', attributes: { href: "/#{prefix}/" } },
-            { title: "New #{model.clean_name}", fa_icon: 'plus', attributes: { href: "/#{prefix}/new" } }
+            { title: 'Browse', icon: '<i class="fa fas-list"/>', attributes: { href: "/#{prefix}/" } },
+            { title: "New #{model.clean_name}", icon: '<i class="fa fas-plus"/>', attributes: { href: "/#{prefix}/new" } }
           ]
         }
       )
 
-      attach_route_template_group(:crud, *(opts[:ignore] || []))
+      attach_template_group(:crud, *(opts[:ignore] || []))
       true
     end
 
