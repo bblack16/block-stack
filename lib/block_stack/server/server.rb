@@ -30,7 +30,6 @@ module BlockStack
     bridge_method :route_map, :route_names, :api_routes, :formatters, :default_formatters, :default_format
     bridge_method :logger, :debug, :info, :warn, :error, :fatal, :request_timer, :app_name, :config
 
-
     def self.config(args = nil)
       case args
       when Hash
@@ -204,7 +203,7 @@ module BlockStack
     # Check each response to see if it is an API route.
     # If it is an API route we will attempt to format the response.
     after do
-      if api_routes.include?(request.env['sinatra.route'].to_s)
+      if api_routes.include?(request.env['sinatra.route'].to_s) && !response.body.is_a?(Rack::File::Iterator)
         formatter = pick_formatter(request, params)
         if formatter
           body = response.body
