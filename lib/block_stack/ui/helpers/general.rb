@@ -33,9 +33,9 @@ module BlockStack
       when Array
         value.join_terms
       when Time
-        value.strftime(settings.time_format)
+        value.strftime(config.time_format)
       when Date
-        value.strftime(settings.date_format)
+        value.strftime(config.date_format)
       when Float, Integer
         label.nil? || label =~ /[^\_\-\.]id[$\s\_\-\.]/i ? value : value.to_delimited_s
       else
