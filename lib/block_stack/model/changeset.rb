@@ -31,6 +31,7 @@ module BlockStack
       def associations_changed?
         return true unless object.exist?
         old_obj = object.class.find(object.id)
+        return false unless old_obj
         object.associations.any? do |association|
           name = association.method_name
           object.send(name) != old_obj.send(name)
