@@ -44,7 +44,9 @@ module BlockStack
       navbar: :default, # Sets the name of the navbar view to render the main menu
       default_renderer: :slim, # Sets the default rendering engine to be used when calling the render method.
       time_format: '%Y-%m-%d %H:%M:%S', # Set the default time format to use when displaying times across various widgets
-      date_format: '%B %d, %Y' # Set the default date format to use when displaying dates across various widgets
+      date_format: '%B %d, %Y', # Set the default date format to use when displaying dates across various widgets
+      auto_load_models: true, # When true any source files in any of the app/model directories will be required automatically.
+      auto_load_controllers: true # When true any source files in any of the app/controller directories will be required automatically.
     )
 
     Opal.use_gem 'bblib'
@@ -63,6 +65,7 @@ module BlockStack
       asset_paths.insert(index, path)
       setup_sprockets
       controllers.each { |c| c.add_asset_path(path, index) }
+      auto_load(path)
       return asset_paths.include?(path)
     end
 
@@ -113,8 +116,13 @@ module BlockStack
       super
     end
 
+    def self.auto_load(base_dir)
+      BlockStack.load_all("#{base_dir}/models") if config.auto_load_models
+      BlockStack.load_all("#{base_dir}/controllers") if config.auto_load_controllers
+    end
+
     def self.title
-      config.app_name || base_server.to_s.split('::').last
+      app_name || base_server.to_s.split('::').last
     end
 
     bridge_method :title
