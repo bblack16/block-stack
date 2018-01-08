@@ -16,14 +16,15 @@ module BlockStack
     def self.model
       return @model if @model
       return nil unless defined?(BlockStack::Model)
-      name = self.to_s.sub(/Controller$/, '')
+      name = self.to_s.split('::').last.sub(/Controller$/, '')
       @model = BlockStack::Model.model_for(name.method_case.to_sym)
     end
 
     bridge_method :model
 
     def self.model=(mdl)
-      @model = mdl if mdl.is_a?(BlockStack::Model)
+      # TODO Reimplement type check
+      @model = mdl# if mdl.is_a?(BlockStack::Model)
     end
 
     def self.crud(opts = {})
