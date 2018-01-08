@@ -20,6 +20,10 @@ module BlockStack
       databases
     end
 
+    def self.name_for(db)
+      databases.keys.find { |name| databases[name] == db }
+    end
+
     def self.setup(name, type, *args)
       adapter = BlockStack::Adapters.by_type(type)
       raise ArgumentError, "Could not locate an appropriate adapter for #{type}." unless adapter
