@@ -3,7 +3,7 @@ module BlockStack
   add_template(:index, :crud, :get, '/', type: :route) do
     begin
       @models = model.all
-      send(default_renderer, :"#{model.plural_name}/index")
+      send(config.default_renderer, :"#{model.plural_name}/index")
     rescue Errno::ENOENT => e
       @model = model
       @models = model.all
@@ -15,7 +15,7 @@ module BlockStack
     begin
       @model = model.find(params[:id])
       if @model
-        send(default_renderer, :"#{model.plural_name}/show")
+        send(config.default_renderer, :"#{model.plural_name}/show")
       else
         redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
       end
@@ -27,7 +27,7 @@ module BlockStack
   add_template(:create, :crud, :get, '/new', type: :route) do
     begin
       @model = model
-      send(default_renderer, :"#{model.plural_name}/new")
+      send(config.default_renderer, :"#{model.plural_name}/new")
     rescue Errno::ENOENT => e
       slim :"#{settings.default_view_folder}/new"
     end
@@ -37,7 +37,7 @@ module BlockStack
     begin
       @model = model.find(params[:id])
       if @model
-        send(default_renderer, :"#{model.plural_name}/edit")
+        send(config.default_renderer, :"#{model.plural_name}/edit")
       else
         redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
       end
