@@ -3,6 +3,7 @@ require_relative 'validation/validation'
 require_relative 'exceptions/invalid_model'
 require_relative 'exceptions/invalid_association'
 require_relative 'changeset'
+require_relative 'cache/cache'
 
 ####################
 # Features
@@ -11,14 +12,14 @@ require_relative 'changeset'
 # *Support as mixin
 # *Default query method support
 # *Name conventions (pluralization)
-# *Arbitrary settings support
+# *Arbitrary config support
 # Polymorphic model support
 # Basic search support
 # Block support for query methods that return arrays
 # Unified query language for all adapters (using hashes most likely)
-# Model uniqueness (by fields other than id or by multiple fields)
+# *Model uniqueness (by fields other than id or by multiple fields)
 # Full dformed support (when UI is available only!)
-# Changeset based updating
+# *Changeset based updating
 
 
 module BlockStack
@@ -31,15 +32,17 @@ module BlockStack
       base.send(:include, InstanceMethods)
       base.extend(Associations)
 
-      base.singleton_class.send(:after, :all, :find_all, :latest_by, :oldest_by, :search, :instantiate_all, send_value_ary: true, modify_value: true)
+      base.singleton_class.send(:after, :all, :find_all, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
+      base.singleton_class.send(:before, :all, :find, :find_all, :search, :first, :last, :sample, :_check_cache, try_first: true, send_method: true)
+      base.singleton_class.send(:after, :all, :find, :find_all, :search, :first, :last, :sample, :_add_cache, send_all: true)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
-      base.send(:attr_of, BBLib::HashStruct, :settings, default_proc: proc { |x| x.ancestor_settings }, singleton: true)
+      base.send(:attr_of, BBLib::HashStruct, :configuration, default_proc: proc { |x| x.ancestor_config }, singleton: true)
       base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false, dformed: false)
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
-      base.send(:bridge_method, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
+      base.send(:bridge_method, :config, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
 
       base.load_associations
 
@@ -54,7 +57,7 @@ module BlockStack
         end unless respond_to?(:find)
 
         def [](id)
-          find(id, opts = {})
+          find(id)
         end unless respond_to?(:[])
 
         def find_all(query, &block)
@@ -101,7 +104,7 @@ module BlockStack
           query ? find_all(query).sample : all.sample
         end unless respond_to?(:sample)
 
-        def exist?(field, query = {})
+        def exist?(query = {})
           query = { id: query } unless query.is_a?(Hash)
           (query && find(query) != nil) ? true : false
         end unless respond_to?(:exist?)
@@ -109,6 +112,7 @@ module BlockStack
     end
 
     def self.Dynamic(db = Database.db)
+      raise RuntimeError, 'No database has been configured. Models cannot be dynamically loaded.' unless db
       BlockStack::Adapters.by_client(db.class)
     end
 
@@ -138,6 +142,19 @@ module BlockStack
       included_classes.flat_map { |c| [c] + c.descendants }
     end
 
+    def self.default_config
+      hash = BBLib::HashStruct.new
+      hash.merge!(
+        unique_by: :id, # Defines what field or fields make this object uniq. Mostly used by create_or_update to determine if a matching model exists
+        paginate_at: 25, # Sets the default number of items returned for APIs
+        serialize_relations: true,
+        # TODO Fix caching (probably per adapter)
+        cache: false, # Set to true to enable caching or false to disable it
+        cache_ttl: 120 # How long a cached version of this object should live before being refreshed (seconds)
+      )
+      hash
+    end
+
     # Base classes should define a type method and return a symbol or array of symbols
     # that represent what type of DB the adapter is for: e.g. :sqlite
     # def self.type
@@ -147,6 +164,20 @@ module BlockStack
     module ClassMethods
       def inherited(subclass)
         subclass.db(Model.consume_next_db)
+      end
+
+      def _check_cache(method, request = nil)
+        return unless config.cache
+        Cache.retrieve(database_name, { method: method, request: request, model: self.to_s })
+      end
+
+      def _add_cache(result)
+        return unless config.cache
+        Cache.add(database_name, { method: result[:method], request: result[:args].first, model: self.to_s }, result[:value], config.cache_ttl)
+      end
+
+      def database_name
+        @database_name ||= Database.name_for(db) || :unknown
       end
 
       def load_associations
@@ -160,9 +191,22 @@ module BlockStack
         end
       end
 
-      def create(*payloads)
-        payloads.all? do |payload|
-          new(payload).save
+      # TODO Add automatic uniq validation based on unique_by config
+      def create(payload)
+        new(payload).save
+      end
+
+      def create_or_update(payload)
+        query = [config.unique_by].flatten.hmap do |field|
+          [
+            field.to_sym,
+            payload[field]
+          ]
+        end
+        if item = self.class.find(query)
+          item.update(payload)
+        else
+          create(payload)
         end
       end
 
@@ -199,25 +243,30 @@ module BlockStack
         db[dataset_name]
       end
 
-      def ancestor_settings
-        settings = Model.default_settings
+      def ancestor_config
+        config = Model.default_config
         ancestors.reverse.each do |a|
           next if a == self
-          settings = settings.merge(a.settings) if a.respond_to?(:settings)
+          config = config.merge(a.config) if a.respond_to?(:config)
         end
-        settings
+        config
       end
 
-      def setting(key)
-        settings[key]
+      def config?(key)
+        configuration.include?(key)
       end
 
-      def setting?(key)
-        settings.include?(key)
-      end
-
-      def set(hash)
-        hash.each { |k, v| settings[k.to_sym] = v }
+      def config(args = nil)
+        case args
+        when Hash
+          args.each { |k, v| configuration[k.to_sym] = v }
+        when String, Symbol
+          configuration.to_h.hpath(args).first
+        when nil
+          configuration
+        else
+          # Nada
+        end
       end
 
       def instantiate(result)
@@ -285,7 +334,13 @@ module BlockStack
       end
 
       def exist?
-        id && self.class.exist?(id) ? true : false
+        query = [config.unique_by].flatten.hmap do |field|
+          [
+            field.to_sym,
+            attribute(field)
+          ]
+        end
+        self.class.exist?(query)
       end
 
       def dataset_name
