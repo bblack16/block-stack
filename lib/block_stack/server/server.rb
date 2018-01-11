@@ -283,7 +283,7 @@ module BlockStack
       if old
         info("Changing prefix from '#{old}' to '#{new}'...")
       else
-        info("Adding route prefix to existing routes: #{new}")
+        debug("Adding route prefix to existing routes: #{new}")
       end
       routes.each do |verb, rts|
         rts.each do |route|
