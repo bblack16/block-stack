@@ -7,19 +7,23 @@ DFormed.add_preset(
   },
   add_button: {
     type: :button,
-    class: 'btn btn-outline-success btn-sm fa fa-plus', label: ''
+    class: 'btn btn-outline-success btn-sm',
+    label: '<i class="fas fa-plus"/>'
   },
   remove_button: {
     type: :button,
-    class: 'btn btn-outline-warning btn-sm fa fa-minus', label: ''
+    class: 'btn btn-outline-warning btn-sm',
+    label: '<i class="fas fa-minus"/>'
   },
   up_button: {
     type: :button,
-    class: 'btn btn-outline-info btn-sm fa fa-arrow-up', label: ''
+    class: 'btn btn-outline-info btn-sm',
+    label: '<i class="fas fa-arrow-up"/>'
   },
   down_button: {
     type: :button,
-    class: 'btn btn-outline-info btn-sm fa fa-arrow-down', label: ''
+    class: 'btn btn-outline-info btn-sm',
+    label: '<i class="fas fa-arrow-down"/>'
   }
 )
 
