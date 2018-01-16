@@ -65,6 +65,12 @@ module BlockStack
         end
       end
 
+      protected
+
+      def simple_init(*args)
+        self.current_login = Time.now
+      end
+
     end
   end
 
