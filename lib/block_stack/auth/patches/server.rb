@@ -109,7 +109,7 @@ module BlockStack
       if config.authentication_failure_route
         redirect to(config.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
       else
-        halt 403, 'Not authorized. Please provide valid credentials.'
+        halt 401, 'Not authorized. Please provide valid credentials.'
       end
     end
 
