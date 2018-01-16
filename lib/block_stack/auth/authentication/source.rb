@@ -3,6 +3,8 @@ module BlockStack
     class Source
       include BBLib::Effortless
 
+      attr_str :name, default_proc: proc { |x| x.to_s }
+
       # This method should be overriden in subclasses. This class should return
       # an array containing an id (username) and a secret (password) if found or
       # nil or false if no valid credentials can be extracted.
