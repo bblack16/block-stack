@@ -2,6 +2,8 @@ module BlockStack
   module Authentication
     class Provider
       include BBLib::Effortless
+
+      attr_str :name, default_proc: proc { |x| x.class.to_s }
       attr_of Object, :login_class, default: BlockStack::Authentication::Login
 
       setup_init_foundation(:type)
