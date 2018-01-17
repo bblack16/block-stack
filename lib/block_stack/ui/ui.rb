@@ -43,7 +43,7 @@ module BlockStack
       # app_name: nil, # Set to a string to override the class name being used as the server name.
       navbar: :default, # Sets the name of the navbar view to render the main menu
       default_renderer: :slim, # Sets the default rendering engine to be used when calling the render method.
-      time_format: '%Y-%m-%d %H:%M:%S', # Set the default time format to use when displaying times across various widgets
+      time_format: '%B %d, %Y %H:%M:%S', # Set the default time format to use when displaying times across various widgets
       date_format: '%B %d, %Y', # Set the default date format to use when displaying dates across various widgets
       auto_load_models: true, # When true any source files in any of the app/model directories will be required automatically.
       auto_load_controllers: true # When true any source files in any of the app/controller directories will be required automatically.
