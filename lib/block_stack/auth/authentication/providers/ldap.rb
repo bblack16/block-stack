@@ -32,12 +32,14 @@ module BlockStack
       attr_bool :lookup_attributes, default: true
       attr_hash :attributes, keys: [Symbol], values: [Symbol, String], default: DEFAULT_ATTRIBUTES, pre_proc: proc { |x| x.is_a?(Array) ? x.hmap { |v| [v.to_sym, v.to_sym] } : x.keys_to_sym }
       attr_of Object, :login_class, default: BlockStack::Authentication::LDAPLogin
+      attr_str :domain, allow_nil: true, default: nil
+      attr_of Proc, :login_format, default: nil, allow_nil: true
 
       after :username=, :password=, :change_auth_method
 
       # Attempt to authenticate the user via our LDAP connection
       def authenticate(id, secret = nil, request: {}, params: {})
-        if secret && !secret.to_s.strip.empty? && bind(id, secret)
+        if secret && !secret.to_s.strip.empty? && bind(process_user_login(id), secret)
           BlockStack.logger.debug("LDAP #{name}: SUCCESS - Authentication of user #{id} successful.")
           build_user(id)
         else
@@ -52,6 +54,14 @@ module BlockStack
           retrieve_attributes(name).each do |k, v|
             user.send("#{k}=", v) if user.respond_to?("#{k}=")
           end
+        end
+      end
+
+      def process_user_login(name)
+        if login_format
+          login_format.call(name)
+        else
+          [name, domain].compact.join('@')
         end
       end
 
