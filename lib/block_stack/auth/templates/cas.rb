@@ -7,10 +7,15 @@ module BlockStack
       require 'rack/cas'
     end
     require_relative '../helpers/cas'
-    raise ArgumentError, "You must pass a server URL (ex: server_url: 'localhost')" unless opts[:server] || opts[:server_url]
+    server_url = opts[:server] || opts[:server_url]
+    raise ArgumentError, "You must pass a server URL (ex: server_url: 'localhost')" unless server_url
     server.helpers(BlockStack::Helpers::CAS)
     server.config(cas_login_class: BlockStack::Authentication::CASLogin)
-    server.use(Rack::CAS, server_url: opts[:server] || opts[:server_url])
+    server.use(Rack::CAS, server_url: server_url)
+    server.get('/session/logout') do
+      session.clear
+      redirect opts[:logout_url] || "#{server_url}#{server_url.end_with?('/') ? nil : '/'}/logout"
+    end
   end
 
 end
