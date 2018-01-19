@@ -31,5 +31,7 @@ DFormed.add_preset(:date, type: :date, class: 'date-picker')
 DFormed.add_preset(:time, type: :time, class: 'time-picker')
 DFormed.add_preset(:date_time, type: :date_time, class: 'date-time-picker')
 
+DFormed.add_preset(:boolean, type: :boolean, class: 'toggle yesno')
+
 DFormed.add_preset(:text_area, type: :text_area, classes: 'autosize')
 DFormed.add_preset(:json, type: :json, classes: 'autosize')
