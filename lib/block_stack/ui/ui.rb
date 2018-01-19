@@ -122,7 +122,7 @@ module BlockStack
     end
 
     def self.title
-      app_name || base_server.to_s.split('::').last
+      config.app_name || base_server.to_s.split('::').last
     end
 
     bridge_method :title
