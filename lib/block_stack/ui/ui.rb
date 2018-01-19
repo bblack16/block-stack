@@ -105,7 +105,7 @@ module BlockStack
       BlockStack.logger.info("BlockStack is compiling assets in #{config.public_folder}...")
       environment = opal.sprockets
       manifest = Sprockets::Manifest.new(environment.index, config.public_folder)
-      manifest.compile([/stylesheets\/[\w\d\s]+\.css/] + %w(application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
+      manifest.compile(%w(stylesheets/*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
     end
 
     def self.run!(*args)
