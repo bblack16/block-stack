@@ -1,8 +1,8 @@
 == stylesheet_include('default/show')
 
-== render_block(:header, title: @model.clean_name, subtitle: "ID: #{@model.id}", background: "#{@model.plural_name}/background") do
+== render_block(:header, title: @model.class.config.display_name, subtitle: "ID: #{@model.id}", background: "#{@model.plural_name}/background") do
   .btn.btn-group.floating-buttons
     == link_to(:edit, @model, class: 'btn btn-outline-warning new-button')
     == link_to(:index, @model, 'Back', class: 'btn btn-outline-danger new-button')
 br
-== render_block :details, attributes: { class: 'height-2' }, title: "#{@model.clean_name} Details", data: @model.serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
+== render_block :details, attributes: { class: 'height-2' }, title: "#{@model.config.display_name} Details", data: @model.serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
