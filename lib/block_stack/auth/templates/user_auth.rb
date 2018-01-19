@@ -10,11 +10,9 @@ module BlockStack
   end
 
   add_template(:login_session, :block_stack_user_auth, :post, '/session/login', type: :route) do
-    p 'CURRENT LOGIN', current_login, config.homepage, config.login_page
     if current_login
       redirect config.homepage, 303, notice: "Hello and welcome, #{current_user.display_name}!"
     else
-      puts 'Redirecting to login'
       redirect config.login_page, 401, notice: 'Please provide valid credentials.', severity: :warn
     end
   end
