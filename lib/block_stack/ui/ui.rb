@@ -38,6 +38,7 @@ module BlockStack
 
     config(
       precompile: false, # When set to true, assets are precompiled into the public folder
+      precompile_assets: %w(stylesheets/*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2), # What assets should be precompiled by default
       assets_prefix: '/assets/', # Sets the default route prefix for assets. Normally this should not be changed.
       maps_prefix: '/__OPAL_SOURCE_MAPS__', # Sets the maps route for opal. Do not change unless you know what you are doing.
       # app_name: nil, # Set to a string to override the class name being used as the server name.
@@ -105,7 +106,7 @@ module BlockStack
       BlockStack.logger.info("BlockStack is compiling assets in #{config.public_folder}...")
       environment = opal.sprockets
       manifest = Sprockets::Manifest.new(environment.index, config.public_folder)
-      manifest.compile(%w(stylesheets/*.css application.rb javascript/*.js *.png *.jpg *.svg *.eot *.ttf *.woff *.woff2))
+      manifest.compile(config.precompile_assets)
     end
 
     def self.run!(*args)
