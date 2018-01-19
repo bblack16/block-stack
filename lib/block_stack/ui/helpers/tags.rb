@@ -23,7 +23,7 @@ module BlockStack
         when :show, :view
           tag(:a, (label || 'View'), attributes.merge(href: "/#{text.dataset_name}/#{text.id}"))
         when :new
-          tag(:a, (label || "New #{text.clean_name}"), attributes.merge(href: "/#{text.dataset_name}/new"))
+          tag(:a, (label || "New #{text.config.display_name}"), attributes.merge(href: "/#{text.dataset_name}/new"))
         else
           tag(:a, (label || url.to_s.title_case), attributes.merge(href: "/#{text.dataset_name}/#{text.id}/#{url}"))
         end
