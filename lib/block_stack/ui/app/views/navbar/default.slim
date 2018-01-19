@@ -34,7 +34,7 @@ div#main-menu.vertical
 
   - if respond_to?(:current_login) && current_login
     nav.float-right.user
-      i.fas.fa-user-circle
+      i.fas.fa-user-circle.grey
       a.link id='menu_login' class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" = current_user.display_name
       ul.dropdown-menu.block_stack_nav  aria-labelledby="menu_login"
         li.dropdown-item
