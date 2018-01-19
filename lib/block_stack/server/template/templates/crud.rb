@@ -47,6 +47,8 @@ module BlockStack
       else
         { result: result, status: :error, message: "Failed to save #{model.model_name}" }
       end
+    rescue InvalidModel => e
+      { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
     rescue => e
       BlockStack.logger.error(e)
       halt(500, { result: nil, status: :error, message: 'Failed to update item. Check the logs for errors.' })
