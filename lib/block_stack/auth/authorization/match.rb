@@ -24,7 +24,7 @@ module BlockStack
       def get_value(user, request, params)
         case type
         when :role
-          user.roles
+          user.roles.map(&:name)
         when :username
           user.name
         when :ip
