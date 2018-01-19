@@ -1,6 +1,13 @@
 == stylesheet_include 'default/index'
 
-== render_block(:header, title: @model.clean_name.pluralize, background: "#{@model.plural_name}/background") do
+== render_block(:header, title: @model.config.display_name.pluralize, background: "#{@model.plural_name}/background") do
   == link_to(:new, @model, class: 'btn btn-outline-success new-button')
 br
-== render_block :table, data: @models
+- if @models.empty?
+  br
+  br
+  h1.text-center.grey There's Nothing Here Yet
+  h4.grey.text-center Why not add a #{@model.config.display_name.downcase}?
+  .centered == link_to(:new, @model, '<i class="fas fa-plus-circle add-fab"></i>', class: 'text-center')
+- else
+  == render_block :table, data: @models
