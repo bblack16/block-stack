@@ -28,6 +28,7 @@ module BlockStack
     end
 
     def self.crud(opts = {})
+      opts[:model] = Model.model_for(opts[:model]) if opts[:model].is_a?(Symbol)
       self.model = opts[:model] if opts[:model]
       self.prefix = opts.include?(:prefix) ? opts[:prefix] : model.plural_name
       attach_route_template_group(:crud, *(opts[:ignore] || []))
