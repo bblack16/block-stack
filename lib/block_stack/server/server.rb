@@ -190,13 +190,13 @@ module BlockStack
 
     def json_request
       JSON.parse(request.body.read).keys_to_sym
-    rescue => e
+    rescue => _e
       {}
     end
 
     before do
-      if config.log_requests && message = log_request
-        debug(message)
+      if config.log_requests
+        request_timer.start(request.object_id)
       end
     end
 
@@ -221,7 +221,7 @@ module BlockStack
         end
       end
 
-      if config.log_requests && message = log_request_finished
+      if config.log_requests && message = log_request
         info(message)
       end
     end
@@ -230,14 +230,7 @@ module BlockStack
       @request_timer ||= BBLib::TaskTimer.new
     end
 
-    # This is called in a before block to log requests. Can be overriden in sub classes.
-    # To disable request logging either set log_requests to false or make this method return nil.
     def log_request
-      request_timer.start(request.object_id)
-      "Processing new request (#{request.object_id}) from #{request.host}: #{request.request_method} #{request.path}#{config.log_params ? " - #{params}" : nil}"
-    end
-
-    def log_request_finished
       "#{request.ip} - #{session[:user] ? session[:user].name : '-'} [#{Time.now.strftime('%d/%m/%Y:%H:%M:%S %z')}] \"#{request.request_method} #{request.path} HTTP\" #{response.status} #{response.content_length} #{request_timer.stop(request.object_id).round(3)}"
       # "Finished processing request (#{request.object_id}) from #{request.host} (#{request.request_method} #{request.path}). Took #{request_timer.stop(request.object_id).to_duration}."
     end
