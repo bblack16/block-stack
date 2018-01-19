@@ -16,7 +16,6 @@ module BlockStack
 
       def convert_login(logins)
         [logins].flatten.map do |login|
-          p login
           login.is_a?(Login) ? login : login_class.new(login)
         end
       end
