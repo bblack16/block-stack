@@ -5,8 +5,13 @@ ul.dropdown-menu.block_stack_nav class="#{level > 1 ? 'sub-dropdown' : nil}" ari
   - item.items.each do |sub_item|
     li.dropdown-item class="#{sub_item.sub_menu? ? ' dropdown-submenu' : nil}"
       a.dropdown-item class="#{sub_item.sub_menu? ? 'dropdown-sub-menu' : nil}" id="menu_#{sub_item.clean_title}" *sub_item.attributes data-toggle="#{sub_item.sub_menu? ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
-        - if sub_item.icon
-          == image_tag(sub_item.icon, class: 'icon')
+        - case sub_item.icon
+        - when String, Symbol
+          == image_tag(sub_item.icon, class: 'sub-menu-icon')
+        - when BBLib::HTML::Tag
+          - icon = sub_item.icon
+          - icon.attributes[:class] = [icon.attributes[:class], :'sub-menu-icon'].flatten
+          == icon
         = sub_item.title
         - if sub_item.sub_menu?
           i.sub-caret.fa.fa-caret-right
