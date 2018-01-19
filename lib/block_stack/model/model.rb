@@ -43,6 +43,7 @@ module BlockStack
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
       base.send(:bridge_method, :config, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
+      base.send(:config, display_name: base.clean_name)
 
       base.load_associations
 
@@ -112,6 +113,7 @@ module BlockStack
     end
 
     def self.Dynamic(db = Database.db)
+      db = Database.databases[db.to_sym] if db.is_a?(Symbol) || db.is_a?(String)
       raise RuntimeError, 'No database has been configured. Models cannot be dynamically loaded.' unless db
       BlockStack::Adapters.by_client(db.class)
     end
