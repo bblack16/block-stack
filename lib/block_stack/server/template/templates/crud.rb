@@ -29,7 +29,7 @@ module BlockStack
         { status: :error, message: "Failed to save #{model.model_name}" }
       end
     rescue InvalidModel => e
-      { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
+      { result: item.errors, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
     rescue => e
       { status: :error, message: "Failed to save due to the following error: #{e}" }
     end
@@ -45,7 +45,7 @@ module BlockStack
       if result = item.update(args)
         { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
       else
-        { result: result, status: :error, message: "Failed to save #{model.model_name}" }
+        { result: result, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
       end
     rescue InvalidModel => e
       { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
