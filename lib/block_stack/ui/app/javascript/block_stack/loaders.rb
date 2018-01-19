@@ -102,6 +102,9 @@ module Loaders
     Element['.date-time-picker'].JS.flatpickr({ enableSeconds: true, enableTime: true, altInput: true }.to_n)
     Element['.date-picker'].JS.flatpickr({ altInput: true }.to_n)
     Element['.time-picker'].JS.flatpickr({ enableSeconds: true, enableTime: true, noCalendar: true}.to_n)
+    # Element['input.date-time-picker'].each do |elem|
+    #   elem.parent.append('<i class="far fa-calendar"></i>') if elem.parent.find('i.far.fa-calendar').empty?
+    # end
   end
 
   def self.toggle
