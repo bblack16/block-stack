@@ -11,21 +11,25 @@ module BlockStack
     end
 
     def self.crud(opts = {})
+      opts[:model] = Model.model_for(opts[:model]) if opts[:model].is_a?(Symbol)
       self.model = opts[:model] if opts[:model]
       raise RuntimeError, "No model was found for controller #{self}." unless self.model
       self.prefix = opts.include?(:prefix) ? opts[:prefix] : model.plural_name
 
-      add_sub_menus(
-        {
-          title: model.clean_name.pluralize,
-          path: opts[:menu_path] || [],
-          icon: config.icon,
-          items: [
-            { title: 'Browse', icon: '<i class="fa fas-list"/>', attributes: { href: "/#{prefix}/" } },
-            { title: "New #{model.clean_name}", icon: '<i class="fa fas-plus"/>', attributes: { href: "/#{prefix}/new" } }
-          ]
-        }
-      )
+      unless opts[:no_menu] || opts[:menu]
+        add_sub_menus(
+          {
+            title: "#{([opts[:menu_path]] || []).flatten.join('/')}/#{model.config.display_name.pluralize}",
+            icon: opts[:icon] || config.icon,
+            items: [
+              { title: 'Browse', icon: Tag.new('i', class: 'fas fa-list'), attributes: { href: "/#{prefix}/" } },
+              { title: "New #{model.config.display_name}", icon: Tag.new('i', class: 'fas fa-plus'), attributes: { href: "/#{prefix}/new" } }
+            ]
+          }
+        )
+      end
+
+      add_sub_menus(opts[:menu]) if opts[:menu]
 
       attach_template_group(:crud, *(opts[:ignore] || []))
       true
