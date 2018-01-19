@@ -33,6 +33,7 @@ module BlockStack
         next if current_user
         creds = source.credentials(request, params)
         next unless creds
+        session[:auth_provided] = true
         auth_providers.each do |provider|
           next if current_user
           user = provider.authenticate(*[creds].flatten(1), request: request, params: params)
@@ -102,9 +103,12 @@ module BlockStack
       end
     end
 
-    # TODO Enhance logging to log whether auth was not provided or was but failed
     def unauthenticated!
-      logger.info("Authentication not provided or failed for request #{request.object_id}.")
+      if session[:auth_provided]
+        logger.info("Authentication failed for request #{request.object_id}.")
+      else
+        logger.info("Authentication not provided for request #{request.object_id}.")
+      end
       return custom_unauthenticated! if respond_to?(:custom_unauthenticated!)
       if config.authentication_failure_route
         redirect to(config.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
