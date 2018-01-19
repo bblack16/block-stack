@@ -15,8 +15,12 @@ module BlockStack
         self.to_s.split('::').last.downcase.to_sym
       end
 
+      def build_route(opts = {})
+        ('/' + [opts[:prefix], route, opts[:suffix]].compact.join('/')).gsub(/\/+/, '/')
+      end
+
       def add_to(server, opts = {})
-        server.send(opts[:verb] || verb, opts[:route] || route, opts[:args] || {}, &processor)
+        server.send(opts[:verb] || verb, opts[:route] || build_route(opts), opts[:args] || {}, &processor)
       end
     end
   end
