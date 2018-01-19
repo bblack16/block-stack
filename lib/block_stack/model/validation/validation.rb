@@ -107,10 +107,43 @@ module BlockStack
 
     protected
 
-    # TODO Make default messages better
     def apply_default_message
       return unless message.empty?
-      self.message = "#{attribute} #{mode == :none ? 'cannot' : 'must'} be #{type} #{expressions.join_terms(mode == :all ? :and : :or)}."
+      self.message =  attribute.to_s.gsub('_', '').title_case +
+        case type
+        when :exists
+          " must#{inverse? ? ' not' : nil} exist."
+        when :not_empty
+          " must#{inverse? ? nil : ' not'} be empty."
+        when :empty
+          " must#{inverse? ? ' not' : nil} be empty."
+        when :eq
+          " must#{inverse? ? ' not' : nil} be equal to #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :gt
+          " must#{inverse? ? ' not' : nil} be greater than #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :gte
+          " must#{inverse? ? ' not' : nil} be greater than or equal to #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :lt
+          " must#{inverse? ? ' not' : nil} be less than #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :lte
+          " must#{inverse? ? ' not' : nil} be less than or equal to #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :in
+          " must#{inverse? ? ' not' : nil} be in #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :contains
+          " must#{inverse? ? ' not' : nil} be contained in #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :start_with
+          " must#{inverse? ? ' not' : nil} start with #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :end_with
+          " must#{inverse? ? ' not' : nil} end with #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :matches
+          " must#{inverse? ? ' not' : nil} match #{expressions.join_terms(mode == :all ? :and : :or)}."
+        when :uniq
+          " must#{inverse? ? ' not' : nil} be unique."
+        when :uniq_or_nil
+          " must#{inverse? ? ' not' : nil} be unique or null."
+        else
+          " is not valid."
+        end
     end
 
   end
