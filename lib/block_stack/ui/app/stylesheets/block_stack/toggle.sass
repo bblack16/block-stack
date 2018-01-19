@@ -1,0 +1,94 @@
+.switch
+  position: relative
+  display: inline-block
+  width: 50px
+  height: 25px
+
+.switch
+  input
+    display: none
+
+.slider
+  position: absolute
+  cursor: pointer
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  background-color: #ccc
+  -webkit-transition: .4s
+  transition: .4s
+
+.slider:before
+  position: absolute
+  content: ""
+  height: 18px
+  width: 18px
+  left: 6px
+  bottom: 4px
+  background-color: white
+  -webkit-transition: .4s
+  transition: .4s
+
+input:checked + .slider
+  background-color: #1392d8
+
+input:checked + .slider.green
+  background-color: #26c714
+
+input:checked + .slider.purple
+  background-color: #8814c7
+
+input:checked + .slider.red
+  background-color: #d71313
+
+input:focus + .slider
+  box-shadow: 0 0 1px #2196F3
+
+input:checked + .slider:before
+  -webkit-transform: translateX(20px)
+  -ms-transform: translateX(20px)
+  transform: translateX(20px)
+
+.slider.round
+  border-radius: 34px
+
+.slider.round:before
+  border-radius: 50%
+
+.slider.onoff, .slider.yesno
+  width: 75px
+
+.slider.onoff:after
+  content: 'OFF'
+  color: white
+  display: block
+  position: absolute
+  transform: translate(-50%,-50%)
+  top: 50%
+  left: 60%
+  font-size: 10px
+
+input:checked + .slider.onoff:after, input:checked + .slider.yesno:after
+  left: 40%
+
+input:checked + .slider.onoff:before, input:checked + .slider.yesno:before
+  -webkit-transform: translateX(44px)
+  -ms-transform: translateX(44px)
+  transform: translateX(44px)
+
+input:checked + .slider.onoff:after
+  content: 'ON'
+
+.slider.yesno:after
+  content: 'NO'
+  color: white
+  display: block
+  position: absolute
+  transform: translate(-50%,-50%)
+  top: 50%
+  left: 60%
+  font-size: 10px
+
+input:checked + .slider.yesno:after
+  content: 'YES'
