@@ -15,7 +15,6 @@ module BlockStack
         :xml
       end
 
-      # TODO - Fix malformed XML issues
       def process(body, params = {})
         body = clean_values(body)
         body = { data: body } unless body.is_a?(Hash)
