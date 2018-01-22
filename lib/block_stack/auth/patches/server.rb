@@ -24,18 +24,20 @@ module BlockStack
       self.authorizations.push(Authorization::Route.new(action, object, { allow: allow }.merge(opts)))
     end
 
-    def authenticate!
+    def authenticate!(opts = {})
       if current_login && current_login.expired?
         logout
         return false
       end
       return true if current_login
       auth_sources.each do |source|
+        next if opts[:sources] && !opts[:sources].any? { |src| source.name?(src) }
         next if current_login
         creds = source.credentials(request, params)
         next unless creds
         session[:auth_provided] = true
         auth_providers.each do |provider|
+          next if opts[:providers] && !opts[:providers].any? { |prvd| provider.name?(prvd) }
           next if current_login
           login = provider.authenticate(*[creds].flatten(1), request: request, params: params)
           next unless login && process_login(login)
@@ -60,7 +62,7 @@ module BlockStack
       false
     end
 
-    def authorize!
+    def authorize!(opts = {})
       return false unless current_login
       return true if authorizations.empty?
       matches = authorizations.find_all do |authorization|
@@ -148,7 +150,7 @@ module BlockStack
       end
     end
 
-    def protected!
+    def protected!(opts = {})
       return if skip_auth?
       if authenticate!
         if config.authorization
