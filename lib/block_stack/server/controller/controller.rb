@@ -23,8 +23,8 @@ module BlockStack
     bridge_method :model
 
     def self.model=(mdl)
-      # TODO Reimplement type check
-      @model = mdl# if mdl.is_a?(BlockStack::Model)
+      raise ArgumentError, "Invalid model passed to #{self}. Must be inherited from BlockStack::Model, got #{mdl}." unless mdl < BlockStack::Model
+      @model = mdl
     end
 
     def self.crud(opts = {})
@@ -49,4 +49,6 @@ module BlockStack
       base_server && base_server.respond_to?(method) || super
     end
   end
+
+  Server.config(controller_base: BlockStack::Controller)
 end
