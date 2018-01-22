@@ -5,6 +5,10 @@
 section.header class="#{color} #{background ? ' with-image' : nil}" style="#{defined?(height) ? "height: #{height}px" : nil}" *attributes
   - if background
     .backdrop == background
+  - if thumbnail
+    .thumbnail == thumbnail
+  - elsif icon
+    .thumbnail.icon == icon
   .header-text
     .title.text-center.bold.animated.fadeIn == title
     - if subtitle

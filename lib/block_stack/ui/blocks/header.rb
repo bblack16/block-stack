@@ -6,6 +6,8 @@ module BlockStack
         title:      '',
         subtitle:   nil,
         background: nil,
+        thumbnail:  nil,
+        icon:       nil,
         color:      :blue,
         animated:   true
       }
