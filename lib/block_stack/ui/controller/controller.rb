@@ -21,11 +21,8 @@ module BlockStack
           {
             title: "#{([opts[:menu_path]] || []).flatten.join('/')}/#{model.config.display_name.pluralize}",
             icon: opts[:icon] || config.icon,
-            items: [
-              { title: 'Browse', icon: Tag.new('i', class: 'fas fa-list'), attributes: { href: "/#{prefix}/" } },
-              { title: "New #{model.config.display_name}", icon: Tag.new('i', class: 'fas fa-plus'), attributes: { href: "/#{prefix}/new" } }
-            ]
-          }
+            href: "/#{prefix}/"
+          }.merge(opts[:menu_args] || {})
         )
       end
 
