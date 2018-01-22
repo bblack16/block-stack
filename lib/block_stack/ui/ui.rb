@@ -82,6 +82,17 @@ module BlockStack
       [File.expand_path("../app", __FILE__)]
     end
 
+    # Check to see if a given view would be found by sprockets.
+    def self.view?(path)
+      # TODO Implement this to prevent having to error handle for default views
+      # opal.sprockets.find_asset("views/#{path.to_s.uncapsulate('/')}") ? true : false
+    end
+
+    # TODO Add a global render method that checks each engine rather than needing
+    # to specify it. Would need config to go with for default engine and prefered engines.
+
+    bridge_method :view?
+
     def self.maps_app
       @maps_app ||= Opal::SourceMapServer.new(sprockets, config.maps_prefix)
     end
