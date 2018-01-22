@@ -120,9 +120,15 @@ module BlockStack
           dataset.select(field).where(query).distinct.all.map { |i| i[field.to_sym] }
         end
 
-        # TODO Implement this in SQL
         def sample(query = {})
-          all.sample
+          case adapter_type
+          when :sqlite, :postgres
+            dataset.where(query).order(Sequel.function(:random)).limit(1).first
+          when :mysql
+            dataset.where(query).order(Sequel.function(:rand)).limit(1).first
+          else
+            all(query).sample
+          end
         end
 
         # Returns the specific SQL adapter being used
