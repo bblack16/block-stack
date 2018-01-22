@@ -1,5 +1,5 @@
 module BlockStack
-  class InvalidModel < StandardError
+  class InvalidModelError < BlockStack::Exception
     attr_reader :errors
 
     def initialize(model_or_msg = 'Invalid model', model = nil)
