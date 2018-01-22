@@ -1,9 +1,9 @@
 require_relative 'model_associations'
 require_relative 'validation/validation'
 require_relative 'exceptions/invalid_model'
+require_relative 'exceptions/uniqueness_error'
 require_relative 'exceptions/invalid_association'
 require_relative 'changeset'
-require_relative 'cache/cache'
 
 ####################
 # Features
@@ -34,8 +34,6 @@ module BlockStack
 
       base.singleton_class.send(:after, :all, :find_all, :search, :instantiate_all, send_value_ary: true, modify_value: true)
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
-      base.singleton_class.send(:before, :all, :find, :find_all, :search, :first, :last, :sample, :_check_cache, try_first: true, send_method: true)
-      base.singleton_class.send(:after, :all, :find, :find_all, :search, :first, :last, :sample, :_add_cache, send_all: true)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
       base.send(:attr_of, BBLib::HashStruct, :configuration, default_proc: proc { |x| x.ancestor_config }, singleton: true)
@@ -148,34 +146,25 @@ module BlockStack
       hash = BBLib::HashStruct.new
       hash.merge!(
         unique_by: :id, # Defines what field or fields make this object uniq. Mostly used by create_or_update to determine if a matching model exists
+        title_method: [:name], # The attribute to use for a title in views that support it
+        tagline_method: [:brief, :short_description], # The attribute to use for a tagline in views that support it
+        description_method: [:desc, :overview, :brief, :synopsis], # The attribute to use as a description in views that support it
+        thumbnail_method: [:cover, :poster, :front_cover, :thumb], # The attribute to use for a thumbnail in views that support it
+        background_method: [:backdrop, :fanart],
+        icon_method: [], # The method(s) to call to get an icon for this object
         paginate_at: 25, # Sets the default number of items returned for APIs
         serialize_relations: true,
-        # TODO Fix caching (probably per adapter)
-        cache: false, # Set to true to enable caching or false to disable it
-        cache_ttl: 120 # How long a cached version of this object should live before being refreshed (seconds)
+        merge_if_exist: false, # When an item is sent to create that already exists based on "unique_by", settings this to true will cause it to be merged. Otherwise and error will be raised.
+        # TODO Add caching to adapters
+        cache: false, # Set to true to enable caching or false to disable it. The adapter must support caching for this to matter.
+        cache_ttl: 120 # How long in seconds cached calls from this object should live. The adapter must support caching for this to matter.
       )
       hash
     end
 
-    # Base classes should define a type method and return a symbol or array of symbols
-    # that represent what type of DB the adapter is for: e.g. :sqlite
-    # def self.type
-    #   nil
-    # end
-
     module ClassMethods
       def inherited(subclass)
         subclass.db(Model.consume_next_db)
-      end
-
-      def _check_cache(method, request = nil)
-        return unless config.cache
-        Cache.retrieve(database_name, { method: method, request: request, model: self.to_s })
-      end
-
-      def _add_cache(result)
-        return unless config.cache
-        Cache.add(database_name, { method: result[:method], request: result[:args].first, model: self.to_s }, result[:value], config.cache_ttl)
       end
 
       def database_name
@@ -193,19 +182,15 @@ module BlockStack
         end
       end
 
-      # TODO Add automatic uniq validation based on unique_by config
       def create(payload)
         new(payload).save
       end
 
       def create_or_update(payload)
         query = [config.unique_by].flatten.hmap do |field|
-          [
-            field.to_sym,
-            payload[field]
-          ]
+          [ field.to_sym, payload[field] ]
         end
-        if item = self.class.find(query)
+        if item = find(query)
           item.update(payload)
         else
           create(payload)
@@ -267,7 +252,7 @@ module BlockStack
         when nil
           configuration
         else
-          # Nada
+          raise ArgumentError, "Not sure what to do with the argument passed to configs. Class was #{args.class}."
         end
       end
 
@@ -336,13 +321,7 @@ module BlockStack
       end
 
       def exist?
-        query = [config.unique_by].flatten.hmap do |field|
-          [
-            field.to_sym,
-            attribute(field)
-          ]
-        end
-        self.class.exist?(query)
+        self.class.exist?(unique_by_query)
       end
 
       def dataset_name
@@ -371,7 +350,7 @@ module BlockStack
       end
 
       def update(params, save_after = true)
-        return false unless valid?
+        raise InvalidModelError, self unless valid?
         params.each do |k, v|
           if attribute?(k)
             send("#{k}=", v)
@@ -391,9 +370,16 @@ module BlockStack
       end
 
       def save(skip_associations = false)
-        return true unless change_set.changes?
         logger.debug("About to save #{clean_name} ID: #{id}")
-        raise InvalidModel, self unless valid?
+        raise InvalidModelError, self unless valid?
+        if exist_not_equal?
+          if config.merge_if_exist
+            self.id = _remote_id
+          else
+            raise UniquenessError, "Another #{clean_name} already exists with the same attributes (#{[config.unique_by].flatten.join_terms})"
+          end
+        end
+        return true unless change_set.changes?
         self.updated_at = Time.now
         adapter_save
         save_associations unless skip_associations
@@ -448,6 +434,63 @@ module BlockStack
 
       def dform
         self.class.dform(self)
+      end
+
+      # Checks to see if this model exists based on it's unique_by config setting
+      # and that the existing entry in the database matches this objects
+      # id (or whatever a subclass considers to be ==).
+      # true means a matching record by uniqueness was found, but with a different
+      # id. Note, this can happen if the object itself has a nil id.
+      def exist_not_equal?
+        query = unique_by_query(self.serialize)
+        item = self.class.find(query)
+        return false unless item
+        item != self
+      end
+
+      # Takes a hash of parameters and constructs a query to check existence of
+      # this object in the database based on the unique_by config.
+      # If no has is provided the attributes of this object are used instead.
+      def unique_by_query(hash = nil)
+        [config.unique_by].flatten.hmap do |field|
+          [ field.to_sym, hash ? hash[field] : attribute(field) ]
+        end
+      end
+
+      # Finds the ID of the first record that matches this one based on its
+      # unique_by configuration. Returns nil if no match is found.
+      def _remote_id
+        self.class.find(unique_by_query(self.serialize))&.id
+      end
+
+      # Default methods used in default views to display this model. Can be overriden
+      # in the parent class.
+
+      def title
+        [config.title_method].flatten.find { |method| return send(method) if respond_to?(method) } || "#{config.display_name} #{id}"
+      end
+
+      def description
+        [config.description_method].flatten.find { |method| return send(method) if respond_to?(method) }
+      end
+
+      def tagline
+        [config.tagline_method].flatten.find { |method| return send(method) if respond_to?(method) } || BBLib.chars_up_to(description.to_s.split(/\.[\s$]/).first, 90) + '.'
+      end
+
+      def thumbnail
+        [config.thumbnail_method].flatten.find { |method| return send(method) if respond_to?(method) }
+        "/#{clean_name}/#{title}"
+      end
+
+      def background
+        [config.background_method].flatten.find { |method| return send(method) if respond_to?(method) }
+        "/#{clean_name}/background"
+      end
+
+      def icon
+        [config.icon_method].flatten.find { |method| return send(method) if respond_to?(method) }
+        "/#{clean_name}/icon"
       end
 
       protected
