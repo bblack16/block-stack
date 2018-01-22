@@ -9,11 +9,12 @@ module BlockStack
     end
   end
 
-  add_template(:login_session, :block_stack_user_auth, :post, '/session/login', type: :route) do
+  add_template(:login_session, :block_stack_user_auth, :post_api, '/session/login', type: :route) do
+    protected!
     if current_login
       redirect config.homepage, 303, notice: "Hello and welcome, #{current_user.display_name}!"
     else
-      redirect config.login_page, 401, notice: 'Please provide valid credentials.', severity: :warn
+      redirect config.login_page, 303
     end
   end
 
@@ -32,7 +33,7 @@ module BlockStack
       else
         { status: :error, message: "Registration failed." }
       end
-    rescue BlockStack::Model::InvalidModel => e
+    rescue BlockStack::Model::InvalidModelError => e
       { result: item.errors, status: :error, message: "Registration failed." }
     rescue => e
       { status: :error, message: "Registration failed: #{e}" }
@@ -43,19 +44,16 @@ module BlockStack
 
     server.config(
       homepage:           opts[:homepage] || '/',
-      login_page:         opts[:login_route] || '/login',
+      login_page:         opts[:login_page] || '/login',
       allow_registration: opts[:allow_registration],
-      login_model:        opts[:login_class] || opts[:user_model] || BlockStack::Authentication::User
+      login_model:        opts[:login_model] || opts[:user_model] || BlockStack::Authentication::User
     )
 
-    auth_sources = opts[:auth_sources] || [BlockStack::Authentication::Credentials.new, BlockStack::Authentication::Basic.new]
+    auth_sources = opts[:auth_sources] || [BlockStack::Authentication::HTMLForm.new, BlockStack::Authentication::Basic.new]
 
     server.add_auth_source(*auth_sources)
-
-    # TODO Remove hardcoded routes from below
-    server.skip_auth('/login', '/session/register')
+    server.skip_auth(server.config.login_page, '/session/register')
     server.helpers(BlockStack::Helpers::UserAuth)
-
     server.attach_template_group(:block_stack_user_auth)
 
     if opts[:providers]
