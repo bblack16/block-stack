@@ -30,9 +30,9 @@ module BlockStack
       def retrieve(obj)
         return nil unless obj.id
         if foreign_key?
-          raise InvalidAssociation, "#{obj.class} does not have a method named #{attribute} and cannot be associated with a #{model}." unless obj.respond_to?(attribute)
+          raise InvalidAssociationError, "#{obj.class} does not have a method named #{attribute} and cannot be associated with a #{model}." unless obj.respond_to?(attribute)
         else
-          raise InvalidAssociation, "#{model} does not have a method named #{column} and cannot be associated with a #{obj.class}." unless model.attribute?(column)
+          raise InvalidAssociationError, "#{model} does not have a method named #{column} and cannot be associated with a #{obj.class}." unless model.attribute?(column)
         end
         model.find(column => obj.attribute(attribute))
       end
