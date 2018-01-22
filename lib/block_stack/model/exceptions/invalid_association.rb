@@ -1,6 +1,6 @@
 module BlockStack
   module Associations
-    class InvalidAssociation < StandardError
+    class InvalidAssociationError < BlockStack::Exception
 
     end
   end
