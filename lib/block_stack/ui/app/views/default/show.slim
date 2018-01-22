@@ -1,6 +1,6 @@
 == stylesheet_include('default/show')
 
-== render_block(:header, title: @model.class.config.display_name, subtitle: "ID: #{@model.id}", background: "#{@model.plural_name}/background") do
+== render_block(:header, title: @model.title, subtitle: @model.tagline, background: "#{@model.plural_name}/background") do
   .btn.btn-group.floating-buttons
     == link_to(:edit, @model, class: 'btn btn-outline-warning new-button')
     == link_to(:index, @model, 'Back', class: 'btn btn-outline-danger new-button')
