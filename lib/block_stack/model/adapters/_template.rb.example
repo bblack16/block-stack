@@ -1,0 +1,90 @@
+# This is not for use, but serves as a template to copy and fill in when
+# creating new adapters.
+module BlockStack
+  module Models
+    module Template
+
+      def self.included(base)
+        base.extend(ClassMethods)
+        base.send(:include, BlockStack::Model)
+        base.send(:include, InstanceMethods)
+      end
+
+      def self.type
+        :template
+      end
+
+      def self.client
+        'Class::Name'
+      end
+
+      BlockStack::Adapters.register(self)
+
+      def self.build_db(type, *args)
+      
+      end
+
+      module ClassMethods
+        def find(query)
+
+        end
+
+        def all(opts = {}, &block)
+
+        end
+
+        def find_all(query, &block)
+
+        end
+
+        def first
+
+        end
+
+        def last
+
+        end
+
+        def count(query = {})
+
+        end
+
+        def average(field, query = {})
+
+        end
+
+        def min(field, query = {})
+
+        end
+
+        def max(field, query = {})
+
+        end
+
+        def sum(field, query = {})
+
+        end
+
+        def distinct(field, query = {})
+
+        end
+
+        def sample(query = {})
+
+        end
+      end
+
+      module InstanceMethods
+        protected
+
+        def adapter_save
+
+        end
+
+        def adapter_delete
+
+        end
+      end
+    end
+  end
+end
