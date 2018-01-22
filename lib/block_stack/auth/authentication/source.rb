@@ -14,6 +14,10 @@ module BlockStack
         false
       end
 
+      def name?(str)
+        name == str.to_s
+      end
+
       def credentials?(*args)
         extract(*args) ? true : false
       end

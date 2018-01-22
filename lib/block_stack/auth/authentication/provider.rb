@@ -14,6 +14,10 @@ module BlockStack
 
       bridge_method :type
 
+      def name?(str)
+        name == str.to_s
+      end
+
       # Should be overwritten in sublcasses.
       # Must return a user object if the request can be validated, otherwise
       # nil or false should be returned (indicating a failed authentication).
