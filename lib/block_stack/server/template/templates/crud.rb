@@ -16,7 +16,6 @@ module BlockStack
     item.serialize
   end
 
-  # TODO Add error message returns for save methods
   add_template(:create_api, :crud, :post_api, '/', type: :route) do
     begin
       args = json_request
@@ -28,14 +27,13 @@ module BlockStack
       else
         { status: :error, message: "Failed to save #{model.model_name}" }
       end
-    rescue InvalidModel => e
+    rescue InvalidModelError, UniquenessError => e
       { result: item.errors, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
     rescue => e
       { status: :error, message: "Failed to save due to the following error: #{e}" }
     end
   end
 
-  # TODO Add error message returns for save methods
   add_template(:update_api, :crud, :put_api, '/:id', type: :route) do
     begin
       args = json_request
@@ -47,7 +45,7 @@ module BlockStack
       else
         { result: result, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
       end
-    rescue InvalidModel => e
+    rescue InvalidModelError, UniquenessError => e
       { result: item.errors, status: :error, message: "Failed to save #{model.model_name}" }
     rescue => e
       BlockStack.logger.error(e)
@@ -55,7 +53,6 @@ module BlockStack
     end
   end
 
-  # TODO Add error message returns for save methods
   add_template(:delete_api, :crud, :delete_api, '/:id', type: :route) do
     item = model.find(params[:id])
     halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
