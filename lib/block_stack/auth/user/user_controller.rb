@@ -35,7 +35,7 @@ module BlockStack
         else
           { status: :error, message: "Registration failed." }
         end
-      rescue InvalidModel => e
+      rescue InvalidModelError => e
         { result: item.errors, status: :error, message: "Registration failed." }
       rescue => e
         { status: :error, message: "Registration failed: #{e}" }
