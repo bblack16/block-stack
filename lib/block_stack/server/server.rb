@@ -50,11 +50,9 @@ module BlockStack
     end
 
     # Setup default settings
-    # TODO Finalize config
     config(
-      controller_base: nil,  #Set this to a class that inherits from BlockStack::Controller
+      controller_base: nil,  # Set this to a class that inherits from BlockStack::Controller
       log_requests: true,
-      log_params: true,
       auto_serialize: true # If true all objects that respond to serialize will be serialized before being passed to the formatter (api routes only)
     )
 
@@ -132,7 +130,6 @@ module BlockStack
     end
 
     # Convenient way to delete a route from this server
-    # TODO (Maybe) Make this also delete controller routes
     def self.remove_route(verb, route)
       index = nil
       verb = verb.to_s.upcase
@@ -231,7 +228,7 @@ module BlockStack
     end
 
     def log_request
-      "#{request.ip} - #{session[:user] ? session[:user].name : '-'} [#{Time.now.strftime('%d/%m/%Y:%H:%M:%S %z')}] \"#{request.request_method} #{request.path} HTTP\" #{response.status} #{response.content_length} #{request_timer.stop(request.object_id).round(3)}"
+      "#{request.ip} - #{session[:login] ? session[:login].name : '-'} [#{Time.now.strftime('%d/%m/%Y:%H:%M:%S %z')}] \"#{request.request_method} #{request.path} HTTP\" #{response.status} #{response.content_length} #{request_timer.stop(request.object_id).round(3)}"
       # "Finished processing request (#{request.object_id}) from #{request.host} (#{request.request_method} #{request.path}). Took #{request_timer.stop(request.object_id).to_duration}."
     end
 
