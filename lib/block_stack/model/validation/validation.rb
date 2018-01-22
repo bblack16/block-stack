@@ -5,7 +5,7 @@ module BlockStack
     TYPES = [
       :exists, :not_empty, :empty, :eq, :gt, :gte, :lt,
       :lte, :in, :contains, :start_with, :end_with, :matches,
-      :length, :uniq, :uniq_or_nil, :custom
+      :length, :uniq, :uniq_or_nil, :custom, :custom_model
     ]
 
     MODES = [:any, :all, :none]
@@ -13,7 +13,7 @@ module BlockStack
     attr_sym :attribute, required: true, arg_at: 0
     attr_element_of TYPES, :type, required: true
     attr_element_of MODES, :mode, default: MODES.first
-    attr_ary :expressions, default: []
+    attr_ary :expressions, default: [], arg_at: :block
     attr_bool :inverse, default: false
     attr_str :message, default: ''
     attr_bool :allow_nil, default: false
@@ -103,6 +103,11 @@ module BlockStack
     def custom(value, exp)
       return false unless exp.is_a?(Proc)
       exp.call(value)
+    end
+
+    def custom_model(value, exp)
+      return false unless exp.is_a?(Proc)
+      exp.call(@model)
     end
 
     protected

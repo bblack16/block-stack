@@ -475,7 +475,11 @@ module BlockStack
       end
 
       def tagline
-        [config.tagline_method].flatten.find { |method| return send(method) if respond_to?(method) } || BBLib.chars_up_to(description.to_s.split(/\.[\s$]/).first, 90) + '.'
+        result = [config.tagline_method].flatten.find { |method| return send(method) if respond_to?(method) }
+        return result if result
+        result = BBLib.chars_up_to(description.to_s.split(/\.[\s$]/).first, 90)
+        return result.to_s + '.' if result
+        nil
       end
 
       def thumbnail
