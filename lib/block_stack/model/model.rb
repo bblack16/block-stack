@@ -40,7 +40,7 @@ module BlockStack
       base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false, dformed: false)
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
-      base.send(:bridge_method, :config, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations)
+      base.send(:bridge_method, :config, :db, :model_name, :clean_name, :plural_name, :dataset_name, :validations, :associations)
       base.send(:config, display_name: base.clean_name)
 
       base.load_associations
@@ -230,6 +230,10 @@ module BlockStack
         db[dataset_name]
       end
 
+      def associations
+        BlockStack::Associations.associations_for(self)
+      end
+
       def ancestor_config
         config = Model.default_config
         ancestors.reverse.each do |a|
@@ -277,7 +281,9 @@ module BlockStack
       end
 
       def dform(obj = self)
-        DFormed.form_for(obj, bypass: true)
+        DFormed.form_for(obj, bypass: true).tap do |form|
+          associations.each { |association| association.process_dform(form, obj) if association.process_dforms? }
+        end
       end
 
       # Returns the controller class for this model if one exists.
@@ -343,10 +349,6 @@ module BlockStack
       def attribute?(name)
         return nil unless name
         _attrs.include?(name) && respond_to?(name)
-      end
-
-      def associations
-        BlockStack::Associations.associations_for(self)
       end
 
       def update(params, save_after = true)
