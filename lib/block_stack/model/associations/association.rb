@@ -7,6 +7,8 @@ module BlockStack
     attr_bool :cascade, default: true
     attr_sym :method_name, default_proc: :method_name_default, allow_nil: true
     attr_bool :singular, default: true
+    attr_bool :process_dforms, default: true
+    attr_hash :dformed_args
 
     before :model, :lookup_model
 
@@ -59,8 +61,9 @@ module BlockStack
       raise BBLib::AbstractError
     end
 
-    def dformed_options
-      model.all.map { |m| [m.id, m.setting_call(:title) || m.id] }.to_h
+    def process_dform(form, obj)
+      # Nothing in base class. This allows subclasses to add to or
+      # modify the dformed form for the parent object.
     end
 
     protected

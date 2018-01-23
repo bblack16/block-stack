@@ -4,6 +4,7 @@ module BlockStack
 
       attr_set :cascade, default: false
       attr_bool :singular, default: false
+      attr_bool :process_dforms, default: false
 
       def associated?(obj_a, obj_b)
         return false if obj_a == obj_b
@@ -45,6 +46,19 @@ module BlockStack
           to: from,
           column: attribute,
           attribute: column
+        )
+      end
+
+      def process_dform(form, obj)
+        form.add_field(
+          {
+            name:          attribute,
+            type:          :multi_select,
+            label:         model.clean_name,
+            include_blank: true,
+            value:         obj.send(method_name).map(&:id),
+            options:       model.all.hmap { |m| [m.id, m.title] }
+          }.merge(dformed_args)
         )
       end
 

@@ -32,12 +32,12 @@ module BlockStack
     end
 
     def self.association_for(from, method)
-      from = from.dataset_name if from.is_a?(Model)
+      from = from.dataset_name if from.respond_to?(:dataset_name)
       associations[from] ? associations[from][method] : nil
     end
 
     def self.associations_for(obj)
-      dataset_name = obj.is_a?(Model) ? obj.dataset_name : obj
+      dataset_name = obj.respond_to?(:dataset_name) ? obj.dataset_name : obj
       associations[dataset_name]&.values || []
     end
   end

@@ -52,6 +52,22 @@ module BlockStack
         )
       end
 
+      def process_dform(form, obj)
+        field = {
+          name:          attribute,
+          type:          :select,
+          label:         model.clean_name,
+          include_blank: true,
+          options:       model.all.hmap { |m| [m.id, m.title] }
+        }.merge(dformed_args)
+        if form.field(attribute)
+          field[:value] = form.field(attribute).value
+          form.replace(attribute, field)
+        else
+          form.add_field(field)
+        end
+      end
+
       protected
 
       def simple_init(*args)

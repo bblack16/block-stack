@@ -41,6 +41,19 @@ module BlockStack
         )
       end
 
+      def process_dform(form, obj)
+        form.add_field(
+          {
+            name:          attribute,
+            type:          :select,
+            label:         model.clean_name,
+            include_blank: true,
+            value:         obj.send(method_name)&.id,
+            options:       model.all.hmap { |m| [m.id, m.title] }
+          }.merge(dformed_args)
+        )
+      end
+
       protected
 
       def method_name_default
