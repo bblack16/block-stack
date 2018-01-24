@@ -35,3 +35,8 @@ DFormed.add_preset(:boolean, type: :boolean, class: 'toggle yesno')
 
 DFormed.add_preset(:text_area, type: :text_area, classes: 'autosize')
 DFormed.add_preset(:json, type: :json, classes: 'autosize')
+
+# TODO Fix issue with select 2 fields in dformed where the element is changed and
+#   tooptips are shown as raw text rather than html on validation
+DFormed.add_preset(:multi_select, type: :multi_select, classes: 'select-2')
+DFormed.add_preset(:select, type: :select, classes: 'select-2')
