@@ -57,6 +57,7 @@ module BlockStack
         form.field(field_name).tap do |field|
           field.add_class(:invalid)
           field.remove_class(:valid)
+          next unless field.element.is(':visible')
           field.add_attribute(
             title: message,
             'data-toggle': :tooltip,
