@@ -352,11 +352,13 @@ module BlockStack
       end
 
       def update(params, save_after = true)
-        raise InvalidModelError, self unless valid?
+        # Is the below needed?
+        # raise InvalidModelError, self unless valid?
         params.each do |k, v|
           if attribute?(k)
             send("#{k}=", v)
           else
+            # TODO toggle behavior (probably between warn or raise error)
             warn("Unknown attribute #{k} passed to #{self.class} in update params. Ignoring it...")
           end
         end
