@@ -19,49 +19,28 @@ module BlockStack
       self.class.skip_auth_routes + (base_server ? base_server.skip_auth_routes : [])
     end
 
+    def protected_routes
+      self.class.protected_routes + (base_server ? base_server.protected_routes : [])
+    end
+
     def self.authentication_failure_route
-      base_server.authentication_failure_route
+      base_server.config.authentication_failure_route
     end
 
     def self.authorization_failure_route
-      base_server.authorization_failure_route
+      base_server.config.authorization_failure_route
     end
 
     def self.authorization
-      base_server.authorization
+      base_server.config.authorization
     end
 
     def self.authentication
-      base_server.authentication
+      base_server.config.authentication
     end
 
     def self.user_model
-      base_server.user_model
+      base_server.config.login_model
     end
-
-    def authenticate!
-      # return base_server.authenticate! unless controller_auth
-    end
-
-    def authorize!
-      # return base_server.authorize! unless controller_auth
-    end
-
-    def skip_auth_routes
-      self.class.skip_auth_routes + base_server.skip_auth_routes
-    end
-
-    def unauthorized!
-      # return base_server.unauthorized! unless controller_auth
-    end
-
-    def unauthenticated!
-      # return base_server.unauthenticated! unless controller_auth
-    end
-
-    def protected!
-      # return base_server.protected! unless controller_auth
-    end
-
   end
 end
