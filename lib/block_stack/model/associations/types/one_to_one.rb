@@ -58,11 +58,12 @@ module BlockStack
           type:          :select,
           label:         model.clean_name,
           include_blank: true,
-          options:       model.all.hmap { |m| [m.id, m.title] }
+          # TODO Improve sorting for options (make it customizable)
+          options:       model.all.map { |m| [m.id, m.title] }.sort_by { |ary| ary.last.to_s.downcase }.to_h
         }.merge(dformed_args)
         if form.field(attribute)
           field[:value] = form.field(attribute).value
-          form.replace(attribute, field)
+          form.replace(attribute, form.field(attribute).serialize.deep_merge(field))
         else
           form.add_field(field)
         end
