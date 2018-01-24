@@ -2,7 +2,7 @@
 - level = 1 unless defined?(level)
 
 ul.dropdown-menu.block_stack_nav class="#{level > 1 ? 'sub-dropdown' : nil}" aria-labelledby="menu_#{item.clean_title}"
-  - item.items.each do |sub_item|
+  - item.sort_items.each do |sub_item|
     li.dropdown-item class="#{sub_item.sub_menu? ? ' dropdown-submenu' : nil}"
       a.dropdown-item class="#{sub_item.sub_menu? ? 'dropdown-sub-menu' : nil}" id="menu_#{sub_item.clean_title}" *sub_item.attributes data-toggle="#{sub_item.sub_menu? ? 'dropdown' : 'toggle'}" aria-haspopup="true" aria-expanded="false"
         - case sub_item.icon
