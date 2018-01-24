@@ -48,6 +48,11 @@ module BlockStack
     def respond_to_missing?(method, include_private = false)
       base_server && base_server.respond_to?(method) || super
     end
+
+    def find_model
+      return nil unless model
+      model.find(params[:id])
+    end
   end
 
   Server.config(controller_base: BlockStack::Controller)
