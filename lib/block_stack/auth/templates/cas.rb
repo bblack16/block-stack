@@ -12,6 +12,11 @@ module BlockStack
     server.helpers(BlockStack::Helpers::CAS)
     server.config(cas_login_class: BlockStack::Authentication::CASLogin)
     server.use(Rack::CAS, server_url: server_url)
+    server.controllers.each do |controller|
+      controller.config(cas_login_class: BlockStack::Authentication::CASLogin)
+      controller.use(Rack::CAS, server_url: server_url)
+      controller.helpers(BlockStack::Helpers::CAS)
+    end
     server.get('/session/logout') do
       session.clear
       redirect opts[:logout_url] || "#{server_url}#{server_url.end_with?('/') ? nil : '/'}/logout"
