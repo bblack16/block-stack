@@ -32,7 +32,14 @@ div.dformed-form
       &.invalid
         box-shadow: 0px 0px 5px #ffb400
         border: 1px solid #ffdc00
-    &.select2-search__field
+    input[readonly]:not(.dformed-date-time):not(.dformed-date):not(.dformed-time)
+      color: grey
+      border: 0px
+      &:hover
+        box-shadow: none
+      &:focus
+        box-shadow: none
+    input.select2-search__field
       border: none
       background-color: transparent
       &:focus
@@ -46,6 +53,8 @@ div.dformed-form
     width: 150px !important
     text-align: center
     padding-right: 5px
+  span.select2
+    display: inline-grid
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button
     opacity: 1
