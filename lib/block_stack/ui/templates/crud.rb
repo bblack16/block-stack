@@ -3,6 +3,7 @@ module BlockStack
   add_template(:index, :crud, :get, '/', type: :route) do
     begin
       @models = model.all
+      @models = process_model_index(@models) if respond_to?(:process_model_index)
       send(config.default_renderer, :"#{model.plural_name}/index")
     rescue Errno::ENOENT => e
       @model = model
@@ -13,7 +14,8 @@ module BlockStack
 
   add_template(:show, :crud, :get, '/:id', type: :route) do
     begin
-      @model = model.find(params[:id])
+      @model = find_model
+      @model = process_model_show(@model) if respond_to?(:process_model_show)
       if @model
         send(config.default_renderer, :"#{model.plural_name}/show")
       else
@@ -27,6 +29,7 @@ module BlockStack
   add_template(:create, :crud, :get, '/new', type: :route) do
     begin
       @model = model
+      @model = process_model_create(@model) if respond_to?(:process_model_create)
       send(config.default_renderer, :"#{model.plural_name}/new")
     rescue Errno::ENOENT => e
       slim :"#{settings.default_view_folder}/new"
@@ -35,7 +38,8 @@ module BlockStack
 
   add_template(:update, :crud, :get, '/:id/edit', type: :route) do
     begin
-      @model = model.find(params[:id])
+      @model = find_model
+      @model = process_model_update(@model) if respond_to?(:process_model_update)
       if @model
         send(config.default_renderer, :"#{model.plural_name}/edit")
       else
