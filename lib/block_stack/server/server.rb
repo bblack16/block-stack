@@ -97,7 +97,7 @@ module BlockStack
     def self.prefix=(pre)
       pre = pre.to_s.uncapsulate('/') if pre
       return @prefix if @prefix == pre
-      change_prefix(@prefix, pre)
+      change_prefix(@prefix, pre.uncapsulate('/'))
       @prefix = pre
     end
 
@@ -283,13 +283,13 @@ module BlockStack
             verb, path = api_routes.delete(full).split(' ', 2)
             path = path.sub(/^\/#{Regexp.escape(old)}/i, '') if old
             replace = "#{api_prefix ? "/#{api_prefix}" : nil}/#{new}"
-            logger.debug("Changing API route from '#{current}' to /#{replace}#{path}")
-            add_api_routes("#{verb} /#{new}#{path}")
+            logger.debug("Changing API route from '#{current}' to #{replace}#{path}")
+            add_api_routes("#{verb} #{replace}#{path}")
           else
             replace = new
           end
           current = current.sub(/^\/#{Regexp.escape(old)}/i, '') if old
-          route[0] = Mustermann.new("/#{replace}#{current}", route[0].options)
+          route[0] = Mustermann.new("#{replace}#{current}", route[0].options)
         end
       end
     end
