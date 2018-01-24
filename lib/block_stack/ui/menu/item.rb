@@ -12,6 +12,12 @@ module BlockStack
 
     init_type :loose
 
+    after :items=, :add_items, :sort_items
+
+    def sort_items
+      @items = items.sort_by { |i| [i.sort, i.title] }
+    end
+
     def clean_title
       title.gsub(/\s+/, '_').downcase.to_clean_sym
     end
