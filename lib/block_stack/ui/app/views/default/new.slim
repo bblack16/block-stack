@@ -1,6 +1,6 @@
 == stylesheet_include 'default/new'
 
-== render_block(:header, title: "New #{@model.config.display_name}", background: "#{@model.plural_name}/background") do
+== render_block(:header, title: "New #{@model.config.display_name}", color: (@model.config.header_color), background: "#{@model.plural_name}/background") do
   == link_to(:index, @model, 'Cancel', class: 'btn btn-outline-danger back-button')
 br
 == render_block(:form, model: @model, method: :post, save_to: "/api/#{model.plural_name}", save_redirect: "/#{model.plural_name}")

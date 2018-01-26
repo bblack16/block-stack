@@ -14,6 +14,11 @@ module BlockStack
 
     after :items=, :add_items, :sort_items
 
+    # Stubbed in for authentication support. By default this always returns true
+    def authorized?(user, request, params)
+      true
+    end
+
     def sort_items
       @items = items.sort_by { |i| [i.sort, i.title] }
     end
@@ -56,6 +61,18 @@ module BlockStack
 
     def add_items(*items)
       items.each { |item| add_item(item) }
+    end
+
+    def item(title)
+      path = Menu.parse_path(title)
+      match = items.find { |item| item.title == path.first }
+      return nil unless match
+      return match.item(path[1..-1]) if path.size > 1
+      match
+    end
+
+    def item?(title)
+      items.any? { |item| item.title == title }
     end
 
     def add_item(item)

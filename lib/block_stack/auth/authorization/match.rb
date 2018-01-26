@@ -2,17 +2,19 @@ module BlockStack
   module Authorization
     class Match
       include BBLib::Effortless
-      TYPES = [:role, :username, :ip, :param].freeze
+      TYPES = [:role, :username, :ip, :param, :attribute].freeze
+      MATCH_TYPES = [:any, :all]
 
       attr_element_of TYPES, :type, default: TYPES.first, arg_at: 0
       attr_ary_of Object, :expressions, default: [], arg_at: 1
-      attr_sym :param, default: nil, allow_nil: true
+      attr_sym :param, :attribute, default: nil, allow_nil: true
       attr_of Proc, :custom_compare, default: nil, allow_nil: true
+      attr_element_of MATCH_TYPES, :match_type, default: MATCH_TYPES.first
 
       def match?(user, request, params)
         values = get_value(user, request, params)
         return false unless values
-        [values].flatten.any? do |value|
+        [values].flatten.send("#{match_type}?".to_sym) do |value|
           expressions.any? do |exp|
             compare(value, exp)
           end
@@ -31,6 +33,8 @@ module BlockStack
           request.remote_address
         when :param
           params[self.param]
+        when :attribute
+          user.send(attribute) rescue nil
         else
           nil
         end

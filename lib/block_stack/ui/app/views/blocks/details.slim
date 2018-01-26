@@ -1,7 +1,7 @@
 == stylesheet_include('blocks/details')
 
 table *attributes
-  - if title
+  - if title && !title.to_s.empty?
     thead
       tr
         th.text-center colspan=2 == title

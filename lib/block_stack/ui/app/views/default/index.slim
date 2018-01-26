@@ -1,6 +1,6 @@
 == stylesheet_include 'default/index'
 
-== render_block(:header, title: @model.config.display_name.pluralize, background: "#{@model.plural_name}/background") do
+== render_block(:header, title: @model.config.display_name.pluralize, color: (@model.config.header_color), background: "#{@model.plural_name}/background") do
   == link_to(:new, @model, class: 'btn btn-outline-success new-button')
 br
 - if @models.empty?

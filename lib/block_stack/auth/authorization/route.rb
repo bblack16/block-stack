@@ -2,16 +2,16 @@ module BlockStack
   module Authorization
     class Route < Base
       attr_elements_of BlockStack::VERBS, :actions, default: [], arg_at: 0
-      attr_of Object, :object, arg_at: 1
+      attr_ary_of Object, :objects, arg_at: 1
 
       def match?(action, object)
-        compare(object, self.object) && actions.any? { |act| compare(action, act) }
+        objects.any? { |obj| compare(object, obj) } && actions.any? { |act| compare(action, act) }
       end
 
       protected
 
       def compare(a, b)
-        b = /#{Regexp.escape(b).gsub('\\*', '.*').gsub('\\?', '?')}/i if b.is_a?(String) && (b.include?('*') || b.include?('?'))
+        b = /^#{Regexp.escape(b).gsub('\\*', '.*').gsub('\\?', '?')}$/i if b.is_a?(String) && (b.include?('*') || b.include?('?'))
         case b
         when Regexp
           a.to_s =~ b

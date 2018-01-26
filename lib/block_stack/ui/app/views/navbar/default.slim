@@ -18,6 +18,7 @@ div#main-menu.vertical
     .clock blockstack-block='Clock' = Time.now.strftime('%H:%M:%S')
 
   - menu.items.each do |item|
+    - next unless item.authorized?(current_login, request, params)
     - active = item.active?(request.path_info)
     nav.menu-item class="#{active ? ' active' : nil}"
       - case item.icon

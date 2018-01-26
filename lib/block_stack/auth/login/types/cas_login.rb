@@ -2,7 +2,7 @@ module BlockStack
   module Authentication
     class CASLogin < Login
       attr_str :ticket
-      attr_hash :extra_attributes#, pre_proc: :process_extra_attributes
+      attr_hash :extra_attributes, pre_proc: :process_extra_attributes
 
       init_type :loose
 
@@ -16,7 +16,7 @@ module BlockStack
 
       protected
 
-      def self.process_extra_attributes(hash)
+      def process_extra_attributes(hash)
         hash.kmap do |key|
           key.method_case.to_sym
         end

@@ -19,19 +19,19 @@
   - else
     - { 'ID': :object_id, 'Name': :to_s, 'Class': :class }
 
-table data-page-length="#{page_length}" *attributes
+table data-page-length="#{page_length}" data-order="[]" *attributes
   thead
     tr
-      - headers.each do |header, method|
+      - headers.each do |header, _method|
         th.ripple data-ripple-color='rgb(215, 215, 215)' = squish(header.to_s, max)
   tbody
     - [data].flatten(1).each do |obj|
       tr
         - headers.each do |header, method|
           - if obj.is_a?(Hash)
-            - value = obj[method]
-          - elsif obj.respond_to?(method)
-            - value = obj.send(method)
+            - value = obj[method || header]
+          - elsif obj.respond_to?(method || header)
+            - value = obj.send(method || header)
           - else
             - value = empty
           - value = display_value(value, method)

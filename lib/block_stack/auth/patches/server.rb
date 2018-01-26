@@ -5,7 +5,7 @@ module BlockStack
     attr_ary_of Authentication::Source, :auth_sources, default: [], singleton: true, add_rem: true, adder_name: 'add_auth_source', remover_name: 'remove_auth_source'
     attr_ary_of Authentication::Provider, :auth_providers, default: [], singleton: true, add_rem: true, adder_name: 'add_auth_provider', remover_name: 'remove_auth_provider'
     attr_ary_of Authorization::Route, :authorizations, default: [], singleton: true, add_rem: true
-    attr_ary_of [String, Regexp], :skip_auth_routes, default: [/^\/(assets\/)?(stylesheets|javascript|fonts)\//i, config.maps_prefix, /^\/__OPAL_SOURCE_MAPS__/i], singleton: true
+    attr_ary_of [String, Regexp], :skip_auth_routes, default: [/^\/(assets\/)?(stylesheets|javascript|fonts|images)\//i, config.maps_prefix, /^\/__OPAL_SOURCE_MAPS__/i], singleton: true
     attr_ary_of [String, Regexp], :protected_routes, singleton: true
 
     bridge_method :authorizations, :auth_providers, :auth_sources, :skip_auth_routes, :protected_routes
@@ -21,6 +21,7 @@ module BlockStack
     )
 
     def self.authorize(action, object, allow, opts = {})
+      logger.debug("Adding new route authorization for #{action} on #{object}")
       self.authorizations.push(Authorization::Route.new(action, object, { allow: allow }.merge(opts)))
     end
 
@@ -64,11 +65,11 @@ module BlockStack
 
     def authorize!(opts = {})
       return false unless current_login
-      return true if authorizations.empty?
+      return !base_server.config.deny_by_default if authorizations.empty?
       matches = authorizations.find_all do |authorization|
         authorization.match?(request.request_method.downcase, request.path)
       end
-      return !config.deny_by_default if matches.empty?
+      return !base_server.config.deny_by_default if matches.empty?
       matches.any? { |auth| auth.permit?(current_login, request, params) }
     end
 
@@ -106,7 +107,7 @@ module BlockStack
       end
     end
 
-    # If the current route matches a protected route protected! is automatically
+    # If the current route matches a protected route, protected! is automatically
     # invoked in the before hook below.
     before do
       protected! if protected?
@@ -129,8 +130,8 @@ module BlockStack
     def unauthorized!
       logger.info("Authorization FORBIDDEN for #{current_login.name} for #{request.path_info}")
       return custom_unauthorized! if respond_to?(:custom_unauthorized!)
-      if config.authorization_failure_route
-        redirect config.authorization_failure_route, 303, notice: 'You are not authorized for that!', severity: :error
+      if base_server.config.authorization_failure_route
+        redirect (base_server.config.authorization_failure_route == :back ? back : base_server.config.authorization_failure_route), 303, notice: 'You are not authorized for that!', severity: :error
       else
         halt 403, 'You are not authorized for that.'
       end
@@ -143,8 +144,8 @@ module BlockStack
         logger.info("Authentication not provided for request #{request.object_id}.")
       end
       return custom_unauthenticated! if respond_to?(:custom_unauthenticated!)
-      if config.authentication_failure_route
-        redirect to(config.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
+      if base_server.config.authentication_failure_route
+        redirect (base_server.config.authentication_failure_route == :back ? back : base_server.config.authentication_failure_route), 303, notice: 'Please provide a valid login.', severity: :error
       else
         halt 401, 'Not authorized. Please provide valid credentials.'
       end

@@ -4,7 +4,7 @@ module BlockStack
       include BBLib::Effortless
       attr_ary_of Match, :allow, :deny, default: []
       attr_bool :prefer_allow, default: true
-      attr_bool :allow_all, default: false
+      attr_bool :allow_all, :deny_all, default: false
       attr_bool :allow_by_default, :deny_by_default, default: false
 
       # This method should be overwritten in subclasses
@@ -16,7 +16,8 @@ module BlockStack
       end
 
       def permit?(user, request, params)
-        return true if user && user.admin?
+        return true if allow_all?
+        return false if deny_all?
         return allow_by_default || !deny_by_default if allow.empty? && deny.empty?
         allowed?(user, request, params) && (prefer_allow? || !denied?(user, request, params))
       end

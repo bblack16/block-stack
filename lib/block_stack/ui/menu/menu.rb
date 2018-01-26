@@ -20,6 +20,18 @@ module BlockStack
       [items].flatten.each { |item| add_item(item) }
     end
 
+    def item(title)
+      path = Menu.parse_path(title)
+      match = items.find { |item| item.title == path.first }
+      return nil unless match
+      return match.item(path[1..-1]) if path.size > 1
+      match
+    end
+
+    def item?(title)
+      items.any? { |item| item.title == title }
+    end
+
     def add_items(*items)
       items.each { |item| add_item(item) }
     end
@@ -41,6 +53,14 @@ module BlockStack
           self.items.push(parent)
           parent.add_item(item)
         end
+      end
+    end
+
+    def self.parse_path(str)
+      if str.is_a?(Array)
+        str
+      else
+        str.to_s.uncapsulate('/').split(/(?=[^\\])\//)
       end
     end
   end
