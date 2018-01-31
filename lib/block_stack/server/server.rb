@@ -286,7 +286,7 @@ module BlockStack
             logger.debug("Changing API route from '#{current}' to #{replace}#{path}")
             add_api_routes("#{verb} #{replace}#{path}")
           else
-            replace = new
+            replace = "/#{new}"
           end
           current = current.sub(/^\/#{Regexp.escape(old)}/i, '') if old
           route[0] = Mustermann.new("#{replace}#{current}", route[0].options)
