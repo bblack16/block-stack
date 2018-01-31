@@ -37,5 +37,5 @@ table data-page-length="#{page_length}" data-order="[]" *attributes
           - value = display_value(value, method)
           - if method == :id && obj.is_a?(BlockStack::Model)
             - value = link_to(:show, obj, value, class: 'btn btn-outline-primary')
-          td == squish(value.to_s, max)
+          td == value.to_s
     == yield if block_given?
