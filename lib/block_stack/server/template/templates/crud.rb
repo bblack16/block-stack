@@ -27,7 +27,7 @@ module BlockStack
       item = process_model_create_api(item) if respond_to?(:process_model_create_api)
       halt(404, { status: :error, message: "#{model.clean_name.capitalize} with id #{params[:id]} not found." }) unless item
       if result = item.save
-        { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
+        { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}", id: (item.id rescue nil) }
       else
         { status: :error, message: "Failed to save #{model.model_name}" }
       end
