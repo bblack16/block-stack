@@ -1,3 +1,5 @@
+require_relative 'protected_login'
+
 module BlockStack
   module Authentication
     class User < ProtectedLogin
