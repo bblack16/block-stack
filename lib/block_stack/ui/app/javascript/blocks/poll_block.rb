@@ -1,7 +1,7 @@
 module Blocks
   class PollBlock < TimerBlock
     attr_str :url
-    attr_str :content
+    attr_of Object, :content
 
     def update
       render(:div) do
