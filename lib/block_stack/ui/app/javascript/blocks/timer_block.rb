@@ -6,12 +6,9 @@ module Blocks
 
     def start
       stop
-      timer = every(interval) do
-        unless updating?
-          updating = true
-          refresh
-          updating = false
-        end
+      execute_update
+      self.timer = every(interval) do
+        execute_update
       end
     end
 
@@ -22,6 +19,16 @@ module Blocks
     def restart
       stop
       start
+    end
+
+    protected
+
+    def execute_update
+      unless updating?
+        updating = true
+        refresh
+        updating = false
+      end
     end
 
   end
