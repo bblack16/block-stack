@@ -267,9 +267,9 @@ module BlockStack
           hash = change_set.diff.hmap do |k, v|
             [
               k,
-              if BBLib.is_a?(v, Array, Hash)
+              if BBLib.is_any?(v, Array, Hash)
                 v.to_json
-              elsif BBLib.is_a?(v, Symbol)
+              elsif BBLib.is_any?(v, Symbol)
                 v.to_s
               else
                 v
