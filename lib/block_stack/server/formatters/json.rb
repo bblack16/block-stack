@@ -14,7 +14,7 @@ module BlockStack
       end
 
       def process(body, params = {})
-        body = { data: body } unless BBLib.is_a?(body, Array, Hash)
+        body = { data: body } unless BBLib.is_any?(body, Array, Hash)
         params.include?(:pretty) ? ::JSON.pretty_generate(body) : body.to_json
       end
     end
