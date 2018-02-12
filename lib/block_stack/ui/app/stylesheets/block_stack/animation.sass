@@ -33,3 +33,45 @@
     -webkit-transform: scale(1.2)
     -o-transform: scale(1.2)
     -moz-transform: scale(1.2)
+
+.loading-overlay
+  position: absolute
+  width: 100%
+  height: 100%
+  top: 0
+  left: 0
+  background-color: rgba(#626262, 0.5)
+  z-index: 999
+  &.loaded
+    display: none
+    .loading-spinner
+      animation: none
+.loading-spinner
+  border: 13px solid rgba(#f4f4f4, 0.8)
+  border-top: 13px solid rgba(#3490db, 0.9)
+  border-radius: 50%
+  width: 80px
+  height: 80px
+  animation: loader-spin 2s linear infinite
+  transform: translate(-50%, -50%)
+  position: absolute
+  z-index: 999
+  top: 50%
+  left: 50%
+  &.green
+    border-top: 13px solid rgba(#38da00, 0.9)
+  &.red
+    border-top: 13px solid rgba(#e20000, 0.9)
+  &.black
+    border-top: 13px solid rgba(#000000, 0.9)
+  &.yellow
+    border-top: 13px solid rgba(#e0de00, 0.9)
+  &.purple
+    border-top: 13px solid rgba(#8b00e0, 0.9)
+
+
+@keyframes loader-spin
+  0%
+    transform: rotate(0deg)
+  100%
+    transform: rotate(360deg)
