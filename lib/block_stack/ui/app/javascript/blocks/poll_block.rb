@@ -2,6 +2,7 @@ module Blocks
   class PollBlock < TimerBlock
     attr_str :url
     attr_of Object, :content
+    attr_bool :first_execution, default: true
 
     def update
       render(:div) do
@@ -27,6 +28,10 @@ module Blocks
         if response.ok?
           self.updating = false
           self.content = response.json
+          if first_execution
+            self.first_execution = false
+            refresh
+          end
         end
       end
     rescue => e
