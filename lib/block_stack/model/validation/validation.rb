@@ -54,19 +54,19 @@ module BlockStack
     end
 
     def gt(value, exp)
-      BBLib.is_a?(value, Integer, Float) && value > exp
+      BBLib.is_any?(value, Integer, Float) && value > exp
     end
 
     def gte(value, exp)
-      BBLib.is_a?(value, Integer, Float) && value >= exp
+      BBLib.is_any?(value, Integer, Float) && value >= exp
     end
 
     def lt(value, exp)
-      BBLib.is_a?(value, Integer, Float) && value < exp
+      BBLib.is_any?(value, Integer, Float) && value < exp
     end
 
     def lte(value, exp)
-      BBLib.is_a?(value, Integer, Float) && value <= exp
+      BBLib.is_any?(value, Integer, Float) && value <= exp
     end
 
     def in(value, exp)
