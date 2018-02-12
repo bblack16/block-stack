@@ -1,8 +1,9 @@
 require_relative 'shared'
 
 require 'opal'
-require 'opal-jquery'
 require 'opal-browser'
+require 'opal-sprockets'
+require 'opal-jquery'
 require 'sass'
 require 'slim'
 require 'dformed' unless defined?(DFormed::VERSION)
