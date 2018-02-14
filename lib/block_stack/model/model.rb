@@ -393,6 +393,7 @@ module BlockStack
       def delete
         logger.debug("Deleting #{clean_name} with ID #{id}.")
         delete_associations
+        adapter_delete
       end
 
       def save_associations
@@ -429,9 +430,9 @@ module BlockStack
       end
 
       def delete_associations
-        debug { "Deleting associations for #{self.class.clean_name} #{id}." }
+        logger.debug { "Deleting associations for #{self.class.clean_name} #{id}." }
         BlockStack::Associations.associations_for(self).all? do |asc|
-          debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
+          logger.debug("Deleting association for #{self.class.clean_name} #{id}: #{asc}")
           asc.delete(self)
         end
       end
