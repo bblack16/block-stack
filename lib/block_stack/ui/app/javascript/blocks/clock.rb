@@ -2,8 +2,8 @@
 module Blocks
   class Clock < TimerBlock
     attr_str :format, default: '%H:%M:%S'
-
-    def update(c)
+    
+    def update
       Time.now.strftime(format)
     end
   end
