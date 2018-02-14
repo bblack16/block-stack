@@ -23,8 +23,6 @@ module Alert
   def self.confirm(message, ack, cancel, opts= {}, &block)
     opts = build_confirm_options(opts)
     message = construct_message(message, opts)
-    `console.log(#{block_given? ? block : ack})`
-    `console.log(#{message})`
     `alertify.okBtn(#{opts[:ok]})
              .cancelBtn(#{opts[:cancel]})
              .confirm(#{message}, #{block_given? ? block : ack})`
