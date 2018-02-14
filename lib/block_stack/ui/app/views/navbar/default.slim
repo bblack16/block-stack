@@ -13,7 +13,7 @@
 div#main-menu.vertical
   a.title href='/' == brand
 
-  nav.float-right.time.menu-item
+  nav.float-right.time
     i.far.fa-clock
     .clock blockstack-block='Clock' = Time.now.strftime('%H:%M:%S')
 
@@ -46,7 +46,6 @@ div#main-menu.vertical
 javascript:
   $(document).ready(function(){
     var menu_type = "#{{base_server.config.menu_type}}";
-    console.log(menu_type)
     if (menu_type != "click" && menu_type != "hover") {
       if (Modernizr.touchevents){
         menu_type = "click"
