@@ -21,7 +21,6 @@ module BlockStack
 
     use Rack::Deflater
 
-    attr_str :app_name, default_proc: proc { |x| x.to_s.method_case.gsub('_', ' ').title_case }, singleton: true
     attr_ary_of String, :api_routes, singleton: true, default: [], add_rem: true
     attr_ary_of Formatter, :formatters, default_proc: :default_formatters, singleton: true
     attr_sym :default_format, default: :json, allow_nil: true, singleton: true
@@ -192,6 +191,7 @@ module BlockStack
     end
 
     before do
+      env['rack.logger'] = logger
       if config.log_requests
         request_timer.start(request.object_id)
       end
@@ -218,7 +218,8 @@ module BlockStack
         end
       end
 
-      if config.log_requests && message = log_request
+      if !env['logged'] && config.log_requests && message = log_request
+        env['logged'] = true
         info(message)
       end
     end
