@@ -4,6 +4,7 @@ require_relative 'exceptions/invalid_model'
 require_relative 'exceptions/uniqueness_error'
 require_relative 'exceptions/invalid_association'
 require_relative 'changeset'
+# require_relative 'query/query'
 
 ####################
 # Features
