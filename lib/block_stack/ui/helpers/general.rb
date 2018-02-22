@@ -31,13 +31,33 @@ module BlockStack
     def display_value(value, label = nil)
       case value
       when Array
-        value.join_terms
+        if value.all? { |v| v.is_a?(String) && v.size <= 128 }
+          value.join_terms
+        elsif value.any? { |v| v.is_a?(Hash) }
+          value.map { |v| display_value(v) }.join('<hr>')
+        elsif value.empty?
+          BBLib::HTML::Tag.new(:i, 'Empty', style: 'color: #bebdbd')
+        else
+          '<ul>' + value.map { |v| "<li>#{v}</li>" }.join + '</ul>'
+        end
       when Time
         value.strftime(config.time_format)
       when Date
         value.strftime(config.date_format)
       when Float, Integer
         label.nil? || label =~ /[^\_\-\.]id[$\s\_\-\.]/i ? value : value.to_delimited_s
+      when Hash
+        '<ul style="list-style-type: none">' + value.flat_map do |k, v|
+          "<li><b>#{k}</b>:&nbsp;#{display_value(v)}</li>"
+        end.join + '</ul>'
+      when String
+        if value =~ /^https?\:\/{2}|^w{3}\.|^\/[\w\d]|^\/$/i
+          BBLib::HTML::Tag.new(:a, value, href: value)
+        else
+          value.to_s
+        end
+      when NilClass
+        BBLib::HTML::Tag.new(:i, 'nil', style: 'color: #bebdbd')
       else
         value.to_s
       end
