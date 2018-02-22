@@ -6,4 +6,5 @@
     == link_to(:delete, @model, 'Delete', class: 'btn btn-outline-warning new-button')
     == link_to(:index, @model, 'Back', class: 'btn btn-outline-danger new-button')
 br
-== render_block :details, attributes: { class: 'height-2' }, title: "#{@model.config.display_name} Details", data: @model.serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
+.show-content
+  == render_block :details, attributes: { class: 'height-2' }, title: "#{@model.config.display_name} Details", data: @model.serialize.hmap { |k, v| [k.to_s.gsub('_', ' ').title_case, v] }
