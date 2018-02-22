@@ -17,6 +17,11 @@ module BlockStack
       end
       form.attr('df-form-data', '')
       form.attr('df-loaded', true)
+      if save_btn = Element[".dform-save[df-name=#{form.attr('df-name')}]"]
+        form.find('input').keypress do |evt|
+          save_btn.click if `#{evt}.which == 13`
+        end
+      end
     end
 
     Element['.dform-save'].each do |btn, id|
