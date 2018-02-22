@@ -17,7 +17,7 @@ sass:
     text-shadow: 5px 5px 8px rgba(#000000, 0.5)
     transition: all 3s ease
 
-== render_block 'header', height: 300, title: "Welcome to #{base_server.app_name}", subtitle: "Powered By BlockStack #{BlockStack::VERSION.split('.')[0..-2].join('.')}"
+== render_block 'header', height: 300, title: "Welcome to #{base_server.title}", subtitle: "Powered By BlockStack #{BlockStack::VERSION.split('.')[0..-2].join('.')}"
 /== image_tag('blocks', id: 'backdrop', class: 'ken-burns')
 br
 #gem.far.fa-gem.animated.zoomIn
