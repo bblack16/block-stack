@@ -1,0 +1,38 @@
+.card
+  border: 0px
+  width: 300px
+  transition: 0.3s
+  .content
+    margin: 10px
+    .title
+      font-size: 20px
+      font-weight: bold
+    .subtitle
+      font-size: 13px
+      color: rgba(#000000, 0.7)
+  &:hover
+    box-shadow: 0px 8px 15px rgba(#000000, 0.5)
+  .card-thumb
+    padding: 0px
+    margin: 0
+    img
+      max-width: 100%
+      max-height: 250px
+      z-index: 2
+      position: absolute
+      transform: translate(-50%,-50%)
+      top: 50%
+      left: 50%
+    .missing-image
+      min-height: 200px
+      .fa-image
+        display: table
+        margin: auto
+        color: #b5b5b5
+        font-size: 50px
+        vertical-align: middle
+        position: absolute
+        transform: translate(-50%,-50%)
+        top: 50%
+        left: 50%
+        z-index: 0

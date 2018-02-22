@@ -1,0 +1,18 @@
+== stylesheet_include('blocks/card')
+
+.card.height-1 width="#{width}" height="#{height}" *attributes
+  .card-thumb
+    .missing-image
+      i.far.fa-image.animated.fadeIn
+      - if image.is_a?(BBLib::HTML::Tag) || image.to_s.encap_by?('<')
+        == image
+      - elsif image.is_a?(String)
+        == image_tag(image)
+  .content
+    - if title
+      .title == title
+    - if subtitle
+      .subtitle == subtitle
+    - if content
+      div == content
+    == yield if block_given?
