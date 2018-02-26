@@ -1,0 +1,15 @@
+.card-thumb
+  i.far.fa-image.animated.fadeIn
+  - if image.is_a?(BBLib::HTML::Tag)
+    - image.append_attribute(:class, 'card-image')
+    == image
+  - elsif image.is_a?(String)
+    == image_tag(image, class: 'card-image')
+.card-body
+  - if title
+    .card-title == title
+  - if subtitle
+    .card-subtitle == subtitle
+  - if content
+    p.card-text == content
+  == yield if block_given?
