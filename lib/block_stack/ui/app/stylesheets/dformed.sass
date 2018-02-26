@@ -32,6 +32,16 @@ div.dformed-form
       &.invalid
         box-shadow: 0px 0px 5px #ffb400
         border: 1px solid #ffdc00
+    textarea
+      resize: both
+      font-size: 1em
+      &.json
+        font-size: 0.8em
+        &.json-parse-failed
+          box-shadow: 0px 0px 5px #ffb400
+          border: 1px solid #ffdc00
+        &.json-parse-succeeded
+          animation: box-shadow-flash-green 1s
     input[readonly]:not(.dformed-date-time):not(.dformed-date):not(.dformed-time)
       color: grey
       border: 0px
