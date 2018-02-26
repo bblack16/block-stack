@@ -34,7 +34,8 @@ DFormed.add_preset(:date_time, type: :date_time, class: 'date-time-picker')
 DFormed.add_preset(:boolean, type: :boolean, class: 'toggle yesno')
 
 DFormed.add_preset(:text_area, type: :text_area, classes: 'autosize')
-DFormed.add_preset(:json, type: :json, classes: 'autosize')
+DFormed.add_preset(:json, type: :json, classes: 'autosize json')
+DFormed.add_preset(:hash_field, type: :json, classes: 'autosize json')
 
 # TODO Fix issue with select 2 fields in dformed where the element is changed and
 #   tooptips are shown as raw text rather than html on validation
