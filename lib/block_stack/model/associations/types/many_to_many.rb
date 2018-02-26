@@ -61,7 +61,7 @@ module BlockStack
       def process_dform(form, obj)
         form.add_field(
           {
-            name:          attribute,
+            name:          method_name,
             type:          :multi_select,
             label:         model.clean_name,
             include_blank: true,
