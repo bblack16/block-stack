@@ -6,13 +6,14 @@ module BlockStack
         title:     '',
         subtitle:  nil,
         image:     nil,
-        thumbnail: nil,
         content:   nil,
-        style:     :default,
-        width:     '300px',
-        height:    nil
+        link:      nil
       }
     end
+
+  end
+
+  class VerticalCard < Card
 
   end
 end
