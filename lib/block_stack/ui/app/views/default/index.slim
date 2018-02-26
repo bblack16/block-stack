@@ -2,12 +2,18 @@
 
 == render_block(:header, title: @model.config.display_name.pluralize, color: (@model.config.header_color), background: "#{@model.plural_name}/background") do
   == link_to(:new, @model, class: 'btn btn-outline-success new-button')
-br
 - if @models.empty?
+  br
   br
   br
   h1.text-center.grey There's Nothing Here Yet
   h4.grey.text-center Why not add a #{@model.config.display_name.downcase}?
   .centered == link_to(:new, @model, '<i class="fas fa-plus-circle add-fab"></i>', class: 'text-center')
 - else
-  == render_block :table, data: @models
+  - case @model.config.list_style
+  - when :cards
+    .card-box.height-1
+      - @models.each do |model|
+        == render_block :card, link: "/#{model.dataset_name}/#{model.id}", title: model.title, subtitle: model.tagline, image: model.thumbnail
+    br
+    == render_block :table, data: @models
