@@ -170,6 +170,7 @@ module BlockStack
 
         def create_table_if_not_exist
           if table_exist?
+            create_missing_columns unless @_columns_checked
             return true
           else
             logger.info("Creating table for #{self}: #{dataset_name} (#{BBLib.plural_string(attr_columns.size, 'column')})")
