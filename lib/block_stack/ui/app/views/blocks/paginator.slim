@@ -1,0 +1,24 @@
+== stylesheet_include('blocks/paginator')
+- current_page = (params[param] || 1).to_i
+- size = [page_count, size].min
+- median = (size / 2.0).floor
+.paginator
+  .btn-group
+    - limit = @model.config.paginate_at
+    - page = (params[param] || 1).to_i
+    - count = @model.count
+    - pages = page_count
+    - if pages > 1
+      - start = page - 3
+      - start = 0 if start < 0
+      - range = (start..[start+4, pages - 1].min)
+      a.btn.btn-secondary href="?page=#{page - 1}" class="#{page <= 1 ? 'disabled' : nil}"
+        i.fa.fa-angle-left
+      - unless start == 0
+        a.btn.btn-secondary href="?page=1" 1
+      - range.to_a.each do |i|
+        a.btn class="#{page == i+1 ? 'btn-primary' : 'btn-secondary'}" href="?page=#{i+1}" = i + 1
+      - unless page == pages || range === pages - 1
+        a.btn.btn-secondary href="?page=#{pages}" = pages
+      a.btn.btn-secondary href="?page=#{page + 1}" class="#{page >= pages ? 'disabled' : nil}"
+        i.fa.fa-angle-right
