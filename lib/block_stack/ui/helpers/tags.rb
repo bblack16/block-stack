@@ -7,26 +7,15 @@ module BlockStack
     end
 
     # TODO Improve the hell out of this
-    def link_to(url, text, label = {}, attributes = {})
+    def link_to(url, text = nil, label = nil, attributes = {})
       if label.is_a?(Hash)
         attributes = label
         label = nil
       end
       if text.is_a?(Model) || text.is_a?(Class) && text.ancestors.include?(Model)
-        case url
-        when :edit, :update
-          tag(:a, (label || 'Edit'), attributes.merge(href: "/#{text.dataset_name}/#{text.id}/edit"))
-        when :delete, :destroy
-          tag(:a, (label || 'Delete'), attributes.merge(class: ('delete-model-btn ' + attributes[:class].to_s).strip, href: '#', 'del-url': "/api/#{text.class.dataset_name}/#{text.id}", 're-url': "/#{text.class.dataset_name}"))
-        when :index
-          tag(:a, (label || 'Index'), attributes.merge(href: "/#{text.dataset_name}"))
-        when :show, :view
-          tag(:a, (label || 'View'), attributes.merge(href: "/#{text.dataset_name}/#{text.id}"))
-        when :new
-          tag(:a, (label || "New #{text.config.display_name}"), attributes.merge(href: "/#{text.dataset_name}/new"))
-        else
-          tag(:a, (label || url.to_s.title_case), attributes.merge(href: "/#{text.dataset_name}/#{text.id}/#{url}"))
-        end
+        text.link_for(url, label, attributes)
+      elsif url.is_a?(Model) || url.is_a?(Class) && url.ancestors.include?(Model)
+        url.link_for(url, text, attributes)
       else
         tag(:a, text, attributes.merge(href: url))
       end
