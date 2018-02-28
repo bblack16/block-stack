@@ -6,14 +6,25 @@
   br
   br
   br
-  h1.text-center.grey There's Nothing Here Yet
-  h4.grey.text-center Why not add a #{@model.config.display_name.downcase}?
-  .centered == link_to(:new, @model, '<i class="fas fa-plus-circle add-fab"></i>', class: 'text-center')
+  - if params[:page].nil?
+    h1.text-center.grey There's Nothing Here Yet
+    h4.grey.text-center Why not add a #{@model.config.display_name.downcase}?
+    .centered == link_to(:new, @model, '<i class="fas fa-plus-circle add-fab"></i>', class: 'text-center')
+  - else
+    h1.text-center.grey No Results Found
 - else
+  - if @model.config.paginate_at
+    br
+    == render_block(:paginator, page_count: (@model.count.to_f / @model.config.paginate_at).ceil)
   - case @model.config.list_style
   - when :cards
-    .card-box.height-1
+    .card-box
       - @models.each do |model|
         == render_block :card, link: "/#{model.dataset_name}/#{model.id}", title: model.title, subtitle: model.tagline, image: model.thumbnail
+  - when :line_items
+    .card-box
+      - @models.each do |model|
+        == render_block :line_item, link: "/#{model.dataset_name}/#{model.id}", title: model.title, subtitle: model.tagline, image: model.thumbnail
+  - else
     br
     == render_block :table, data: @models
