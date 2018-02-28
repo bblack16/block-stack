@@ -1,0 +1,21 @@
+== stylesheet_include('blocks/line_item')
+
+.line_item *attributes
+  .thumb
+    i.far.fa-image.animated.fadeIn
+    - if image.is_a?(BBLib::HTML::Tag)
+      - image.append_attribute(:class, 'card-image')
+      == image
+    - elsif image.is_a?(String)
+      == image_tag(image, class: 'card-image')
+  .body
+    - if title
+      - if link
+        a.title == link_to(link, title)
+      - else
+       .title == title
+    - if subtitle
+      .subtitle == subtitle
+    - if content
+      p.text == content
+    == yield if block_given?
