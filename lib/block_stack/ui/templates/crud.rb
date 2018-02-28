@@ -1,13 +1,17 @@
 module BlockStack
-
+  # TODO Add better hooks to default crud methods to allow custom model
+  # gathering
   add_template(:index, :crud, :get, '/', type: :route) do
     begin
-      @models = model.all
+      if model.config.paginate_at
+        @models = model.page(params[:page] || 1)
+      else
+        @models = model.all
+      end
       @models = process_model_index(@models) if respond_to?(:process_model_index)
       send(config.default_renderer, :"#{model.plural_name}/index")
-    rescue Errno::ENOENT => e
+    rescue Errno::ENOENT => _e
       @model = model
-      @models = model.all
       slim :"#{settings.default_view_folder}/index"
     end
   end
@@ -21,7 +25,7 @@ module BlockStack
       else
         redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
       end
-    rescue Errno::ENOENT => e
+    rescue Errno::ENOENT => _e
       slim :"#{settings.default_view_folder}/show"
     end
   end
@@ -31,7 +35,7 @@ module BlockStack
       @model = model
       @model = process_model_create(@model) if respond_to?(:process_model_create)
       send(config.default_renderer, :"#{model.plural_name}/new")
-    rescue Errno::ENOENT => e
+    rescue Errno::ENOENT => _e
       slim :"#{settings.default_view_folder}/new"
     end
   end
@@ -45,7 +49,7 @@ module BlockStack
       else
         redirect "/#{model.plural_name}", notice: "Could not locate any #{model.clean_name.pluralize} with an id of #{params[:id]}."
       end
-    rescue Errno::ENOENT => e
+    rescue Errno::ENOENT => _e
       slim :"#{settings.default_view_folder}/edit"
     end
   end
