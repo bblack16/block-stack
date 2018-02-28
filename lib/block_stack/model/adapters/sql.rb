@@ -78,6 +78,13 @@ module BlockStack
           dataset.where(query).first
         end
 
+        def [](id)
+          return super unless id.is_a?(Range)
+          limit = id.last.negative? ? (count + id.last - id.first) : (id.last - id.first)
+          limit = limit + 1 unless id.exclude_end?
+          all(offset: id.first, limit: limit)
+        end
+
         def all(opts = {}, &block)
           build_filter(opts).all
         end
