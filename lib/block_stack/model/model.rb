@@ -4,6 +4,7 @@ require_relative 'exceptions/invalid_model'
 require_relative 'exceptions/uniqueness_error'
 require_relative 'exceptions/invalid_association'
 require_relative 'changeset'
+require_relative 'configuration'
 # require_relative 'query/query'
 
 ####################
@@ -37,7 +38,7 @@ module BlockStack
       base.singleton_class.send(:after, :find, :first, :last, :sample, :instantiate, send_value: true, modify_value: true)
       base.send(:attr_int, :id, default: nil, allow_nil: true, sql_type: :primary_key, dformed: false, searchable: true)
       base.send(:attr_time, :created_at, :updated_at, default_proc: proc { Time.now }, dformed: false, blockstack: { display: false })
-      base.send(:attr_of, BBLib::HashStruct, :configuration, default_proc: proc { |x| x.ancestor_config }, singleton: true)
+      base.send(:attr_of, Configuration, :configuration, default_proc: proc { |x| x.ancestor_config }, singleton: true)
       base.send(:attr_of, ChangeSet, :change_set, default_proc: proc { |x| ChangeSet.new(x) }, serialize: false, dformed: false)
       base.send(:attr_ary_of, Validation, :validations, default: [], singleton: true)
       base.send(:attr_hash, :errors, default: {}, serialize: false, dformed: false)
@@ -57,7 +58,12 @@ module BlockStack
         end unless respond_to?(:find)
 
         def [](id)
-          find(id)
+          case id
+          when Range
+            all[id]
+          else
+            find(id)
+          end
         end unless respond_to?(:[])
 
         def find_all(query, &block)
@@ -108,6 +114,19 @@ module BlockStack
           query = { id: query } unless query.is_a?(Hash)
           (query && find(query) != nil) ? true : false
         end unless respond_to?(:exist?)
+
+        # Returns a range of the model based on a page number. The page number uses
+        # the models paginate_at to calculate the range to return.
+        # If pagination is disabled, only index = 1 will return results and will
+        # simply call :all.
+        def page(index = 1)
+          index = index.to_i
+          return [] unless index.positive?
+          return index == 1 ? all : [] unless config.paginate_at
+          offset = (index - 1) * config.paginate_at
+          cap = offset + config.paginate_at
+          self[offset...cap]
+        end unless respond_to?(:page)
       end
     end
 
@@ -144,23 +163,7 @@ module BlockStack
     end
 
     def self.default_config
-      hash = BBLib::HashStruct.new
-      hash.merge!(
-        unique_by: :id, # Defines what field or fields make this object uniq. Mostly used by create_or_update to determine if a matching model exists
-        title_method: [:name], # The attribute to use for a title in views that support it
-        tagline_method: [:brief, :short_description], # The attribute to use for a tagline in views that support it
-        description_method: [:desc, :overview, :brief, :synopsis], # The attribute to use as a description in views that support it
-        thumbnail_method: [:cover, :poster, :front_cover, :thumb], # The attribute to use for a thumbnail in views that support it
-        background_method: [:backdrop, :fanart],
-        icon_method: [], # The method(s) to call to get an icon for this object
-        paginate_at: 25, # Sets the default number of items returned for APIs
-        serialize_relations: true,
-        merge_if_exist: false, # When an item is sent to create that already exists based on "unique_by", settings this to true will cause it to be merged. Otherwise and error will be raised.
-        # TODO Add caching to adapters
-        cache: false, # Set to true to enable caching or false to disable it. The adapter must support caching for this to matter.
-        cache_ttl: 120 # How long in seconds cached calls from this object should live. The adapter must support caching for this to matter.
-      )
-      hash
+      Configuration.new
     end
 
     module ClassMethods
@@ -251,7 +254,7 @@ module BlockStack
       def config(args = nil)
         case args
         when Hash
-          args.each { |k, v| configuration[k.to_sym] = v }
+          args.each { |k, v| configuration.send("#{k}=", v) }
         when String, Symbol
           configuration.to_h.hpath(args).first
         when nil
@@ -319,6 +322,27 @@ module BlockStack
       def controller=(cont)
         raise RuntimeError, "BlockStack::Controller not found. You must require it first if you wish to use it: require 'block_stack/server'" unless defined?(BlockStack::Controller)
         @controller = cont
+      end
+
+      def register_link(name, tag)
+        config(links: {}) unless config.links.is_a?(Hash)
+        tag = BBLib::HTML.build(:a, name.to_s.title_case, href: tag) if tag.is_a?(String) && !tag.strip.encap_By?('<')
+        config.links[name.to_sym] = tag
+      end
+
+      def link_for(name, label = nil, **attributes)
+        if config.links && link = config.links[name.to_sym].dup
+          context = attributes.delete(:context) || self
+          link.content = BBLib.pattern_render(label || link.content, context)
+          link.attributes = link.attributes.hmap do |k, v|
+            [k, BBLib.pattern_render(v.to_s, context)]
+          end
+          return link.merge(attributes)
+        end
+      end
+
+      def link_for?(name, context = self)
+        config.links && config.links.include?(name.to_sym)
       end
     end
 
@@ -501,6 +525,14 @@ module BlockStack
       def icon
         [config.icon_method].flatten.find { |method| return send(method) if respond_to?(method) }
         "/#{clean_name}/icon"
+      end
+
+      def link_for(name, label = nil, **attributes)
+        self.class.link_for(name, label, attributes.merge(context: self))
+      end
+
+      def link_for?(name)
+        self.class.link_for?(name)
       end
 
       protected
