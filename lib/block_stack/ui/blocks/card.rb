@@ -12,8 +12,4 @@ module BlockStack
     end
 
   end
-
-  class VerticalCard < Card
-
-  end
 end
