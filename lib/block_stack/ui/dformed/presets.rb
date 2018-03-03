@@ -8,7 +8,12 @@ DFormed.add_preset(
   add_button: {
     type: :button,
     class: 'btn btn-outline-success btn-sm',
-    label: '<i class="fas fa-plus"/>'
+    label: '<i class="fas fa-plus"/>',
+    events: {
+      events: :click,
+      type: :ruby,
+      event: "puts 'TEST'"
+    }
   },
   remove_button: {
     type: :button,
@@ -41,3 +46,36 @@ DFormed.add_preset(:hash_field, type: :json, classes: 'autosize json')
 #   tooptips are shown as raw text rather than html on validation
 DFormed.add_preset(:multi_select, type: :multi_select, classes: 'select-2')
 DFormed.add_preset(:select, type: :select, classes: 'select-2')
+
+DFormed.add_preset(
+  :flat_hash,
+  type: :flat_hash,
+  row_attributes:{
+    class: ['animated', 'fadeIn']
+  },
+  add_button: {
+    type: :button,
+    class: 'btn btn-outline-success btn-sm',
+    label: '<i class="fas fa-plus"/>',
+    events: {
+      events: :mouseup,
+      type: :ruby,
+      event: "after(0.1) { Loaders.load_all(element.closest('.dformed-flat-hash')) }"
+    }
+  },
+  remove_button: {
+    type: :button,
+    class: 'btn btn-outline-warning btn-sm',
+    label: '<i class="fas fa-minus"/>'
+  },
+  up_button: {
+    type: :button,
+    class: 'btn btn-outline-info btn-sm',
+    label: '<i class="fas fa-arrow-up"/>'
+  },
+  down_button: {
+    type: :button,
+    class: 'btn btn-outline-info btn-sm',
+    label: '<i class="fas fa-arrow-down"/>'
+  }
+)
