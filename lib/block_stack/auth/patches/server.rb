@@ -128,7 +128,7 @@ module BlockStack
     end
 
     def unauthorized!
-      logger.info("Authorization FORBIDDEN for #{current_login.name} for #{request.path_info}")
+      logger.info("Authorization FORBIDDEN for #{current_login.name} for #{request.path_info}") unless env['auth_logged']
       return custom_unauthorized! if respond_to?(:custom_unauthorized!)
       if base_server.config.authorization_failure_route
         redirect (base_server.config.authorization_failure_route == :back ? back : base_server.config.authorization_failure_route), 303, notice: 'You are not authorized for that!', severity: :error
@@ -139,9 +139,9 @@ module BlockStack
 
     def unauthenticated!
       if session[:auth_provided]
-        logger.info("Authentication failed for request #{request.object_id}.")
+        logger.info("Authentication failed for request #{request.object_id}.") unless env['auth_logged']
       else
-        logger.info("Authentication not provided for request #{request.object_id}.")
+        logger.info("Authentication not provided for request #{request.object_id}.") unless env['auth_logged']
       end
       return custom_unauthenticated! if respond_to?(:custom_unauthenticated!)
       if base_server.config.authentication_failure_route
@@ -156,11 +156,12 @@ module BlockStack
       if authenticate!
         if config.authorization
           if authorize!
-            logger.debug("Authorization ALLOWED for #{current_login.name} for #{request.path_info}.")
+            logger.debug("Authorization ALLOWED for #{current_login.name}: #{request.path_info}.") unless env['auth_logged']
           else
             unauthorized!
           end
         end
+        env['auth_logged'] = true
       else
         unauthenticated!
       end
