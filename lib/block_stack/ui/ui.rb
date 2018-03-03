@@ -99,7 +99,8 @@ module BlockStack
 
     def self.opal
       exists = @opal
-      @opal ||= Opal::Sprockets::Server.new do |s|
+      server = OPAL_LEGACY ? Opal::Server : Opal::Sprockets::Server
+      @opal ||= server.new do |s|
         s.append_path "#{File.expand_path('../app', __FILE__)}"
         s.main = 'javascript/application'
       end
