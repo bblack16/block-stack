@@ -6,6 +6,10 @@ div.dformed-form
   display: table
   background-color: white
   box-shadow: 2px 2px 10px grey
+  .section-label
+    font-size: 1.5em
+    text-align: center
+    padding: 10px 0px
   .dformed-form-field
     padding: 12px 30px
     width: 100%
@@ -20,9 +24,8 @@ div.dformed-form
       transition: all 0.5s ease
       border: 1px solid #b9b9b9
       padding: 5px 10px
-      font-size: 15px
       border-radius: 3px
-      font-size: 18px
+      font-size: 1em
       height: 40px
       width: 400px
       &:focus
@@ -32,6 +35,12 @@ div.dformed-form
       &.invalid
         box-shadow: 0px 0px 5px #ffb400
         border: 1px solid #ffdc00
+    .dformed-key-value
+      input:nth-child(1), select:nth-child(1)
+        width: 225px
+        margin-right: 10px
+      input:nth-child(2), select:nth-child(2)
+        width: 300px
     textarea
       resize: both
       font-size: 1em
@@ -68,7 +77,7 @@ div.dformed-form
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button
     opacity: 1
-  .dformed-multi-field
+  .dformed-multi-field, .dformed-flat-hash
     display: inline-block
     .multi-field-empty
       color: grey
