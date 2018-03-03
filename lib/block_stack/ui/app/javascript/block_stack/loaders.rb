@@ -118,11 +118,16 @@ module Loaders
     end
   end
 
+  # TODO Add detection if the field is already loaded, otherwise this is destructive
   def self.select_2(selector = 'body')
-    Element[selector].find('.select-2').JS.select2({
+    Element[selector].find('select.select-2').JS.select2({
 			theme: 'bootstrap',
       allowClear: true
     }.to_n)
+    Element[selector].find('select.select-2').each do |elem|
+      elem.remove_class('select-2')
+      elem.add_class('select-2-loaded')
+    end
   end
 
   def self.ripple(selector = 'body')
