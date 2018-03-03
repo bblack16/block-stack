@@ -18,8 +18,13 @@ module BlockStack
       form.attr('df-form-data', '')
       form.attr('df-loaded', true)
       if save_btn = Element[".dform-save[df-name=#{form.attr('df-name')}]"]
-        form.find('input').keypress do |evt|
-          save_btn.click if `#{evt}.which == 13`
+        begin
+          form.find('input').keypress do |evt|
+            save_btn.click if `#{evt}.which == 13`
+          end
+        rescue => e
+          # TODO Figure out why this fails in older versions of Opal
+          puts "ERROR: Failed to register DFormed on enter event: #{e}"
         end
       end
     end
