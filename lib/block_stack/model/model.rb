@@ -326,7 +326,7 @@ module BlockStack
 
       def register_link(name, tag)
         config(links: {}) unless config.links.is_a?(Hash)
-        tag = BBLib::HTML.build(:a, name.to_s.title_case, href: tag) if tag.is_a?(String) && !tag.strip.encap_By?('<')
+        tag = BBLib::HTML.build(:a, name.to_s.title_case, href: tag) if tag.is_a?(String) && !tag.strip.encap_by?('<')
         config.links[name.to_sym] = tag
       end
 
