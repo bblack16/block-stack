@@ -24,8 +24,8 @@ module BlockStack
       BBLib::HTML::Tag.new(:span, content: chopped, attributes: { title: string })
     end
 
-    def render_block(view, locals = {}, &block)
-      Block.new(type: view).render(self, locals, &block)
+    def render_block(view, model = nil, **locals, &block)
+      Block.new(type: view).render(self, model, locals, &block)
     end
 
     def display_value(value, label = nil)
@@ -45,11 +45,13 @@ module BlockStack
       when Date
         value.strftime(config.date_format)
       when Float, Integer
-        label.nil? || label =~ /[^\_\-\.]id[$\s\_\-\.]/i ? value : value.to_delimited_s
+        label.nil? || label =~ /[^\_\-\.](id|year|time)[$\s\_\-\.]/i ? value : value.to_delimited_s
       when Hash
         '<ul style="list-style-type: none">' + value.flat_map do |k, v|
           "<li><b>#{k}</b>:&nbsp;#{display_value(v)}</li>"
         end.join + '</ul>'
+      when Regexp
+        value.inspect
       when String
         if value =~ /^https?\:\/{2}|^w{3}\.|^\/[\w\d]|^\/$/i
           BBLib::HTML::Tag.new(:a, value, href: value)
