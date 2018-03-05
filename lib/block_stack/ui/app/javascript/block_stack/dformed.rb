@@ -37,8 +37,8 @@ module BlockStack
         btn.attr(:disabled, true)
         `alertify.closeLogOnClick(true).logPosition("bottom right").log("Saving form...");`
 
-        block = proc  do |response|
-          `console.log(#{response})`
+        HTTP.send(method, btn.attr('df-save-to'), data: form_controller.values(btn.attr('df-name')).to_json, contentType: 'application/json').then do |response|
+          # `console.log(#{response})`
           if response.json['status'] == :success
             `alertify.closeLogOnClick(true).logPosition("bottom right").success(#{response.json[:message] || "Successfully saved!"});`
             mark_form_invalid(btn.attr('df-name'), {})
@@ -50,9 +50,11 @@ module BlockStack
             mark_form_invalid(btn.attr('df-name'), response.json[:result])
             btn.attr(:disabled, false)
           end
+        end.fail do |response|
+          Alert.send(response.json[:result].is_a?(Hash) ? :warn : :error, response.json[:message] || "Failed to save")
+          mark_form_invalid(btn.attr('df-name'), response.json[:result])
+          btn.attr(:disabled, false)
         end
-
-        HTTP.send(method, btn.attr('df-save-to'), data: form_controller.values(btn.attr('df-name')).to_json, contentType: 'application/json', &block)
       end
       btn.attr('df-loaded', true)
     end
