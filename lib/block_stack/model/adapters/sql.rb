@@ -72,6 +72,23 @@ module BlockStack
         end
       end
 
+      def self.serialize_sql(values)
+        hash = values.hmap do |k, v|
+          [
+            k,
+            if BBLib.is_any?(v, Array, Hash)
+              v.to_json
+            elsif BBLib.is_any?(v, Symbol)
+              v.to_s
+            else
+              v
+            end
+          ]
+        end
+        hash.delete(:id) unless hash[:id]
+        hash
+      end
+
       module ClassMethods
         def find(query)
           query = { id: query } unless query.is_a?(Hash)
@@ -160,7 +177,8 @@ module BlockStack
             {
               type: data[:options][:sql_type] ? data[:options][:sql_type] : BlockStack::Models::SQL.determine_mapping(data[:type], data[:options]),
               name: name,
-              options: data[:sql] || {}
+              options: data[:sql] || {},
+              default: data[:default] || data[:options][:default]
             }
           end.compact
         end
@@ -193,7 +211,7 @@ module BlockStack
 
         # TODO Raise error when columns types are a mismatch (a migration is needed)
         def create_missing_columns
-          if missing_columns.empty? || @_columns_checked
+          if missing = missing_columns.empty? || @_columns_checked
             @_columns_checked = true unless @_columns_checked
             return true
           end
@@ -207,10 +225,16 @@ module BlockStack
               add_column(column[:name], column[:type], column[:options])
             end
           end
+          missing.each do |column|
+            attr_data = attr_columns.find { |col| col[:name] == column }
+            next unless  attr_data && !attr_data[:default].nil?
+            dataset.update(SQL.serialize_sql(column => attr_data[:default]))
+          end
+          true
         end
 
         def drop_extra_columns
-          BlockStack::Models::SQL._current_model(self)
+          BlockStack::Models::SQL.processing_model(self)
           db.alter_table(dataset_name) do
             BlockStack::Models::SQL.processing_model.extra_columns.each do |col|
               BlockStack.logger.info("Dropping column #{col}")
@@ -271,21 +295,8 @@ module BlockStack
           self.class.create_table_if_not_exist
         end
 
-        def serialize_sql
-          hash = change_set.diff.hmap do |k, v|
-            [
-              k,
-              if BBLib.is_any?(v, Array, Hash)
-                v.to_json
-              elsif BBLib.is_any?(v, Symbol)
-                v.to_s
-              else
-                v
-              end
-            ]
-          end
-          hash.delete(:id) unless hash[:id]
-          hash
+        def serialize_sql(values = nil)
+          SQL.serialize_sql(values || change_set.diff)
         end
       end
     end
