@@ -1,9 +1,9 @@
 module BlockStack
   class Form < Block
 
-    def default_locals
+    def default_locals(custom = {})
       {
-        model:         nil,
+        model:         custom[:model],
         form:          nil,
         name:          'form',
         save_text:     nil,

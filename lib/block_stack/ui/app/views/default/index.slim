@@ -1,6 +1,6 @@
 == stylesheet_include 'default/index'
 
-== render_block(:header, title: @model.config.display_name.pluralize, color: (@model.config.header_color), background: "#{@model.plural_name}/background") do
+== render_block(:header, @model) do
   == link_to(:new, @model, class: 'btn btn-outline-success new-button')
 - if @models.empty?
   br
@@ -20,7 +20,7 @@
   - when :cards
     .card-box
       - @models.each do |model|
-        == render_block :card, link: "/#{model.dataset_name}/#{model.id}", title: model.title, subtitle: model.tagline, image: model.thumbnail
+        == render_block :card, model
   - when :line_items
     .card-box
       - @models.each do |model|

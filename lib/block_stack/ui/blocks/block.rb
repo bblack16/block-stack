@@ -18,7 +18,8 @@ module BlockStack
       "blocks/#{type}".to_sym
     end
 
-    def render(server, opts = {}, &block)
+    def render(server, model = nil, **opts, &block)
+      opts = opts.merge(model: model) if model
       server.send(engine, view, opts[:render_options] || {}, build_locals(opts), &block)
     end
 
@@ -30,7 +31,7 @@ module BlockStack
     # This should be redefined in subclasses and must return a hash
     # with attributes to be added to the created html block
     # (such as class, id, etc...)
-    def default_attributes
+    def default_attributes(custom = {})
       {}
     end
 
@@ -38,7 +39,7 @@ module BlockStack
 
     def build_locals(custom = {})
       custom[:attributes] = attributes(custom[:attributes] || {})
-      default_locals.merge(custom)
+      default_locals(custom).merge(custom)
     end
 
     # Assemble attributes

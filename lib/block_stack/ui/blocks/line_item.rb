@@ -1,7 +1,7 @@
 module BlockStack
   class LineItem < Block
 
-    def default_locals
+    def default_locals(custom = {})
       {
         title:     '',
         subtitle:  nil,

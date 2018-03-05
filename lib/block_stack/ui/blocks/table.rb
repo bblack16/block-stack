@@ -1,7 +1,7 @@
 module BlockStack
   class Table < Block
 
-    def default_locals
+    def default_locals(custom = {})
       {
         data:        [],
         headers:     nil,
