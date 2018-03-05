@@ -29,10 +29,11 @@ module BlockStack
       if result = item.save
         { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}", id: (item.id rescue nil) }
       else
-        { status: :error, message: "Failed to save #{model.model_name}" }
+        halt(500, { status: :error, message: "Failed to save #{model.model_name}" })
       end
     rescue InvalidModelError, UniquenessError => e
-      { result: item.errors, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
+      BlockStack.logger.warn(e.to_s)
+      halt(400, { result: item.errors, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" })
     rescue => e
       { status: :error, message: "Failed to save due to the following error: #{e}" }
     end
@@ -48,11 +49,11 @@ module BlockStack
       if result = item.update(args)
         { result: result, status: :success, message: "Successfully saved #{model.model_name} #{item.id rescue nil}" }
       else
-        { result: result, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" }
+        halt(400, { result: result, status: :error, message: "There are missing or invalid fields in this #{model.model_name}" })
       end
     rescue InvalidModelError, UniquenessError => e
       BlockStack.logger.warn(e.to_s)
-      { result: item.errors, status: :error, message: "Failed to save #{model.model_name} because it is not valid." }
+      halt(400, { result: item.errors, status: :error, message: "Failed to save #{model.model_name} because it is not valid." })
     rescue => e
       BlockStack.logger.error(e)
       halt(500, { result: nil, status: :error, message: 'Failed to update item. Check the logs for errors.' })
