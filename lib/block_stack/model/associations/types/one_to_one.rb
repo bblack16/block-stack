@@ -53,11 +53,13 @@ module BlockStack
       end
 
       def process_dform(form, obj)
+        # TODO Fix this so that it uses presets
         field = {
           name:          attribute,
           type:          :select,
           label:         model.clean_name,
           include_blank: true,
+          class:         'select-2',
           # TODO Improve sorting for options (make it customizable)
           options:       model.all.map { |m| [m.id, m.title] }.sort_by { |ary| ary.last.to_s.downcase }.to_h
         }.merge(dformed_args)
