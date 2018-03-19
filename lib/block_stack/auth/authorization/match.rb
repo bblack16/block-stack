@@ -14,8 +14,8 @@ module BlockStack
       def match?(user, request, params)
         values = get_value(user, request, params)
         return false unless values
-        [values].flatten.send("#{match_type}?".to_sym) do |value|
-          expressions.any? do |exp|
+        [values].flatten.any? do |value|
+          expressions.send("#{match_type}?") do |exp|
             compare(value, exp)
           end
         end
