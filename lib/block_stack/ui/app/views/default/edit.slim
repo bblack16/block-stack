@@ -1,6 +1,0 @@
-== stylesheet_include 'default/edit'
-
-== render_block(:header, @model) do
-  == link_to(:show, @model, 'Cancel', class: 'btn btn-outline-danger cancel-button')
-br
-== render_block(:form, model: @model, method: :put, save_to: "/api/#{@model.plural_name}/#{@model.id}", save_redirect: "/#{@model.plural_name}/#{@model.id}")
