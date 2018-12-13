@@ -1,7 +1,7 @@
 # coding: utf-8
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "block_stack/shared/constants"
+require "block_stack/version"
 Gem::Specification.new do |spec|
   spec.name          = "block_stack"
   spec.version       = BlockStack::VERSION
