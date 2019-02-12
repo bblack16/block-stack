@@ -34,10 +34,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 
-  spec.add_runtime_dependency 'block_stack_util', "~> 1.0"
-  spec.add_runtime_dependency 'block_stack_server', "~> 1.0"
-  spec.add_runtime_dependency 'block_stack_ui', "~> 1.0"
-  spec.add_runtime_dependency 'block_stack_model', "~> 1.0"
-  spec.add_runtime_dependency 'block_stack_query', "~> 1.0"
-  spec.add_runtime_dependency 'block_stack_auth', "~> 1.0"
+  spec.add_runtime_dependency 'block_stack_util', "~> 1.1"
+  spec.add_runtime_dependency 'block_stack_server', "~> 1.1"
+  spec.add_runtime_dependency 'block_stack_ui', "~> 1.1"
+  spec.add_runtime_dependency 'block_stack_model', "~> 1.1"
+  spec.add_runtime_dependency 'block_stack_query', "~> 1.1"
+  spec.add_runtime_dependency 'block_stack_auth', "~> 1.1"
 end
